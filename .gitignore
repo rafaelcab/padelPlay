@@ -1,15 +1,41 @@
+# Gradle
 .gradle/
 build/
 out/
 bin/
 
-# IntelliJ / VS Code
+# Gradle wrapper jar (sí se versiona)
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDEs visuala and IntelliJ IDEA
 .idea/
 .vscode/
 *.iml
+*.ipr
+*.iws
+
+# Eclipse / STS
+.classpath
+.project
+.settings/
+.springBeans
+.sts4-cache
+.apt_generated
+.factorypath
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
 
 # Java
 *.class
 
 # Logs
 *.log
+
+# OS
+.DS_Store
+Thumbs.db
