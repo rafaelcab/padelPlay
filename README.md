@@ -21,9 +21,10 @@ padelPlay (Raíz)
 ## Configuración e Instalación rápida
 ### 1. Clonar el repositorio
 Desde tu terminal, clona el proyecto y accede a la carpeta raíz:
-
 ```bash
 git clone [https://github.com/rafaelcab/padelPlay.git](https://github.com/rafaelcab/padelPlay.git)
+```
+```bash
 cd padelPlay
 ```
 
