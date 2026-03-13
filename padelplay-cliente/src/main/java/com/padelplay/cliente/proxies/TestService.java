@@ -1,5 +1,6 @@
 package com.padelplay.client.proxies;
 
+import com.padelplay.common.dto.PruebaDto;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 

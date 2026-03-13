@@ -19,6 +19,8 @@ repositories {
 }
 
 dependencies {
+	implementation project(':padelplay-common')
+	
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 	// Dependencia para MySQL (se activará cuando conectemos la BD real)

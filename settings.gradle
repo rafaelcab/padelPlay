@@ -1,2 +1,2 @@
 rootProject.name = 'padelPlay-app'
-include 'padelplay-cliente', 'padelplay-server'
+include 'padelplay-cliente', 'padelplay-server', 'padelplay-common'
