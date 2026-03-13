@@ -17,9 +17,8 @@ padelPlay (Raíz)
 ├── padelplay-server
 └── padelplay-cliente
 ```
-
-## 🚀 Configuración e Instalación rápida
-
+## GIT
+## Configuración e Instalación rápida
 ### 1. Clonar el repositorio
 Desde tu terminal, clona el proyecto y accede a la carpeta raíz:
 
@@ -48,7 +47,7 @@ Para compilar todos los módulos a la vez:
 ```
 gradlew.bat build
 ```
-## 🛠️ Ejecución de los Módulos
+## Ejecución de los Módulos
 ### Ejecutar el Servidor (Backend)
 ```
 gradlew.bat :padelplay-server:bootRun
@@ -65,7 +64,7 @@ gradlew.bat :padelplay-cliente:bootRun
 
 URL: http://localhost:8081
 
-## 🔄 Flujo de Trabajo con Git
+## Flujo de Trabajo con Git
 Repositorio: https://github.com/rafaelcab/padelPlay
 
 Comandos básicos:
