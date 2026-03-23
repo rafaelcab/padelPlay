@@ -1,124 +1,222 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<html lang="es">
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Registro - PadelPlay</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #0f172a;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+<meta charset="UTF-8">
+<title>Registro - PadelPlay</title>
 
-        .container {
-            background-color: #1e293b;
-            padding: 30px;
-            border-radius: 10px;
-            width: 300px;
-        }
+<style>
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #0f172a, #020617);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
 
-        h2 {
-            text-align: center;
-        }
+    .card {
+        background: rgba(30, 41, 59, 0.8);
+        backdrop-filter: blur(10px);
+        padding: 40px;
+        border-radius: 15px;
+        width: 350px;
+        box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        padding-right: 65px;
+    }
 
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border-radius: 5px;
-            border: none;
-        }
+    h2 {
+        text-align: center;
+        margin-bottom: 10px;
+    }
 
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #22c55e;
-            border: none;
-            color: white;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+    p {
+        text-align: center;
+        font-size: 14px;
+        color: #94a3b8;
+        margin-bottom: 25px;
+    }
 
-        button:hover {
-            background-color: #16a34a;
-        }
-        input:focus {
-            outline: none;
-            border: 2px solid #38bdf8; 
-            box-shadow: 0 0 5px #38bdf8;
-        }
+    input {
+        width: 100%;
+        padding: 12px;
+        margin: 8px 0;
+        border-radius: 8px;
+        border: none;
+        background-color: #151f30;
+        color: white;
+        font-size: 14px;
+    }
 
-        .error {
-            color: #ef4444;
-            font-size: 12px;
-            margin-top: -5px;
-            margin-bottom: 8px;
-            display: none;
-        }
+    input::placeholder {
+        color: #64748b;
+    }
 
-        .error.show {
-            display: block;
-        }
+    input:focus {
+        outline: none;
+        border: 2px solid #22c55e;
+        box-shadow: 0 0 8px #22c55e;
+    }
 
-        input.invalid {
-            border: 2px solid #ef4444;
-            box-shadow: 0 0 5px #ef4444;
-        }
-    </style>
+    .error {
+        color: #ef4444;
+        font-size: 12px;
+        display: none;
+    }
+
+    .error.show {
+        display: block;
+    }
+
+    input.invalid {
+        border: 2px solid #ef4444;
+    }
+
+    button {
+        width: 105%;
+        padding: 12px;
+        margin-top: 15px;
+        background: #a3e635;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        background: #84cc16;
+        transform: scale(1.02);
+    }
+
+    .login {
+        text-align: center;
+        margin-top: 15px;
+        font-size: 13px;
+    }
+
+    .login a {
+        color: #a3e635;
+        text-decoration: none;
+    }
+
+    .checkbox-container {
+        display: flex;
+        align-items: center;
+        margin: 15px 0;
+        font-size: 13px;
+    }
+
+    .checkbox-container input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        margin-right: 10px;
+        cursor: pointer;
+        accent-color: #a3e635;
+    }
+
+    .checkbox-container label {
+        cursor: pointer;
+        color: #94a3b8;
+    }
+
+    .checkbox-container a {
+        color: #a3e635;
+        text-decoration: none;
+    }
+
+    .checkbox-container a:hover {
+        text-decoration: underline;
+    }
+
+    .error-checkbox {
+        border: 1px solid #ef4444;
+        border-radius: 4px;
+        padding: 5px;
+        display: none;
+    }
+
+    .error-checkbox.show {
+        display: block;
+        color: #ef4444;
+    }
+
+</style>
 </head>
+
 <body>
 
-<div class="container">
-    <h2>Registro PadelPlay</h2>
+<div class="card">
+    <h2>Join the Court</h2>
+    <p>Crea tu cuenta para empezar a competir</p>
 
-    <form action="/registro" method="post" onsubmit="return validarContraseñas()">
-        <input type="text" name="nombre" placeholder="Nombre completo" required>
+    <form action="/auth/register" method="post" onsubmit="return validarContraseñas()">
+
+        <input type="text" name="username" placeholder="Usuario" required>
 
         <input type="email" name="email" placeholder="Correo electrónico" required>
 
         <input type="password" id="password" name="password" placeholder="Contraseña" required>
 
-        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirmar contraseña" required oninput="validarEnTiempoReal()">
-        
+        <input type="password" id="confirmPassword" placeholder="Repetir contraseña"
+               required oninput="validarEnTiempoReal()">
+
         <div id="errorMensaje" class="error">Las contraseñas no coinciden</div>
 
-        <button type="submit">Registrarse</button>
+        <div class="checkbox-container">
+            <input type="checkbox" id="privacidad" name="privacidad" required>
+            <label for="privacidad">Acepto los <a href="/privacidad" target="_blank">términos de privacidad</a></label>
+        </div>
+        <div id="errorPrivacidad" class="error-checkbox">Debes aceptar los términos de privacidad</div>
+
+        <button type="submit">REGISTER →</button>
     </form>
+
+    <div class="login">
+        ¿Ya tienes cuenta? <a href="/login">Login</a>
+    </div>
 </div>
 
 <script>
-    function validarEnTiempoReal() {
-        const password = document.getElementById("password").value;
-        const confirmPassword = document.getElementById("confirmPassword").value;
-        const errorMensaje = document.getElementById("errorMensaje");
-        const confirmInput = document.getElementById("confirmPassword");
+function validarEnTiempoReal() {
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+    const errorMensaje = document.getElementById("errorMensaje");
+    const confirmInput = document.getElementById("confirmPassword");
 
-        if (confirmPassword.length > 0 && password !== confirmPassword) {
-            errorMensaje.classList.add("show");
-            confirmInput.classList.add("invalid");
-        } else {
-            errorMensaje.classList.remove("show");
-            confirmInput.classList.remove("invalid");
-        }
+    if (confirmPassword.length > 0 && password !== confirmPassword) {
+        errorMensaje.classList.add("show");
+        confirmInput.classList.add("invalid");
+    } else {
+        errorMensaje.classList.remove("show");
+        confirmInput.classList.remove("invalid");
+    }
+}
+
+function validarContraseñas() {
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+    const privacidad = document.getElementById("privacidad").checked;
+    const errorPrivacidad = document.getElementById("errorPrivacidad");
+
+    let esValido = true;
+
+    if (password !== confirmPassword) {
+        document.getElementById("errorMensaje").classList.add("show");
+        document.getElementById("confirmPassword").classList.add("invalid");
+        esValido = false;
     }
 
-    function validarContraseñas() {
-        const password = document.getElementById("password").value;
-        const confirmPassword = document.getElementById("confirmPassword").value;
-
-        if (password !== confirmPassword) {
-            document.getElementById("errorMensaje").classList.add("show");
-            document.getElementById("confirmPassword").classList.add("invalid");
-            return false;
-        }
-        return true;
+    if (!privacidad) {
+        errorPrivacidad.classList.add("show");
+        esValido = false;
+    } else {
+        errorPrivacidad.classList.remove("show");
     }
+
+    return esValido;
+}
 </script>
 
 </body>
