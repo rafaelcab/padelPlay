@@ -31,7 +31,7 @@ public class webPrueba {
 
     @PostMapping("/registro")
     public String registrarUsuario(@RequestParam String nombre, @RequestParam String email, @RequestParam String password) {
-        
+
         System.out.println("Usuario registrado: " + nombre);
 
         return "redirect:/login";
