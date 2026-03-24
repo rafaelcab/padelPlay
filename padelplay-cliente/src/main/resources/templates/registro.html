@@ -1,155 +1,172 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Registro - PadelPlay</title>
+    <meta charset="UTF-8">
+    <title>Registro - PadelPlay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 
-<style>
-    body {
-        margin: 0;
-        font-family: 'Segoe UI', sans-serif;
-        background: linear-gradient(135deg, #0f172a, #020617);
-        color: white;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    }
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0c0e10, #000000);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
 
-    .card {
-        background: rgba(30, 41, 59, 0.8);
-        backdrop-filter: blur(10px);
-        padding: 40px;
-        border-radius: 15px;
-        width: 350px;
-        box-shadow: 0 0 30px rgba(0,0,0,0.5);
-        padding-right: 65px;
-    }
+        .card {
+            background: rgba(23, 26, 28, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            padding: 40px;
+            border-radius: 15px;
+            width: 350px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
 
-    h2 {
-        text-align: center;
-        margin-bottom: 10px;
-    }
+        /* Contenedor del Logo */
+        .brand-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 25px;
+            text-align: center;
+        }
 
-    p {
-        text-align: center;
-        font-size: 14px;
-        color: #94a3b8;
-        margin-bottom: 25px;
-    }
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
 
-    input {
-        width: 100%;
-        padding: 12px;
-        margin: 8px 0;
-        border-radius: 8px;
-        border: none;
-        background-color: #151f30;
-        color: white;
-        font-size: 14px;
-    }
+        .brand-logo span {
+            color: #d1fc00; /* Color verde lima del estilo Vantage */
+            font-size: 32px;
+        }
 
-    input::placeholder {
-        color: #64748b;
-    }
+        .brand-name {
+            font-weight: 900;
+            font-style: italic;
+            text-transform: uppercase;
+            color: #d1fc00;
+            letter-spacing: -1px;
+            font-size: 20px;
+            margin: 0;
+        }
 
-    input:focus {
-        outline: none;
-        border: 2px solid #22c55e;
-        box-shadow: 0 0 8px #22c55e;
-    }
+        h1 {
+            font-size: 28px;
+            margin: 0;
+            font-weight: 700;
+        }
 
-    .error {
-        color: #ef4444;
-        font-size: 12px;
-        display: none;
-    }
+        p {
+            text-align: center;
+            font-size: 14px;
+            color: #94a3b8;
+            margin-top: 5px;
+            margin-bottom: 25px;
+        }
 
-    .error.show {
-        display: block;
-    }
+        input {
+            width: 100%;
+            box-sizing: border-box; /* Evita que el padding ensanche el input */
+            padding: 14px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: none;
+            background-color: #1d2023;
+            color: white;
+            font-size: 14px;
+            transition: 0.3s;
+        }
 
-    input.invalid {
-        border: 2px solid #ef4444;
-    }
+        input:focus {
+            outline: none;
+            background-color: #292c30;
+            border: 2px solid #22c55e;
+            box-shadow:  0 0 8px #22c55e;
+        }
 
-    button {
-        width: 105%;
-        padding: 12px;
-        margin-top: 15px;
-        background: #a3e635;
-        border: none;
-        border-radius: 8px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: 0.3s;
-    }
+        .error {
+            color: #ff7351;
+            font-size: 12px;
+            display: none;
+            margin-bottom: 10px;
+        }
 
-    button:hover {
-        background: #84cc16;
-        transform: scale(1.02);
-    }
+        .error.show { display: block; }
 
-    .login {
-        text-align: center;
-        margin-top: 15px;
-        font-size: 13px;
-    }
+        input.invalid { border: 1px solid #ff7351; }
 
-    .login a {
-        color: #a3e635;
-        text-decoration: none;
-    }
+        button {
+            width: 100%;
+            padding: 15px;
+            margin-top: 20px;
+            background: #d1fc00;
+            color: #3c4a00;
+            border: none;
+            border-radius: 8px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
 
-    .checkbox-container {
-        display: flex;
-        align-items: center;
-        margin: 15px 0;
-        font-size: 13px;
-    }
+        button:hover {
+            background: #f4ffc6;
+            transform: scale(1.02);
+        }
 
-    .checkbox-container input[type="checkbox"] {
-        width: 18px;
-        height: 18px;
-        margin-right: 10px;
-        cursor: pointer;
-        accent-color: #a3e635;
-    }
+        .login {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #94a3b8;
+        }
 
-    .checkbox-container label {
-        cursor: pointer;
-        color: #94a3b8;
-    }
+        .login a {
+            color: #d1fc00;
+            text-decoration: none;
+            font-weight: bold;
+        }
 
-    .checkbox-container a {
-        color: #a3e635;
-        text-decoration: none;
-    }
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #94a3b8;
+        }
 
-    .checkbox-container a:hover {
-        text-decoration: underline;
-    }
+        .checkbox-container input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            accent-color: #d1fc00;
+        }
 
-    .error-checkbox {
-        border: 1px solid #ef4444;
-        border-radius: 4px;
-        padding: 5px;
-        display: none;
-    }
-
-    .error-checkbox.show {
-        display: block;
-        color: #ef4444;
-    }
-
-</style>
+        .checkbox-container a { color: #d1fc00; text-decoration: none; }
+    </style>
 </head>
 
 <body>
 
 <div class="card">
-    <h2>Join the Court</h2>
-    <p>Crea tu cuenta para empezar a competir</p>
+    <header class="brand-header">
+        <div class="brand-logo">
+            <span class="material-symbols-outlined">sports_tennis</span>
+            <h2 class="brand-name">PadelPlay</h2>
+        </div>
+        <h1>Join the Court</h1>
+        <p>Crea tu cuenta para empezar a competir</p>
+    </header>
 
     <form action="/auth/register" method="post" onsubmit="return validarContraseñas()">
 
@@ -168,7 +185,7 @@
             <input type="checkbox" id="privacidad" name="privacidad" required>
             <label for="privacidad">Acepto los <a href="/privacidad" target="_blank">términos de privacidad</a></label>
         </div>
-        <div id="errorPrivacidad" class="error-checkbox">Debes aceptar los términos de privacidad</div>
+        <div id="errorPrivacidad" class="error">Debes aceptar los términos de privacidad</div>
 
         <button type="submit">REGISTER →</button>
     </form>
