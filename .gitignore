@@ -39,3 +39,7 @@ bin/
 # OS
 .DS_Store
 Thumbs.db
+
+#Credenciales
+.env
+Credenciales.env

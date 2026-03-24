@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Auth Test - PadelPlay</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .auth-container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 24px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        #google-signin-btn {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        /* Spinner overlay */
+        .spinner-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .spinner-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .spinner-text {
+            margin-top: 20px;
+            color: #333;
+            font-size: 16px;
+        }
+
+        /* Success state */
+        .success-container {
+            display: none;
+        }
+
+        .success-container.active {
+            display: block;
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            border: 3px solid #667eea;
+        }
+
+        .welcome-text {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .user-email {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .token-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: left;
+            font-size: 12px;
+            word-break: break-all;
+        }
+
+        .token-label {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .token-value {
+            color: #333;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .badge-new {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-existing {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .btn-logout {
+            background: #ff5252;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: #ff1744;
+        }
+
+        /* Error state */
+        .error-message {
+            display: none;
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        /* Initial state container */
+        .login-container {
+            display: block;
+        }
+
+        .login-container.hidden {
+            display: none;
+        }
+
+        .config-warning {
+            background: #fff3e0;
+            color: #e65100;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        .config-warning code {
+            background: #ffe0b2;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Spinner Overlay -->
+    <div class="spinner-overlay" id="spinner">
+        <div class="spinner"></div>
+        <div class="spinner-text">Iniciando sesión...</div>
+    </div>
+
+    <div class="auth-container">
+        <!-- Login State -->
+        <div class="login-container" id="loginContainer">
+            <div class="logo">🎾</div>
+            <h1>PadelPlay</h1>
+            <p class="subtitle">Inicia sesión para continuar</p>
+
+            <div class="config-warning" id="configWarning" style="display: none;">
+                ⚠️ <strong>Configuración requerida:</strong><br>
+                Reemplaza <code>TU_GOOGLE_CLIENT_ID</code> en este archivo con tu Client ID de Google Cloud Console.
+            </div>
+
+            <div id="google-signin-btn"></div>
+
+            <div class="error-message" id="errorMessage"></div>
+        </div>
+
+        <!-- Success State -->
+        <div class="success-container" id="successContainer">
+            <img class="user-avatar" id="userAvatar" src="" alt="Avatar">
+            <div class="badge badge-existing" id="userBadge">Usuario existente</div>
+            <div class="welcome-text">¡Bienvenido!</div>
+            <div class="welcome-text" id="userName"></div>
+            <div class="user-email" id="userEmail"></div>
+
+            <div class="token-info">
+                <div class="token-label">🔑 JWT Token (para usar en API):</div>
+                <div class="token-value" id="jwtToken"></div>
+            </div>
+
+            <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+        </div>
+    </div>
+
+    <script>
+        // ====================================
+        // CONFIGURACIÓN - REEMPLAZAR ESTE VALOR
+        // ====================================
+        const GOOGLE_CLIENT_ID = '75813445817-4rvtubv93v7tcc3h7o3t8tu5s8u4tbsn.apps.googleusercontent.com';
+        const API_URL = 'http://localhost:8080/api/auth/google';
+
+        // Verificar configuración
+        window.onload = function() {
+            if (GOOGLE_CLIENT_ID.includes('TU_GOOGLE_CLIENT_ID')) {
+                document.getElementById('configWarning').style.display = 'block';
+            }
+        };
+
+        // Callback cuando Google devuelve el token
+        function handleCredentialResponse(response) {
+            console.log('Google credential received');
+            showSpinner();
+
+            // Enviar token al backend
+            fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    credential: response.credential
+                })
+            })
+            .then(res => {
+                if (!res.ok) {
+                    return res.json().then(err => { throw err; });
+                }
+                return res.json();
+            })
+            .then(data => {
+                hideSpinner();
+                showSuccess(data);
+            })
+            .catch(error => {
+                hideSpinner();
+                showError(error.error || 'Error al iniciar sesión');
+            });
+        }
+
+        function showSpinner() {
+            document.getElementById('spinner').classList.add('active');
+        }
+
+        function hideSpinner() {
+            document.getElementById('spinner').classList.remove('active');
+        }
+
+        function showSuccess(data) {
+            document.getElementById('loginContainer').classList.add('hidden');
+            document.getElementById('successContainer').classList.add('active');
+
+            document.getElementById('userAvatar').src = data.pictureUrl || 'https://via.placeholder.com/80';
+            document.getElementById('userName').textContent = data.nombre;
+            document.getElementById('userEmail').textContent = data.email;
+            document.getElementById('jwtToken').textContent = data.token;
+
+            const badge = document.getElementById('userBadge');
+            if (data.nuevoUsuario) {
+                badge.textContent = '🎉 ¡Nuevo usuario!';
+                badge.className = 'badge badge-new';
+            } else {
+                badge.textContent = 'Usuario existente';
+                badge.className = 'badge badge-existing';
+            }
+
+            // Guardar token para uso posterior
+            localStorage.setItem('padelplay_token', data.token);
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = '❌ ' + message;
+            errorEl.classList.add('active');
+        }
+
+        function logout() {
+            localStorage.removeItem('padelplay_token');
+            document.getElementById('loginContainer').classList.remove('hidden');
+            document.getElementById('successContainer').classList.remove('active');
+            document.getElementById('errorMessage').classList.remove('active');
+
+            // Recargar para reinicializar el botón de Google
+            location.reload();
+        }
+
+        // Inicializar Google Sign-In
+        window.onload = function() {
+            if (GOOGLE_CLIENT_ID.includes('TU_GOOGLE_CLIENT_ID')) {
+                document.getElementById('configWarning').style.display = 'block';
+                return;
+            }
+
+            google.accounts.id.initialize({
+                client_id: GOOGLE_CLIENT_ID,
+                callback: handleCredentialResponse,
+                auto_select: false,
+                cancel_on_tap_outside: true
+            });
+
+            google.accounts.id.renderButton(
+                document.getElementById('google-signin-btn'),
+                {
+                    theme: 'outline',
+                    size: 'large',
+                    width: 280,
+                    text: 'continue_with',
+                    shape: 'rectangular',
+                    logo_alignment: 'left'
+                }
+            );
+        };
+    </script>
+</body>
+</html>
