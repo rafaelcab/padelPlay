@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selecciona tu Perfil - PadelPlay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 700px;
+            width: 100%;
+        }
+
+        .logo {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #667eea;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .roles-container {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .role-card {
+            background: #f8f9fa;
+            border: 3px solid transparent;
+            border-radius: 16px;
+            padding: 40px 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 280px;
+        }
+
+        .role-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.2);
+        }
+
+        .role-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        }
+
+        .role-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .role-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .role-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .btn-continue {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 16px 50px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 40px;
+            transition: all 0.3s ease;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .btn-continue.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .btn-continue.active:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .note {
+            color: #888;
+            font-size: 12px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🎾</div>
+        <h1>¡Bienvenido a PadelPlay!</h1>
+        <p class="subtitle">Selecciona cómo quieres usar la aplicación</p>
+
+        <div class="error-message" th:if="${error}" th:text="${error}"></div>
+
+        <div class="user-info" th:if="${usuario}">
+            <img class="user-avatar" th:src="${usuario.pictureUrl}" alt="Avatar">
+            <span class="user-name" th:text="${usuario.nombre}">Usuario</span>
+        </div>
+
+        <form method="post" th:action="@{/perfil/seleccionar-rol}" id="roleForm">
+            <input type="hidden" name="rol" id="selectedRole" value="">
+            
+            <div class="roles-container">
+                <div class="role-card" onclick="selectRole('JUGADOR')">
+                    <div class="role-icon">🏸</div>
+                    <div class="role-title">Jugador</div>
+                    <div class="role-description">
+                        Busca partidos, encuentra compañeros de juego, 
+                        registra tus estadísticas y mejora tu nivel.
+                    </div>
+                </div>
+
+                <div class="role-card" onclick="selectRole('ENTRENADOR')">
+                    <div class="role-icon">📋</div>
+                    <div class="role-title">Entrenador</div>
+                    <div class="role-description">
+                        Gestiona tus alumnos, organiza sesiones de entrenamiento 
+                        y haz seguimiento del progreso.
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-continue" id="btnContinue">
+                Continuar →
+            </button>
+        </form>
+
+        <p class="note">
+            💡 Podrás añadir el otro perfil más adelante desde tu cuenta.
+        </p>
+    </div>
+
+    <script>
+        function selectRole(role) {
+            // Desmarcar todas las cards
+            document.querySelectorAll('.role-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Marcar la seleccionada
+            event.currentTarget.classList.add('selected');
+            
+            // Guardar el valor
+            document.getElementById('selectedRole').value = role;
+            
+            // Activar el botón
+            document.getElementById('btnContinue').classList.add('active');
+        }
+    </script>
+</body>
+</html>
