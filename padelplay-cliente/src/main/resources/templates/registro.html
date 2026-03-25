@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>Registro - PadelPlay</title>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <!-- Google Sign-In SDK -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <style>
         body {
@@ -14,7 +16,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .card {
@@ -153,10 +157,99 @@
         }
 
         .checkbox-container a { color: #d1fc00; text-decoration: none; }
+
+        /* Separador */
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-top: 1px solid #374151;
+        }
+
+        .divider span {
+            padding: 0 15px;
+        }
+
+        /* Contenedor botón Google */
+        #google-signin-btn {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        /* Spinner de carga */
+        .spinner-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .spinner-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #374151;
+            border-top: 4px solid #d1fc00;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .spinner-text {
+            margin-top: 20px;
+            color: #d1fc00;
+            font-size: 16px;
+        }
+
+        /* Error de Google */
+        .google-error {
+            display: none;
+            background: rgba(255, 82, 82, 0.1);
+            border: 1px solid #ff5252;
+            color: #ff7351;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .google-error.show {
+            display: block;
+        }
     </style>
 </head>
 
 <body>
+
+<!-- Spinner Overlay -->
+<div class="spinner-overlay" id="spinner">
+    <div class="spinner"></div>
+    <div class="spinner-text" id="spinnerText">Procesando...</div>
+</div>
 
 <div class="card">
     <header class="brand-header">
@@ -168,11 +261,11 @@
         <p>Crea tu cuenta para empezar a competir</p>
     </header>
 
-    <form action="/auth/register" method="post" onsubmit="return validarContraseñas()">
+    <form id="registroForm" onsubmit="return registrarUsuario(event)">
 
-        <input type="text" name="username" placeholder="Usuario" required>
+        <input type="text" id="username" name="username" placeholder="Usuario" required>
 
-        <input type="email" name="email" placeholder="Correo electrónico" required>
+        <input type="email" id="email" name="email" placeholder="Correo electrónico" required>
 
         <input type="password" id="password" name="password" placeholder="Contraseña" required>
 
@@ -180,6 +273,9 @@
                required oninput="validarEnTiempoReal()">
 
         <div id="errorMensaje" class="error">Las contraseñas no coinciden</div>
+        
+        <!-- Error del servidor -->
+        <div class="google-error" id="registroError"></div>
 
         <div class="checkbox-container">
             <input type="checkbox" id="privacidad" name="privacidad" required>
@@ -189,6 +285,17 @@
 
         <button type="submit">REGISTER →</button>
     </form>
+    
+    <!-- Separador entre registro manual y Google -->
+    <div class="divider">
+        <span>o regístrate con</span>
+    </div>
+
+    <!-- Error de Google -->
+    <div class="google-error" id="googleError"></div>
+
+    <!-- Botón real de Google Sign-In -->
+    <div id="google-signin-btn"></div>
 
     <div class="login">
         ¿Ya tienes cuenta? <a href="/login">Login</a>
@@ -196,6 +303,40 @@
 </div>
 
 <script>
+// ====================================
+// CONFIGURACIÓN
+// ====================================
+const GOOGLE_CLIENT_ID = '75813445817-4rvtubv93v7tcc3h7o3t8tu5s8u4tbsn.apps.googleusercontent.com';
+const API_URL_GOOGLE = 'http://localhost:8080/api/auth/google';
+const API_URL_REGISTER = 'http://localhost:8080/api/auth/register';
+
+// ====================================
+// UTILIDADES
+// ====================================
+
+function showSpinner(message) {
+    document.getElementById('spinnerText').textContent = message || 'Procesando...';
+    document.getElementById('spinner').classList.add('active');
+}
+
+function hideSpinner() {
+    document.getElementById('spinner').classList.remove('active');
+}
+
+function showError(elementId, message) {
+    const errorEl = document.getElementById(elementId);
+    errorEl.textContent = '❌ ' + message;
+    errorEl.classList.add('show');
+}
+
+function hideError(elementId) {
+    document.getElementById(elementId).classList.remove('show');
+}
+
+// ====================================
+// VALIDACIONES DEL FORMULARIO
+// ====================================
+
 function validarEnTiempoReal() {
     const password = document.getElementById("password").value;
     const confirmPassword = document.getElementById("confirmPassword").value;
@@ -211,13 +352,14 @@ function validarEnTiempoReal() {
     }
 }
 
-function validarContraseñas() {
+function validarFormulario() {
     const password = document.getElementById("password").value;
     const confirmPassword = document.getElementById("confirmPassword").value;
     const privacidad = document.getElementById("privacidad").checked;
     const errorPrivacidad = document.getElementById("errorPrivacidad");
 
     let esValido = true;
+    hideError('registroError');
 
     if (password !== confirmPassword) {
         document.getElementById("errorMensaje").classList.add("show");
@@ -233,6 +375,143 @@ function validarContraseñas() {
     }
 
     return esValido;
+}
+
+// ====================================
+// REGISTRO MANUAL
+// ====================================
+
+function registrarUsuario(event) {
+    event.preventDefault();
+    
+    if (!validarFormulario()) {
+        return false;
+    }
+
+    const nombre = document.getElementById('username').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    showSpinner('Creando tu cuenta...');
+    hideError('registroError');
+
+    fetch(API_URL_REGISTER, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            nombre: nombre,
+            email: email,
+            password: password
+        })
+    })
+    .then(res => {
+        if (!res.ok) {
+            return res.json().then(err => { throw err; });
+        }
+        return res.json();
+    })
+    .then(data => {
+        hideSpinner();
+        
+        // Guardar token en sessionStorage
+        sessionStorage.setItem('padelplay_token', data.token);
+        
+        // Registro exitoso -> siempre va a selección de rol
+        window.location.href = '/perfil/seleccionar-rol?token=' + data.token;
+    })
+    .catch(error => {
+        hideSpinner();
+        showError('registroError', error.error || 'Error al registrar. Inténtalo de nuevo.');
+        console.error('Error:', error);
+    });
+
+    return false;
+}
+
+// ====================================
+// GOOGLE SIGN-IN
+// ====================================
+
+function handleCredentialResponse(response) {
+    console.log('Google credential received');
+    hideError('googleError');
+    showSpinner('Iniciando sesión con Google...');
+
+    fetch(API_URL_GOOGLE, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            credential: response.credential
+        })
+    })
+    .then(res => {
+        if (!res.ok) {
+            return res.json().then(err => { throw err; });
+        }
+        return res.json();
+    })
+    .then(data => {
+        hideSpinner();
+        
+        // Guardar token en sessionStorage
+        sessionStorage.setItem('padelplay_token', data.token);
+        
+        // Redirigir según si es nuevo usuario o no
+        if (data.nuevoUsuario) {
+            window.location.href = '/perfil/seleccionar-rol?token=' + data.token;
+        } else {
+            window.location.href = '/perfil/dashboard?token=' + data.token;
+        }
+    })
+    .catch(error => {
+        hideSpinner();
+        showError('googleError', error.error || 'Error al iniciar sesión con Google');
+        console.error('Error:', error);
+    });
+}
+
+// ====================================
+// INICIALIZACIÓN
+// ====================================
+
+window.onload = function() {
+    if (typeof google !== 'undefined' && google.accounts) {
+        initializeGoogleSignIn();
+    } else {
+        setTimeout(function() {
+            if (typeof google !== 'undefined' && google.accounts) {
+                initializeGoogleSignIn();
+            } else {
+                console.error('No se pudo cargar Google Sign-In SDK');
+                showError('googleError', 'No se pudo cargar Google Sign-In. Recarga la página.');
+            }
+        }, 1000);
+    }
+};
+
+function initializeGoogleSignIn() {
+    google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true
+    });
+
+    google.accounts.id.renderButton(
+        document.getElementById('google-signin-btn'),
+        {
+            theme: 'filled_black',
+            size: 'large',
+            width: 310,
+            text: 'signup_with',
+            shape: 'rectangular',
+            logo_alignment: 'center'
+        }
+    );
 }
 </script>
 
