@@ -3,6 +3,8 @@ package com.padelplay.cliente.controller;
 import com.padelplay.common.dto.AuthResponseDto;
 import com.padelplay.common.dto.RegistroRequestDto;
 import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,6 +17,8 @@ import org.springframework.web.client.RestTemplate;
 
 @Controller
 public class RegistroController {
+
+    private static final Logger logger = LoggerFactory.getLogger(RegistroController.class);
 
     private final RestTemplate restTemplate;
     private final String serverUrl;
@@ -68,6 +72,7 @@ public class RegistroController {
             model.addAttribute("error", mensaje);
             return "registro";
         } catch (Exception ex) {
+            logger.error("Error inesperado al registrar", ex);
             model.addAttribute("error", "Error inesperado al registrar");
             return "registro";
         }

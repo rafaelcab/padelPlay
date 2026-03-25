@@ -223,7 +223,7 @@ public class AuthController {
             }
         } catch (Exception e) {
             logger.error("Error al procesar la contraseña", e);
-            throw new RuntimeException("Error al procesar la contraseña", e);
+            throw new RuntimeException("Error al generar hash de contraseña", e);
         }
     }
 }
