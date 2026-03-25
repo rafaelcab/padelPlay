@@ -20,7 +20,7 @@ public class RegistroController {
         return "registro";
     }
 
-    @PostMapping("/registro")
+    @PostMapping("/auth/register")
     public String registrar(@ModelAttribute Usuario usuario, Model model) {
 
         RestTemplate restTemplate = new RestTemplate();
