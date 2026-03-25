@@ -315,6 +315,20 @@
         }
 
         function showSuccess(data) {
+            // Guardar token en sessionStorage
+            sessionStorage.setItem('padelplay_token', data.token);
+            
+            // Redirigir directamente según si es nuevo usuario o no
+            if (data.nuevoUsuario) {
+                // Nuevo usuario -> selección de rol
+                window.location.href = '/perfil/seleccionar-rol?token=' + data.token;
+            } else {
+                // Usuario existente -> dashboard
+                window.location.href = '/perfil/dashboard?token=' + data.token;
+            }
+        }
+        
+        function showLoginSuccess(data) {
             document.getElementById('loginContainer').classList.add('hidden');
             document.getElementById('successContainer').classList.add('active');
 
@@ -331,9 +345,6 @@
                 badge.textContent = 'Usuario existente';
                 badge.className = 'badge badge-existing';
             }
-
-            // Guardar token para uso posterior
-            localStorage.setItem('padelplay_token', data.token);
         }
 
         function showError(message) {

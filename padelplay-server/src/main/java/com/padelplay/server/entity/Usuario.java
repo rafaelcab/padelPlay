@@ -1,9 +1,12 @@
 package com.padelplay.server.entity;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Entidad Usuario con soporte para autenticación local y Google OAuth.
+ * Soporta multi-perfil (Jugador/Entrenador).
  */
 @Entity
 @Table(name = "usuarios")
@@ -30,6 +33,21 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AuthProvider authProvider = AuthProvider.LOCAL;
+
+    // === MULTI-PERFIL ===
+    
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private TipoRol rolActivo;
+
+    @Column(nullable = false)
+    private boolean tienePerfilJugador = false;
+
+    @Column(nullable = false)
+    private boolean tienePerfilEntrenador = false;
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PerfilJugador> perfilesJugador = new ArrayList<>();
 
     public Usuario() {
     }
@@ -111,5 +129,69 @@ public class Usuario {
         if (this.authProvider == AuthProvider.LOCAL) {
             this.authProvider = AuthProvider.MIXED;
         }
+    }
+
+    // === MULTI-PERFIL: Getters y Setters ===
+
+    public TipoRol getRolActivo() {
+        return rolActivo;
+    }
+
+    public void setRolActivo(TipoRol rolActivo) {
+        this.rolActivo = rolActivo;
+    }
+
+    public boolean isTienePerfilJugador() {
+        return tienePerfilJugador;
+    }
+
+    public void setTienePerfilJugador(boolean tienePerfilJugador) {
+        this.tienePerfilJugador = tienePerfilJugador;
+    }
+
+    public boolean isTienePerfilEntrenador() {
+        return tienePerfilEntrenador;
+    }
+
+    public void setTienePerfilEntrenador(boolean tienePerfilEntrenador) {
+        this.tienePerfilEntrenador = tienePerfilEntrenador;
+    }
+
+    public List<PerfilJugador> getPerfilesJugador() {
+        return perfilesJugador;
+    }
+
+    public void setPerfilesJugador(List<PerfilJugador> perfilesJugador) {
+        this.perfilesJugador = perfilesJugador;
+    }
+
+    /**
+     * Verifica si el usuario necesita seleccionar un perfil inicial.
+     */
+    public boolean requiereSeleccionPerfil() {
+        return !tienePerfilJugador && !tienePerfilEntrenador;
+    }
+
+    /**
+     * Verifica si el usuario puede cambiar entre perfiles.
+     */
+    public boolean puedeAlternarPerfil() {
+        return tienePerfilJugador && tienePerfilEntrenador;
+    }
+
+    /**
+     * Activa el perfil de jugador.
+     */
+    public void activarPerfilJugador() {
+        this.tienePerfilJugador = true;
+        this.rolActivo = TipoRol.JUGADOR;
+    }
+
+    /**
+     * Activa el perfil de entrenador.
+     */
+    public void activarPerfilEntrenador() {
+        this.tienePerfilEntrenador = true;
+        this.rolActivo = TipoRol.ENTRENADOR;
     }
 }
