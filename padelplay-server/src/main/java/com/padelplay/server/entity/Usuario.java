@@ -50,6 +50,9 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PerfilJugador> perfilesJugador = new ArrayList<>();
 
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PerfilEntrenador> perfilesEntrenador = new ArrayList<>();
+
     // Constructores
     
     public Usuario() {}
@@ -176,6 +179,14 @@ public class Usuario {
 
     public void setPerfilesJugador(List<PerfilJugador> perfilesJugador) {
         this.perfilesJugador = perfilesJugador;
+    }
+
+    public List<PerfilEntrenador> getPerfilesEntrenador() {
+        return perfilesEntrenador;
+    }
+
+    public void setPerfilesEntrenador(List<PerfilEntrenador> perfilesEntrenador) {
+        this.perfilesEntrenador = perfilesEntrenador;
     }
 
     /**

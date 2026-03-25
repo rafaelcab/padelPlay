@@ -14,6 +14,7 @@ public class EstadoPerfilDto {
     private boolean tienePerfilEntrenador;
     private boolean requiereSeleccionPerfil;
     private PerfilJugadorDto perfilJugador;
+    private PerfilEntrenadorDto perfilEntrenador;
 
     public EstadoPerfilDto() {
     }
@@ -90,5 +91,13 @@ public class EstadoPerfilDto {
 
     public void setPerfilJugador(PerfilJugadorDto perfilJugador) {
         this.perfilJugador = perfilJugador;
+    }
+
+    public PerfilEntrenadorDto getPerfilEntrenador() {
+        return perfilEntrenador;
+    }
+
+    public void setPerfilEntrenador(PerfilEntrenadorDto perfilEntrenador) {
+        this.perfilEntrenador = perfilEntrenador;
     }
 }

@@ -1,7 +1,9 @@
 package com.padelplay.cliente.proxies;
 
+import com.padelplay.common.dto.CertificacionDto;
 import com.padelplay.common.dto.DetallesTecnicosDto;
 import com.padelplay.common.dto.EstadoPerfilDto;
+import com.padelplay.common.dto.PerfilEntrenadorDto;
 import com.padelplay.common.dto.PerfilJugadorDto;
 import com.padelplay.common.dto.SeleccionRolDto;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +11,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -154,6 +157,106 @@ public class PerfilServiceProxy {
     public Map<String, Object> obtenerOpcionesTecnicas() {
         ResponseEntity<Map> response = restTemplate.getForEntity(
                 serverUrl + "/api/perfil/opciones-tecnicas",
+                Map.class
+        );
+        
+        return response.getBody();
+    }
+
+    // === MÉTODOS PARA ENTRENADOR ===
+
+    /**
+     * Obtiene el perfil de entrenador.
+     */
+    public PerfilEntrenadorDto obtenerPerfilEntrenador(String token) {
+        HttpHeaders headers = crearHeaders(token);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        
+        ResponseEntity<PerfilEntrenadorDto> response = restTemplate.exchange(
+                serverUrl + "/api/perfil/entrenador",
+                HttpMethod.GET,
+                entity,
+                PerfilEntrenadorDto.class
+        );
+        
+        return response.getBody();
+    }
+
+    /**
+     * Actualiza el perfil de entrenador.
+     */
+    public PerfilEntrenadorDto actualizarPerfilEntrenador(String token, PerfilEntrenadorDto perfil) {
+        HttpHeaders headers = crearHeaders(token);
+        HttpEntity<PerfilEntrenadorDto> entity = new HttpEntity<>(perfil, headers);
+        
+        ResponseEntity<PerfilEntrenadorDto> response = restTemplate.exchange(
+                serverUrl + "/api/perfil/entrenador",
+                HttpMethod.PUT,
+                entity,
+                PerfilEntrenadorDto.class
+        );
+        
+        return response.getBody();
+    }
+
+    /**
+     * Añade una certificación al perfil del entrenador.
+     */
+    public PerfilEntrenadorDto agregarCertificacion(String token, CertificacionDto certificacion) {
+        HttpHeaders headers = crearHeaders(token);
+        HttpEntity<CertificacionDto> entity = new HttpEntity<>(certificacion, headers);
+        
+        ResponseEntity<PerfilEntrenadorDto> response = restTemplate.exchange(
+                serverUrl + "/api/perfil/entrenador/certificaciones",
+                HttpMethod.POST,
+                entity,
+                PerfilEntrenadorDto.class
+        );
+        
+        return response.getBody();
+    }
+
+    /**
+     * Elimina una certificación del perfil del entrenador.
+     */
+    public PerfilEntrenadorDto eliminarCertificacion(String token, Long certificacionId) {
+        HttpHeaders headers = crearHeaders(token);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        
+        ResponseEntity<PerfilEntrenadorDto> response = restTemplate.exchange(
+                serverUrl + "/api/perfil/entrenador/certificaciones/" + certificacionId,
+                HttpMethod.DELETE,
+                entity,
+                PerfilEntrenadorDto.class
+        );
+        
+        return response.getBody();
+    }
+
+    /**
+     * Actualiza todas las certificaciones del entrenador.
+     */
+    public PerfilEntrenadorDto actualizarCertificaciones(String token, List<CertificacionDto> certificaciones) {
+        HttpHeaders headers = crearHeaders(token);
+        HttpEntity<List<CertificacionDto>> entity = new HttpEntity<>(certificaciones, headers);
+        
+        ResponseEntity<PerfilEntrenadorDto> response = restTemplate.exchange(
+                serverUrl + "/api/perfil/entrenador/certificaciones",
+                HttpMethod.PUT,
+                entity,
+                PerfilEntrenadorDto.class
+        );
+        
+        return response.getBody();
+    }
+
+    /**
+     * Obtiene las opciones disponibles para entrenadores.
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> obtenerOpcionesEntrenador() {
+        ResponseEntity<Map> response = restTemplate.getForEntity(
+                serverUrl + "/api/perfil/opciones-entrenador",
                 Map.class
         );
         

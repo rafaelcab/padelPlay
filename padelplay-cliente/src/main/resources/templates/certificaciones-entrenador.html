@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificaciones - PadelPlay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 35px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: #444;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        .certificacion-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .certificacion-info {
+            flex: 1;
+        }
+
+        .certificacion-tipo {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .certificacion-detalles {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .certificacion-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .certificacion-badge.pending {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-delete {
+            background: #ffebee;
+            color: #c62828;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-delete:hover {
+            background: #ffcdd2;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-add {
+            background: white;
+            color: #667eea;
+            border: 2px dashed #667eea;
+            padding: 14px 30px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .btn-add:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .progress-step {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ddd;
+        }
+
+        .progress-step.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .add-form {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+            border: 2px dashed #ddd;
+        }
+
+        .add-form-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .button-row .btn-primary {
+            flex: 2;
+        }
+
+        .button-row .btn-secondary {
+            flex: 1;
+        }
+
+        @media (max-width: 600px) {
+            .form-row, .form-row-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .card {
+                padding: 25px;
+            }
+
+            .certificacion-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .button-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🏆</div>
+            <h1>Tus Certificaciones</h1>
+            <p class="subtitle">Añade tus titulaciones para generar confianza en tus alumnos</p>
+        </div>
+
+        <div class="progress-indicator">
+            <div class="progress-step active"></div>
+            <div class="progress-step active"></div>
+        </div>
+
+        <div class="error-message" th:if="${param.error}" th:text="${param.error}"></div>
+
+        <div class="card">
+            <div class="card-title">📜 Certificaciones Actuales</div>
+            
+            <div th:if="${certificaciones == null or certificaciones.empty}" class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <p>Aún no has añadido ninguna certificación</p>
+                <p class="help-text">Las certificaciones aumentan la confianza de los alumnos</p>
+            </div>
+
+            <div th:each="cert : ${certificaciones}" class="certificacion-item">
+                <div class="certificacion-info">
+                    <div class="certificacion-tipo">
+                        <span th:text="${cert.tipoCertificacion}">Tipo</span>
+                        <span th:if="${cert.verificada}" class="certificacion-badge">✓ Verificada</span>
+                        <span th:unless="${cert.verificada}" class="certificacion-badge pending">Pendiente verificación</span>
+                    </div>
+                    <div class="certificacion-detalles">
+                        <span th:if="${cert.nivel}" th:text="'Nivel: ' + ${cert.nivel}">Nivel</span>
+                        <span th:if="${cert.organismo}" th:text="' | ' + ${cert.organismo}">Organismo</span>
+                        <span th:if="${cert.anioObtencion}" th:text="' | Año: ' + ${cert.anioObtencion}">Año</span>
+                    </div>
+                </div>
+                <form th:action="@{/perfil/entrenador/certificaciones/eliminar/{id}(id=${cert.id})}" method="post" style="margin: 0;">
+                    <button type="submit" class="btn-delete" onclick="return confirm('¿Eliminar esta certificación?')">
+                        🗑️ Eliminar
+                    </button>
+                </form>
+            </div>
+
+            <!-- Formulario para añadir nueva certificación -->
+            <div class="add-form">
+                <div class="add-form-title">
+                    ➕ Añadir Nueva Certificación
+                </div>
+                <form th:action="@{/perfil/entrenador/certificaciones/agregar}" method="post" th:object="${nuevaCertificacion}">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tipoCertificacion">Tipo de certificación *</label>
+                            <select id="tipoCertificacion" name="tipoCertificacion" required>
+                                <option value="">Selecciona...</option>
+                                <option th:each="tipo : ${opciones?.tiposCertificacion}"
+                                        th:value="${tipo.valor}"
+                                        th:text="${tipo.nombre}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="nivel">Nivel (opcional)</label>
+                            <input type="text" id="nivel" name="nivel" placeholder="Ej: Nivel 2, Avanzado...">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="organismo">Organismo emisor</label>
+                            <input type="text" id="organismo" name="organismo" 
+                                   placeholder="Ej: Federación Española de Pádel">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="anioObtencion">Año de obtención</label>
+                            <input type="number" id="anioObtencion" name="anioObtencion" 
+                                   placeholder="2023" min="1990" max="2030">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="numeroRegistro">Número de registro (opcional)</label>
+                        <input type="text" id="numeroRegistro" name="numeroRegistro" 
+                               placeholder="Número oficial de la certificación">
+                        <p class="help-text">Si lo proporcionas, podremos verificar tu certificación</p>
+                    </div>
+
+                    <button type="submit" class="btn-add">
+                        ➕ Añadir Certificación
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="button-row">
+            <form th:action="@{/perfil/entrenador/finalizar}" method="post" style="flex: 2;">
+                <button type="submit" class="btn-primary">
+                    ✓ Finalizar Configuración
+                </button>
+            </form>
+            <a href="/perfil/entrenador/configurar" class="btn-secondary" style="display: flex; align-items: center; justify-content: center; text-decoration: none;">
+                ← Volver
+            </a>
+        </div>
+    </div>
+</body>
+</html>

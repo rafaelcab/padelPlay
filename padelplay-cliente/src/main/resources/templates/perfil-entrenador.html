@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurar Perfil de Entrenador - PadelPlay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 35px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: #444;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .checkbox-item:hover {
+            background: #e9ecef;
+        }
+
+        .checkbox-item.selected {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-color: #667eea;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 10px;
+            width: auto;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 8px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 26px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked + .slider {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .toggle-switch input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .progress-step {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ddd;
+        }
+
+        .progress-step.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .price-input {
+            position: relative;
+        }
+
+        .price-input::before {
+            content: "€";
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .card {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">📋</div>
+            <h1>Configura tu Perfil de Entrenador</h1>
+            <p class="subtitle">Muestra tu experiencia y certificaciones para atraer alumnos</p>
+        </div>
+
+        <div class="progress-indicator">
+            <div class="progress-step active"></div>
+            <div class="progress-step"></div>
+        </div>
+
+        <div class="error-message" th:if="${error}" th:text="${error}"></div>
+
+        <form method="post" th:action="@{/perfil/entrenador/guardar}" th:object="${perfil}">
+            <div class="card">
+                <div class="card-title">📝 Información Básica</div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="apodo">Nombre profesional / Apodo</label>
+                        <input type="text" id="apodo" name="apodo" th:value="${perfil?.apodo}"
+                               placeholder="¿Cómo te conocen tus alumnos?">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="telefono">Teléfono de contacto</label>
+                        <input type="tel" id="telefono" name="telefono" th:value="${perfil?.telefono}"
+                               placeholder="+34 600 000 000">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="aniosExperiencia">Años de experiencia como entrenador</label>
+                        <select id="aniosExperiencia" name="aniosExperiencia">
+                            <option value="">Selecciona...</option>
+                            <option value="1" th:selected="${perfil?.aniosExperiencia == 1}">1 año</option>
+                            <option value="2" th:selected="${perfil?.aniosExperiencia == 2}">2 años</option>
+                            <option value="3" th:selected="${perfil?.aniosExperiencia == 3}">3 años</option>
+                            <option value="5" th:selected="${perfil?.aniosExperiencia == 5}">4-5 años</option>
+                            <option value="7" th:selected="${perfil?.aniosExperiencia == 7}">6-10 años</option>
+                            <option value="15" th:selected="${perfil?.aniosExperiencia == 15}">11-15 años</option>
+                            <option value="20" th:selected="${perfil?.aniosExperiencia >= 20}">Más de 15 años</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="clubActual">Club actual (opcional)</label>
+                        <input type="text" id="clubActual" name="clubActual" th:value="${perfil?.clubActual}"
+                               placeholder="Nombre del club donde entrenas">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="ubicacion">Zona donde impartes clases</label>
+                    <input type="text" id="ubicacion" name="ubicacion" th:value="${perfil?.ubicacion}"
+                           placeholder="Ej: Bilbao y alrededores, Madrid centro...">
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🎯 Especialidades</div>
+                <p class="help-text" style="margin-bottom: 15px;">Selecciona las áreas en las que te especializas</p>
+                
+                <div class="checkbox-group">
+                    <div th:each="esp : ${opciones?.especialidades}" class="checkbox-item">
+                        <input type="checkbox" 
+                               th:id="${'esp_' + esp.valor}"
+                               name="especialidadesArray"
+                               th:value="${esp.valor}"
+                               th:checked="${perfil?.especialidades != null and perfil.especialidades.contains(esp.valor)}">
+                        <label th:for="${'esp_' + esp.valor}" th:text="${esp.nombre}">Especialidad</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">💰 Disponibilidad y Tarifas</div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Clases particulares</label>
+                        <div class="toggle-group">
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="disponibleClasesParticulares" 
+                                       th:checked="${perfil?.disponibleClasesParticulares != false}">
+                                <span class="slider"></span>
+                            </label>
+                            <span>Disponible</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="precioHoraParticular">Precio/hora particular (€)</label>
+                        <input type="number" id="precioHoraParticular" name="precioHoraParticular" 
+                               th:value="${perfil?.precioHoraParticular}"
+                               placeholder="35" min="0" step="0.5">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Clases en grupo</label>
+                        <div class="toggle-group">
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="disponibleClasesGrupo"
+                                       th:checked="${perfil?.disponibleClasesGrupo != false}">
+                                <span class="slider"></span>
+                            </label>
+                            <span>Disponible</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="precioHoraGrupo">Precio/hora grupo (€/persona)</label>
+                        <input type="number" id="precioHoraGrupo" name="precioHoraGrupo"
+                               th:value="${perfil?.precioHoraGrupo}"
+                               placeholder="20" min="0" step="0.5">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📄 Descripción Profesional</div>
+                
+                <div class="form-group">
+                    <label for="descripcion">Sobre ti</label>
+                    <textarea id="descripcion" name="descripcion" th:text="${perfil?.descripcion}"
+                              placeholder="Cuéntales a tus futuros alumnos quién eres, tu trayectoria y qué te hace especial como entrenador..."></textarea>
+                    <p class="help-text">Una buena descripción aumenta la confianza de los alumnos</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="metodologia">Tu metodología de enseñanza</label>
+                    <textarea id="metodologia" name="metodologia" th:text="${perfil?.metodologia}"
+                              placeholder="Describe cómo son tus clases, qué métodos usas, cómo te adaptas a cada alumno..."></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary">
+                Continuar → Certificaciones
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // Marcar visualmente los checkboxes seleccionados
+        document.querySelectorAll('.checkbox-item input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                this.closest('.checkbox-item').classList.toggle('selected', this.checked);
+            });
+            // Inicializar estado
+            if (checkbox.checked) {
+                checkbox.closest('.checkbox-item').classList.add('selected');
+            }
+        });
+    </script>
+</body>
+</html>

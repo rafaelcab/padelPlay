@@ -1,9 +1,13 @@
 package com.padelplay.server.facade;
 
+import com.padelplay.common.dto.CertificacionDto;
 import com.padelplay.common.dto.DetallesTecnicosDto;
 import com.padelplay.common.dto.EstadoPerfilDto;
+import com.padelplay.common.dto.PerfilEntrenadorDto;
 import com.padelplay.common.dto.PerfilJugadorDto;
 import com.padelplay.common.dto.SeleccionRolDto;
+import com.padelplay.server.entity.EspecialidadEntrenador;
+import com.padelplay.server.entity.TipoCertificacion;
 import com.padelplay.server.entity.TipoRol;
 import com.padelplay.server.service.JwtService;
 import com.padelplay.server.service.PerfilService;
@@ -11,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -184,6 +189,116 @@ public class PerfilController {
                     Map.of("valor", "Avanzado", "descripcion", "Avanzado"),
                     Map.of("valor", "Profesional", "descripcion", "Profesional")
             )
+        ));
+    }
+
+    // === ENDPOINTS PARA ENTRENADOR ===
+
+    /**
+     * Obtiene el perfil de entrenador del usuario.
+     */
+    @GetMapping("/entrenador")
+    public ResponseEntity<?> obtenerPerfilEntrenador(@RequestHeader("Authorization") String authHeader) {
+        try {
+            Long usuarioId = extraerUsuarioId(authHeader);
+            return perfilService.obtenerPerfilEntrenador(usuarioId)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Actualiza el perfil de entrenador.
+     */
+    @PutMapping("/entrenador")
+    public ResponseEntity<?> actualizarPerfilEntrenador(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody PerfilEntrenadorDto request) {
+        try {
+            Long usuarioId = extraerUsuarioId(authHeader);
+            PerfilEntrenadorDto perfil = perfilService.actualizarPerfilEntrenador(usuarioId, request);
+            return ResponseEntity.ok(perfil);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Valor inválido: " + e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Añade una certificación al perfil del entrenador.
+     */
+    @PostMapping("/entrenador/certificaciones")
+    public ResponseEntity<?> agregarCertificacion(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody CertificacionDto request) {
+        try {
+            Long usuarioId = extraerUsuarioId(authHeader);
+            PerfilEntrenadorDto perfil = perfilService.agregarCertificacion(usuarioId, request);
+            return ResponseEntity.ok(perfil);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Tipo de certificación inválido: " + e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Elimina una certificación del perfil del entrenador.
+     */
+    @DeleteMapping("/entrenador/certificaciones/{certificacionId}")
+    public ResponseEntity<?> eliminarCertificacion(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Long certificacionId) {
+        try {
+            Long usuarioId = extraerUsuarioId(authHeader);
+            PerfilEntrenadorDto perfil = perfilService.eliminarCertificacion(usuarioId, certificacionId);
+            return ResponseEntity.ok(perfil);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Actualiza todas las certificaciones del entrenador.
+     */
+    @PutMapping("/entrenador/certificaciones")
+    public ResponseEntity<?> actualizarCertificaciones(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody List<CertificacionDto> request) {
+        try {
+            Long usuarioId = extraerUsuarioId(authHeader);
+            PerfilEntrenadorDto perfil = perfilService.actualizarCertificaciones(usuarioId, request);
+            return ResponseEntity.ok(perfil);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Tipo de certificación inválido: " + e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Obtiene las opciones disponibles para los campos del perfil de entrenador.
+     */
+    @GetMapping("/opciones-entrenador")
+    public ResponseEntity<?> obtenerOpcionesEntrenador() {
+        return ResponseEntity.ok(Map.of(
+            "tiposCertificacion", java.util.Arrays.stream(TipoCertificacion.values())
+                    .map(t -> Map.of("valor", t.name(), "nombre", t.getNombre(), "descripcion", t.getDescripcion()))
+                    .toList(),
+            "especialidades", java.util.Arrays.stream(EspecialidadEntrenador.values())
+                    .map(e -> Map.of("valor", e.name(), "nombre", e.getNombre(), "descripcion", e.getDescripcion()))
+                    .toList()
         ));
     }
 

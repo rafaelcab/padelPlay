@@ -1,15 +1,20 @@
 package com.padelplay.server.service;
 
+import com.padelplay.common.dto.CertificacionDto;
 import com.padelplay.common.dto.DetallesTecnicosDto;
 import com.padelplay.common.dto.EstadoPerfilDto;
+import com.padelplay.common.dto.PerfilEntrenadorDto;
 import com.padelplay.common.dto.PerfilJugadorDto;
 import com.padelplay.server.entity.*;
+import com.padelplay.server.repository.CertificacionRepository;
 import com.padelplay.server.repository.DetallesTecnicosRepository;
+import com.padelplay.server.repository.PerfilEntrenadorRepository;
 import com.padelplay.server.repository.PerfilJugadorRepository;
 import com.padelplay.server.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,13 +29,19 @@ public class PerfilService {
     private final UsuarioRepository usuarioRepository;
     private final PerfilJugadorRepository perfilJugadorRepository;
     private final DetallesTecnicosRepository detallesTecnicosRepository;
+    private final PerfilEntrenadorRepository perfilEntrenadorRepository;
+    private final CertificacionRepository certificacionRepository;
 
     public PerfilService(UsuarioRepository usuarioRepository,
                          PerfilJugadorRepository perfilJugadorRepository,
-                         DetallesTecnicosRepository detallesTecnicosRepository) {
+                         DetallesTecnicosRepository detallesTecnicosRepository,
+                         PerfilEntrenadorRepository perfilEntrenadorRepository,
+                         CertificacionRepository certificacionRepository) {
         this.usuarioRepository = usuarioRepository;
         this.perfilJugadorRepository = perfilJugadorRepository;
         this.detallesTecnicosRepository = detallesTecnicosRepository;
+        this.perfilEntrenadorRepository = perfilEntrenadorRepository;
+        this.certificacionRepository = certificacionRepository;
     }
 
     /**
@@ -56,6 +67,11 @@ public class PerfilService {
                     .ifPresent(perfil -> dto.setPerfilJugador(convertirADto(perfil)));
         }
 
+        if (usuario.isTienePerfilEntrenador()) {
+            perfilEntrenadorRepository.findByUsuarioIdWithCertificaciones(usuarioId)
+                    .ifPresent(perfil -> dto.setPerfilEntrenador(convertirADto(perfil)));
+        }
+
         return dto;
     }
 
@@ -77,7 +93,11 @@ public class PerfilService {
             }
         } else if (rol == TipoRol.ENTRENADOR) {
             usuario.activarPerfilEntrenador();
-            // Aquí se crearía el perfil de entrenador (futuro)
+            // Crear perfil de entrenador vacío
+            if (!perfilEntrenadorRepository.existsByUsuarioId(usuarioId)) {
+                PerfilEntrenador perfil = new PerfilEntrenador(usuario);
+                perfilEntrenadorRepository.save(perfil);
+            }
         }
 
         usuarioRepository.save(usuario);
@@ -180,6 +200,115 @@ public class PerfilService {
                 .map(this::convertirADto);
     }
 
+    // === MÉTODOS PARA ENTRENADOR ===
+
+    /**
+     * Obtiene el perfil de entrenador del usuario.
+     */
+    @Transactional(readOnly = true)
+    public Optional<PerfilEntrenadorDto> obtenerPerfilEntrenador(Long usuarioId) {
+        return perfilEntrenadorRepository.findByUsuarioIdWithCertificaciones(usuarioId)
+                .map(this::convertirADto);
+    }
+
+    /**
+     * Actualiza el perfil de entrenador.
+     */
+    public PerfilEntrenadorDto actualizarPerfilEntrenador(Long usuarioId, PerfilEntrenadorDto dto) {
+        PerfilEntrenador perfil = perfilEntrenadorRepository.findByUsuarioId(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Perfil de entrenador no encontrado"));
+
+        perfil.setApodo(dto.getApodo());
+        perfil.setAniosExperiencia(dto.getAniosExperiencia());
+        perfil.setTelefono(dto.getTelefono());
+        perfil.setDescripcion(dto.getDescripcion());
+        perfil.setMetodologia(dto.getMetodologia());
+        perfil.setUbicacion(dto.getUbicacion());
+        perfil.setClubActual(dto.getClubActual());
+        perfil.setDisponibleClasesParticulares(dto.getDisponibleClasesParticulares());
+        perfil.setDisponibleClasesGrupo(dto.getDisponibleClasesGrupo());
+        perfil.setPrecioHoraParticular(dto.getPrecioHoraParticular());
+        perfil.setPrecioHoraGrupo(dto.getPrecioHoraGrupo());
+
+        // Actualizar especialidades
+        if (dto.getEspecialidades() != null) {
+            Set<EspecialidadEntrenador> especialidades = dto.getEspecialidades().stream()
+                    .map(EspecialidadEntrenador::valueOf)
+                    .collect(Collectors.toSet());
+            perfil.setEspecialidades(especialidades);
+        }
+
+        perfilEntrenadorRepository.save(perfil);
+        return convertirADto(perfil);
+    }
+
+    /**
+     * Añade una certificación al perfil del entrenador.
+     */
+    public PerfilEntrenadorDto agregarCertificacion(Long usuarioId, CertificacionDto dto) {
+        PerfilEntrenador perfil = perfilEntrenadorRepository.findByUsuarioIdWithCertificaciones(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Perfil de entrenador no encontrado"));
+
+        Certificacion certificacion = new Certificacion();
+        certificacion.setTipoCertificacion(TipoCertificacion.valueOf(dto.getTipoCertificacion()));
+        certificacion.setNivel(dto.getNivel());
+        certificacion.setOrganismo(dto.getOrganismo());
+        certificacion.setAnioObtencion(dto.getAnioObtencion());
+        certificacion.setNumeroRegistro(dto.getNumeroRegistro());
+        certificacion.setVerificada(false);
+
+        perfil.agregarCertificacion(certificacion);
+        perfilEntrenadorRepository.save(perfil);
+
+        return convertirADto(perfil);
+    }
+
+    /**
+     * Elimina una certificación del perfil del entrenador.
+     */
+    public PerfilEntrenadorDto eliminarCertificacion(Long usuarioId, Long certificacionId) {
+        PerfilEntrenador perfil = perfilEntrenadorRepository.findByUsuarioIdWithCertificaciones(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Perfil de entrenador no encontrado"));
+
+        Certificacion certificacion = certificacionRepository.findById(certificacionId)
+                .orElseThrow(() -> new RuntimeException("Certificación no encontrada"));
+
+        if (!certificacion.getPerfilEntrenador().getId().equals(perfil.getId())) {
+            throw new RuntimeException("La certificación no pertenece a este entrenador");
+        }
+
+        perfil.eliminarCertificacion(certificacion);
+        certificacionRepository.delete(certificacion);
+
+        return convertirADto(perfil);
+    }
+
+    /**
+     * Actualiza las certificaciones del entrenador (reemplaza todas).
+     */
+    public PerfilEntrenadorDto actualizarCertificaciones(Long usuarioId, List<CertificacionDto> certificacionesDto) {
+        PerfilEntrenador perfil = perfilEntrenadorRepository.findByUsuarioIdWithCertificaciones(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Perfil de entrenador no encontrado"));
+
+        // Eliminar certificaciones existentes
+        perfil.getCertificaciones().clear();
+
+        // Agregar nuevas certificaciones
+        for (CertificacionDto dto : certificacionesDto) {
+            Certificacion cert = new Certificacion();
+            cert.setTipoCertificacion(TipoCertificacion.valueOf(dto.getTipoCertificacion()));
+            cert.setNivel(dto.getNivel());
+            cert.setOrganismo(dto.getOrganismo());
+            cert.setAnioObtencion(dto.getAnioObtencion());
+            cert.setNumeroRegistro(dto.getNumeroRegistro());
+            cert.setVerificada(false);
+            perfil.agregarCertificacion(cert);
+        }
+
+        perfilEntrenadorRepository.save(perfil);
+        return convertirADto(perfil);
+    }
+
     // === Métodos de conversión ===
 
     private PerfilJugadorDto convertirADto(PerfilJugador perfil) {
@@ -212,6 +341,50 @@ public class PerfilService {
             dto.setGolpesFuertes(golpes);
         }
         
+        return dto;
+    }
+
+    private PerfilEntrenadorDto convertirADto(PerfilEntrenador perfil) {
+        PerfilEntrenadorDto dto = new PerfilEntrenadorDto();
+        dto.setId(perfil.getId());
+        dto.setApodo(perfil.getApodo());
+        dto.setAniosExperiencia(perfil.getAniosExperiencia());
+        dto.setTelefono(perfil.getTelefono());
+        dto.setDescripcion(perfil.getDescripcion());
+        dto.setMetodologia(perfil.getMetodologia());
+        dto.setUbicacion(perfil.getUbicacion());
+        dto.setClubActual(perfil.getClubActual());
+        dto.setDisponibleClasesParticulares(perfil.getDisponibleClasesParticulares());
+        dto.setDisponibleClasesGrupo(perfil.getDisponibleClasesGrupo());
+        dto.setPrecioHoraParticular(perfil.getPrecioHoraParticular());
+        dto.setPrecioHoraGrupo(perfil.getPrecioHoraGrupo());
+
+        if (perfil.getEspecialidades() != null) {
+            Set<String> especialidades = perfil.getEspecialidades().stream()
+                    .map(EspecialidadEntrenador::name)
+                    .collect(Collectors.toSet());
+            dto.setEspecialidades(especialidades);
+        }
+
+        if (perfil.getCertificaciones() != null) {
+            List<CertificacionDto> certificaciones = perfil.getCertificaciones().stream()
+                    .map(this::convertirADto)
+                    .collect(Collectors.toList());
+            dto.setCertificaciones(certificaciones);
+        }
+
+        return dto;
+    }
+
+    private CertificacionDto convertirADto(Certificacion cert) {
+        CertificacionDto dto = new CertificacionDto();
+        dto.setId(cert.getId());
+        dto.setTipoCertificacion(cert.getTipoCertificacion() != null ? cert.getTipoCertificacion().name() : null);
+        dto.setNivel(cert.getNivel());
+        dto.setOrganismo(cert.getOrganismo());
+        dto.setAnioObtencion(cert.getAnioObtencion());
+        dto.setNumeroRegistro(cert.getNumeroRegistro());
+        dto.setVerificada(cert.getVerificada());
         return dto;
     }
 }

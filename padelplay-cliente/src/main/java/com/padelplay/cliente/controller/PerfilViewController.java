@@ -1,7 +1,9 @@
 package com.padelplay.cliente.controller;
 
+import com.padelplay.common.dto.CertificacionDto;
 import com.padelplay.common.dto.DetallesTecnicosDto;
 import com.padelplay.common.dto.EstadoPerfilDto;
+import com.padelplay.common.dto.PerfilEntrenadorDto;
 import com.padelplay.common.dto.PerfilJugadorDto;
 import com.padelplay.cliente.proxies.PerfilServiceProxy;
 import org.springframework.stereotype.Controller;
@@ -9,6 +11,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -74,6 +79,8 @@ public class PerfilViewController {
             
             if ("JUGADOR".equals(rol)) {
                 return "redirect:/perfil/jugador/configurar";
+            } else if ("ENTRENADOR".equals(rol)) {
+                return "redirect:/perfil/entrenador/configurar";
             } else {
                 return "redirect:/perfil/dashboard";
             }
@@ -252,10 +259,157 @@ public class PerfilViewController {
             
             if ("JUGADOR".equals(rol)) {
                 return "redirect:/perfil/jugador/configurar";
+            } else if ("ENTRENADOR".equals(rol)) {
+                return "redirect:/perfil/entrenador/configurar";
             }
             return "redirect:/perfil/dashboard";
         } catch (Exception e) {
             return "redirect:/perfil/dashboard?error=" + e.getMessage();
         }
+    }
+
+    // === MÉTODOS PARA ENTRENADOR ===
+
+    /**
+     * Página de configuración del perfil de entrenador.
+     */
+    @GetMapping("/entrenador/configurar")
+    public String configurarPerfilEntrenador(HttpSession session, Model model) {
+        String token = (String) session.getAttribute("token");
+        if (token == null) {
+            return "redirect:/google-test";
+        }
+        
+        try {
+            // Cargar opciones primero (no requiere autenticación)
+            Map<String, Object> opciones = perfilServiceProxy.obtenerOpcionesEntrenador();
+            model.addAttribute("opciones", opciones);
+        } catch (Exception e) {
+            // Si falla cargar opciones, al menos mostrar el formulario vacío
+            model.addAttribute("opciones", new java.util.HashMap<>());
+        }
+        
+        try {
+            PerfilEntrenadorDto perfil = perfilServiceProxy.obtenerPerfilEntrenador(token);
+            model.addAttribute("perfil", perfil != null ? perfil : new PerfilEntrenadorDto());
+        } catch (Exception e) {
+            model.addAttribute("perfil", new PerfilEntrenadorDto());
+            // No mostrar error si simplemente no existe el perfil aún
+        }
+        
+        return "perfil-entrenador";
+    }
+
+    /**
+     * Guarda el perfil básico del entrenador.
+     */
+    @PostMapping("/entrenador/guardar")
+    public String guardarPerfilEntrenador(
+            @ModelAttribute PerfilEntrenadorDto perfil,
+            @RequestParam(required = false) String[] especialidadesArray,
+            HttpSession session,
+            Model model) {
+        String token = (String) session.getAttribute("token");
+        if (token == null) {
+            return "redirect:/google-test";
+        }
+        
+        try {
+            // Convertir array de especialidades a Set
+            if (especialidadesArray != null) {
+                perfil.setEspecialidades(new HashSet<>(java.util.Arrays.asList(especialidadesArray)));
+            }
+            
+            perfilServiceProxy.actualizarPerfilEntrenador(token, perfil);
+            return "redirect:/perfil/entrenador/certificaciones";
+        } catch (Exception e) {
+            model.addAttribute("error", "Error al guardar el perfil: " + e.getMessage());
+            model.addAttribute("perfil", perfil);
+            Map<String, Object> opciones = perfilServiceProxy.obtenerOpcionesEntrenador();
+            model.addAttribute("opciones", opciones);
+            return "perfil-entrenador";
+        }
+    }
+
+    /**
+     * Página de gestión de certificaciones del entrenador.
+     */
+    @GetMapping("/entrenador/certificaciones")
+    public String gestionarCertificaciones(HttpSession session, Model model) {
+        String token = (String) session.getAttribute("token");
+        if (token == null) {
+            return "redirect:/google-test";
+        }
+        
+        // Cargar opciones primero
+        try {
+            Map<String, Object> opciones = perfilServiceProxy.obtenerOpcionesEntrenador();
+            model.addAttribute("opciones", opciones);
+        } catch (Exception e) {
+            model.addAttribute("opciones", new java.util.HashMap<>());
+        }
+        
+        try {
+            PerfilEntrenadorDto perfil = perfilServiceProxy.obtenerPerfilEntrenador(token);
+            model.addAttribute("perfil", perfil);
+            model.addAttribute("certificaciones", perfil != null && perfil.getCertificaciones() != null ? 
+                    perfil.getCertificaciones() : new ArrayList<>());
+        } catch (Exception e) {
+            model.addAttribute("perfil", new PerfilEntrenadorDto());
+            model.addAttribute("certificaciones", new ArrayList<>());
+        }
+        
+        model.addAttribute("nuevaCertificacion", new CertificacionDto());
+        return "certificaciones-entrenador";
+    }
+
+    /**
+     * Añade una nueva certificación.
+     */
+    @PostMapping("/entrenador/certificaciones/agregar")
+    public String agregarCertificacion(
+            @ModelAttribute CertificacionDto certificacion,
+            HttpSession session,
+            Model model) {
+        String token = (String) session.getAttribute("token");
+        if (token == null) {
+            return "redirect:/google-test";
+        }
+        
+        try {
+            perfilServiceProxy.agregarCertificacion(token, certificacion);
+            return "redirect:/perfil/entrenador/certificaciones";
+        } catch (Exception e) {
+            model.addAttribute("error", "Error al agregar certificación: " + e.getMessage());
+            return "redirect:/perfil/entrenador/certificaciones?error=" + e.getMessage();
+        }
+    }
+
+    /**
+     * Elimina una certificación.
+     */
+    @PostMapping("/entrenador/certificaciones/eliminar/{id}")
+    public String eliminarCertificacion(
+            @PathVariable Long id,
+            HttpSession session) {
+        String token = (String) session.getAttribute("token");
+        if (token == null) {
+            return "redirect:/google-test";
+        }
+        
+        try {
+            perfilServiceProxy.eliminarCertificacion(token, id);
+            return "redirect:/perfil/entrenador/certificaciones";
+        } catch (Exception e) {
+            return "redirect:/perfil/entrenador/certificaciones?error=" + e.getMessage();
+        }
+    }
+
+    /**
+     * Finaliza la configuración del entrenador y va al dashboard.
+     */
+    @PostMapping("/entrenador/finalizar")
+    public String finalizarConfiguracionEntrenador(HttpSession session) {
+        return "redirect:/perfil/dashboard";
     }
 }

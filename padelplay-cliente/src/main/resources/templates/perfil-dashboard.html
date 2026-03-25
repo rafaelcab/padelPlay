@@ -306,14 +306,114 @@
             </div>
         </div>
 
-        <!-- Perfil de Entrenador (Placeholder) -->
+        <!-- Perfil de Entrenador -->
         <div th:if="${estado.tienePerfilEntrenador && estado.rolActivo == 'ENTRENADOR'}">
+            <!-- Información Básica del Entrenador -->
             <div class="card">
-                <div class="empty-state">
-                    <div class="empty-state-icon"><span class="material-symbols-outlined"
-                            style="font-size: 48px;">construction</span></div>
-                    <h3>Perfil de Entrenador</h3>
-                    <p>Esta sección estará disponible próximamente.</p>
+                <div class="card-header">
+                    <div class="card-title"><span class="material-symbols-outlined">school</span> Información Profesional</div>
+                    <a href="/perfil/entrenador/configurar" class="btn-edit">Editar</a>
+                </div>
+                <div class="profile-grid" th:if="${estado.perfilEntrenador}">
+                    <div class="profile-item">
+                        <div class="profile-label">Nombre profesional</div>
+                        <div class="profile-value" th:classappend="${estado.perfilEntrenador.apodo == null} ? 'empty'"
+                            th:text="${estado.perfilEntrenador.apodo} ?: 'Sin especificar'">-</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">Experiencia</div>
+                        <div class="profile-value"
+                            th:classappend="${estado.perfilEntrenador.aniosExperiencia == null} ? 'empty'"
+                            th:text="${estado.perfilEntrenador.aniosExperiencia != null} ? ${estado.perfilEntrenador.aniosExperiencia} + ' años' : 'Sin especificar'">-</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">Teléfono</div>
+                        <div class="profile-value" th:classappend="${estado.perfilEntrenador.telefono == null} ? 'empty'"
+                            th:text="${estado.perfilEntrenador.telefono} ?: 'Sin especificar'">-</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">Club actual</div>
+                        <div class="profile-value" th:classappend="${estado.perfilEntrenador.clubActual == null} ? 'empty'"
+                            th:text="${estado.perfilEntrenador.clubActual} ?: 'Sin especificar'">-</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">Ubicación</div>
+                        <div class="profile-value" th:classappend="${estado.perfilEntrenador.ubicacion == null} ? 'empty'"
+                            th:text="${estado.perfilEntrenador.ubicacion} ?: 'Sin especificar'">-</div>
+                    </div>
+                </div>
+
+                <!-- Especialidades -->
+                <div class="profile-item" style="margin-top: 20px;"
+                    th:if="${estado.perfilEntrenador?.especialidades != null && !estado.perfilEntrenador.especialidades.empty}">
+                    <div class="profile-label">Especialidades</div>
+                    <div class="tags-container">
+                        <span class="tag" th:each="esp : ${estado.perfilEntrenador.especialidades}"
+                            th:text="${esp}">Especialidad</span>
+                    </div>
+                </div>
+
+                <!-- Descripción -->
+                <div class="profile-item" style="margin-top: 20px;"
+                    th:if="${estado.perfilEntrenador?.descripcion != null}">
+                    <div class="profile-label">Sobre mí</div>
+                    <div class="profile-value" th:text="${estado.perfilEntrenador.descripcion}">-</div>
+                </div>
+            </div>
+
+            <!-- Tarifas y Disponibilidad -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><span class="material-symbols-outlined">payments</span> Tarifas y Disponibilidad</div>
+                    <a href="/perfil/entrenador/configurar" class="btn-edit">Editar</a>
+                </div>
+                <div class="profile-grid" th:if="${estado.perfilEntrenador}">
+                    <div class="profile-item">
+                        <div class="profile-label">Clases particulares</div>
+                        <div class="profile-value" 
+                            th:text="${estado.perfilEntrenador.disponibleClasesParticulares != false} ? '✓ Disponible' : '✗ No disponible'">-</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">Precio/hora particular</div>
+                        <div class="profile-value" th:classappend="${estado.perfilEntrenador.precioHoraParticular == null} ? 'empty'"
+                            th:text="${estado.perfilEntrenador.precioHoraParticular != null} ? ${estado.perfilEntrenador.precioHoraParticular} + ' €/h' : 'Sin especificar'">-</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">Clases en grupo</div>
+                        <div class="profile-value"
+                            th:text="${estado.perfilEntrenador.disponibleClasesGrupo != false} ? '✓ Disponible' : '✗ No disponible'">-</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">Precio/hora grupo</div>
+                        <div class="profile-value" th:classappend="${estado.perfilEntrenador.precioHoraGrupo == null} ? 'empty'"
+                            th:text="${estado.perfilEntrenador.precioHoraGrupo != null} ? ${estado.perfilEntrenador.precioHoraGrupo} + ' €/h/persona' : 'Sin especificar'">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Certificaciones -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><span class="material-symbols-outlined">workspace_premium</span> Certificaciones</div>
+                    <a href="/perfil/entrenador/certificaciones" class="btn-edit">Gestionar</a>
+                </div>
+                <div th:if="${estado.perfilEntrenador?.certificaciones != null && !estado.perfilEntrenador.certificaciones.empty}">
+                    <div th:each="cert : ${estado.perfilEntrenador.certificaciones}" class="profile-item" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div class="profile-value" th:text="${cert.tipoCertificacion}">Tipo</div>
+                            <div class="profile-label" style="margin-top: 4px;">
+                                <span th:if="${cert.organismo}" th:text="${cert.organismo}">Organismo</span>
+                                <span th:if="${cert.anioObtencion}" th:text="' | ' + ${cert.anioObtencion}">Año</span>
+                            </div>
+                        </div>
+                        <span th:if="${cert.verificada}" class="tag" style="background: rgba(34, 197, 94, 0.1); color: #22c55e; border-color: rgba(34, 197, 94, 0.2);">✓ Verificada</span>
+                        <span th:unless="${cert.verificada}" class="tag" style="background: rgba(234, 179, 8, 0.1); color: #eab308; border-color: rgba(234, 179, 8, 0.2);">Pendiente</span>
+                    </div>
+                </div>
+                <div class="empty-state" th:if="${estado.perfilEntrenador?.certificaciones == null || estado.perfilEntrenador.certificaciones.empty}">
+                    <div class="empty-state-icon"><span class="material-symbols-outlined" style="font-size: 48px;">badge</span></div>
+                    <p>No has añadido certificaciones aún.</p>
+                    <a href="/perfil/entrenador/certificaciones" class="btn-edit" style="margin-top: 15px; display: inline-block;">Añadir certificaciones</a>
                 </div>
             </div>
         </div>

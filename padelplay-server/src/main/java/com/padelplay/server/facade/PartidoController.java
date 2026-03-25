@@ -1,4 +1,4 @@
-package com.padelplay.server.controller;
+package com.padelplay.server.facade;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,23 +28,20 @@ public class PartidoController {
     }
 
     // =========================================================================
-    // 1. CREAR PARTIDO 
+    // 1. CREAR PARTIDO
     // POST /api/partidos
     // =========================================================================
-    @Operation(
-        summary = "Crear un nuevo partido ",
-        description = "Crea un partido, vincula al jugador creador y establece automáticamente los huecos disponibles a 3."
-    )
+    @Operation(summary = "Crear un nuevo partido ", description = "Crea un partido, vincula al jugador creador y establece automáticamente los huecos disponibles a 3.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Partido creado correctamente"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos (nivel fuera de rango, fecha en el pasado, o jugador no encontrado)")
+            @ApiResponse(responseCode = "201", description = "Partido creado correctamente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos (nivel fuera de rango, fecha en el pasado, o jugador no encontrado)")
     })
     @PostMapping
     public ResponseEntity<Partido> crearPartido(@RequestBody PartidoDto partidoDto) {
         try {
             // Lógica de dominio en el servicio
             Partido nuevoPartido = partidoService.crearPartido(partidoDto);
-            
+
             return new ResponseEntity<>(nuevoPartido, HttpStatus.CREATED);
 
         } catch (IllegalArgumentException e) {
