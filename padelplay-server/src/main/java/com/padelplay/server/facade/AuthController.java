@@ -9,6 +9,8 @@ import com.padelplay.server.repository.UsuarioRepository;
 import com.padelplay.server.service.GoogleAuthService;
 import com.padelplay.server.service.GoogleAuthService.GoogleUserInfo;
 import com.padelplay.server.service.JwtService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +29,11 @@ import javax.crypto.spec.PBEKeySpec;
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*") // Ajustar en producción
 public class AuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+    private static final int PASSWORD_SALT_BYTES = 16;
+    private static final int PASSWORD_ITERATIONS = 65536;
+    private static final int PASSWORD_KEY_LENGTH = 256;
 
     private final GoogleAuthService googleAuthService;
     private final JwtService jwtService;
@@ -124,6 +131,10 @@ public class AuthController {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Nombre, email y contraseña son obligatorios"));
         }
+        if (request.getPassword().length() < 8) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "La contraseña debe tener al menos 8 caracteres"));
+        }
 
         String email = request.getEmail().trim().toLowerCase();
         String nombre = request.getNombre().trim();
@@ -197,18 +208,17 @@ public class AuthController {
 
     private String hashPassword(String password) {
         try {
-            byte[] salt = new byte[16];
+            byte[] salt = new byte[PASSWORD_SALT_BYTES];
             SecureRandom secureRandom = new SecureRandom();
             secureRandom.nextBytes(salt);
-            int iterations = 65536;
-            int keyLength = 256;
-            PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, iterations, keyLength);
+            PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, PASSWORD_ITERATIONS, PASSWORD_KEY_LENGTH);
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
             byte[] hashed = factory.generateSecret(spec).getEncoded();
-            return iterations + ":"
+            return PASSWORD_ITERATIONS + ":"
                     + Base64.getEncoder().encodeToString(salt)
                     + ":" + Base64.getEncoder().encodeToString(hashed);
         } catch (Exception e) {
+            logger.error("Error al procesar la contraseña", e);
             throw new RuntimeException("Error al procesar la contraseña", e);
         }
     }

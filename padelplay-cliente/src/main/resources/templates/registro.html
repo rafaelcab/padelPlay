@@ -90,7 +90,7 @@
             outline: none;
             background-color: #292c30;
             border: 2px solid #22c55e;
-            box-shadow:  0 0 8px #22c55e;
+            box-shadow: 0 0 8px #22c55e;
         }
 
         .error {
@@ -175,8 +175,8 @@
 
         <input type="password" id="password" name="password" placeholder="Contraseña" th:field="*{password}" required>
 
-        <input type="password" id="confirmPassword" placeholder="Repetir contraseña"
-               required oninput="validarEnTiempoReal()">
+        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Repetir contraseña"
+               aria-label="Repetir contraseña" required oninput="validarEnTiempoReal()">
 
         <div id="errorMensaje" class="error" style="display:none;">Las contraseñas no coinciden</div>
 

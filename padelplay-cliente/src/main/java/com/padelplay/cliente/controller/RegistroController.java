@@ -63,7 +63,7 @@ public class RegistroController {
             if (ex.getStatusCode().value() == 409) {
                 mensaje = "Email ya registrado";
             } else if (ex.getStatusCode().value() == 400) {
-                mensaje = "Completa todos los campos";
+                mensaje = "Datos inválidos";
             }
             model.addAttribute("error", mensaje);
             return "registro";
