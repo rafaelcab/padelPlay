@@ -4,11 +4,12 @@ import com.padelplay.common.dto.DetallesTecnicosDto;
 import com.padelplay.common.dto.EstadoPerfilDto;
 import com.padelplay.common.dto.PerfilJugadorDto;
 import com.padelplay.cliente.proxies.PerfilServiceProxy;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 
-import jakarta.servlet.http.HttpSession;
 import java.util.Map;
 
 /**
@@ -37,7 +38,7 @@ public class PerfilViewController {
         }
         
         if (token == null) {
-            return "redirect:/google-test";
+            return "redirect:/login";
         }
         
         try {
@@ -51,6 +52,9 @@ public class PerfilViewController {
             model.addAttribute("usuario", estado);
             return "seleccion-rol";
         } catch (Exception e) {
+            if (esSesionInvalida(e)) {
+                return redirigirALogin(session);
+            }
             model.addAttribute("error", "Error al cargar el perfil: " + e.getMessage());
             return "seleccion-rol";
         }
@@ -66,7 +70,7 @@ public class PerfilViewController {
             Model model) {
         String token = (String) session.getAttribute("token");
         if (token == null) {
-            return "redirect:/google-test";
+            return "redirect:/login";
         }
         
         try {
@@ -78,6 +82,9 @@ public class PerfilViewController {
                 return "redirect:/perfil/dashboard";
             }
         } catch (Exception e) {
+            if (esSesionInvalida(e)) {
+                return redirigirALogin(session);
+            }
             model.addAttribute("error", "Error al seleccionar rol: " + e.getMessage());
             return "seleccion-rol";
         }
@@ -96,7 +103,7 @@ public class PerfilViewController {
         }
         
         if (token == null) {
-            return "redirect:/google-test";
+            return "redirect:/login";
         }
         
         try {
@@ -110,6 +117,9 @@ public class PerfilViewController {
             model.addAttribute("estado", estado);
             return "perfil-dashboard";
         } catch (Exception e) {
+            if (esSesionInvalida(e)) {
+                return redirigirALogin(session);
+            }
             model.addAttribute("error", "Error al cargar el dashboard: " + e.getMessage());
             return "perfil-dashboard";
         }
@@ -122,7 +132,7 @@ public class PerfilViewController {
     public String configurarPerfilJugador(HttpSession session, Model model) {
         String token = (String) session.getAttribute("token");
         if (token == null) {
-            return "redirect:/google-test";
+            return "redirect:/login";
         }
         
         try {
@@ -133,6 +143,9 @@ public class PerfilViewController {
             model.addAttribute("opciones", opciones);
             return "perfil-jugador";
         } catch (Exception e) {
+            if (esSesionInvalida(e)) {
+                return redirigirALogin(session);
+            }
             model.addAttribute("error", "Error al cargar el perfil: " + e.getMessage());
             return "perfil-jugador";
         }
@@ -148,13 +161,16 @@ public class PerfilViewController {
             Model model) {
         String token = (String) session.getAttribute("token");
         if (token == null) {
-            return "redirect:/google-test";
+            return "redirect:/login";
         }
         
         try {
             perfilServiceProxy.actualizarPerfilJugador(token, perfil);
             return "redirect:/perfil/jugador/detalles-tecnicos";
         } catch (Exception e) {
+            if (esSesionInvalida(e)) {
+                return redirigirALogin(session);
+            }
             model.addAttribute("error", "Error al guardar el perfil: " + e.getMessage());
             model.addAttribute("perfil", perfil);
             return "perfil-jugador";
@@ -168,7 +184,7 @@ public class PerfilViewController {
     public String configurarDetallesTecnicos(HttpSession session, Model model) {
         String token = (String) session.getAttribute("token");
         if (token == null) {
-            return "redirect:/google-test";
+            return "redirect:/login";
         }
         
         try {
@@ -181,6 +197,9 @@ public class PerfilViewController {
             model.addAttribute("opciones", opciones);
             return "detalles-tecnicos";
         } catch (Exception e) {
+            if (esSesionInvalida(e)) {
+                return redirigirALogin(session);
+            }
             model.addAttribute("error", "Error al cargar los detalles: " + e.getMessage());
             return "detalles-tecnicos";
         }
@@ -197,7 +216,7 @@ public class PerfilViewController {
             Model model) {
         String token = (String) session.getAttribute("token");
         if (token == null) {
-            return "redirect:/google-test";
+            return "redirect:/login";
         }
         
         try {
@@ -209,6 +228,9 @@ public class PerfilViewController {
             perfilServiceProxy.actualizarDetallesTecnicos(token, detalles);
             return "redirect:/perfil/dashboard";
         } catch (Exception e) {
+            if (esSesionInvalida(e)) {
+                return redirigirALogin(session);
+            }
             model.addAttribute("error", "Error al guardar los detalles: " + e.getMessage());
             model.addAttribute("detalles", detalles);
             return "detalles-tecnicos";
@@ -224,13 +246,16 @@ public class PerfilViewController {
             HttpSession session) {
         String token = (String) session.getAttribute("token");
         if (token == null) {
-            return "redirect:/google-test";
+            return "redirect:/login";
         }
         
         try {
             perfilServiceProxy.cambiarRol(token, rol);
             return "redirect:/perfil/dashboard";
         } catch (Exception e) {
+            if (esSesionInvalida(e)) {
+                return redirigirALogin(session);
+            }
             return "redirect:/perfil/dashboard?error=" + e.getMessage();
         }
     }
@@ -244,7 +269,7 @@ public class PerfilViewController {
             HttpSession session) {
         String token = (String) session.getAttribute("token");
         if (token == null) {
-            return "redirect:/google-test";
+            return "redirect:/login";
         }
         
         try {
@@ -255,7 +280,20 @@ public class PerfilViewController {
             }
             return "redirect:/perfil/dashboard";
         } catch (Exception e) {
+            if (esSesionInvalida(e)) {
+                return redirigirALogin(session);
+            }
             return "redirect:/perfil/dashboard?error=" + e.getMessage();
         }
+    }
+
+    private boolean esSesionInvalida(Exception e) {
+        return e instanceof HttpClientErrorException.Unauthorized
+                || e instanceof HttpClientErrorException.Forbidden;
+    }
+
+    private String redirigirALogin(HttpSession session) {
+        session.invalidate();
+        return "redirect:/login";
     }
 }
