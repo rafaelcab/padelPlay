@@ -138,13 +138,13 @@ public class AuthController {
 
         String email = request.getEmail().trim().toLowerCase();
         String nombre = request.getNombre().trim();
-        String passwordHashed = hashPassword(request.getPassword());
 
         Optional<Usuario> usuarioExistente = usuarioRepository.findByEmail(email);
         if (usuarioExistente.isPresent()) {
             Usuario usuario = usuarioExistente.get();
 
             if (usuario.getPassword() == null) {
+                String passwordHashed = hashPassword(request.getPassword());
                 usuario.setPassword(passwordHashed);
                 if (usuario.getAuthProvider() == AuthProvider.GOOGLE) {
                     usuario.setAuthProvider(AuthProvider.MIXED);
@@ -166,6 +166,7 @@ public class AuthController {
                     .body(Map.of("error", "Email ya registrado"));
         }
 
+        String passwordHashed = hashPassword(request.getPassword());
         Usuario usuario = new Usuario();
         usuario.setEmail(email);
         usuario.setNombre(nombre);
