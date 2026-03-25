@@ -11,9 +11,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     // Método original de main - para registro manual
     boolean existsByEmail(String email);
-    
     // Métodos adicionales de Rama_Mikel - para autenticación Google
     Optional<Usuario> findByEmail(String email);
+    Usuario findByEmailAndPassword(String email, String password);
 
     Optional<Usuario> findByGoogleId(String googleId);
 }

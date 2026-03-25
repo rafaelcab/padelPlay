@@ -49,6 +49,7 @@ dependencies {
 	
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+	implementation 'org.springframework.security:spring-security-crypto'  //Solo para encriptar contraseñas, no se usará Spring Security completo
 	// Dependencia para MySQL (se activará cuando conectemos la BD real)
 	//runtimeOnly 'com.mysql:mysql-connector-j'
 	implementation 'com.h2database:h2'
