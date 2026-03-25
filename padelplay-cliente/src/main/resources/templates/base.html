@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html class="dark" lang="es" xmlns:th="http://www.thymeleaf.org" th:fragment="layout (title, links, content)">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title th:replace="${title}">Vantage Padel</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,700;0,800;1,800&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    fontFamily: {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        body {
+            background-color: #000000;
+            color: #eeeef0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-nav {
+            background: rgba(12, 14, 16, 0.7);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+    <!-- Elementos dinámicos del head (hojas de estilo especificas) -->
+    <th:block th:replace="${links}" />
+</head>
+
+<body class="bg-black min-h-screen">
+
+    <header
+        class="fixed top-0 w-full z-50 glass-nav shadow-[0_20px_40px_rgba(0,0,0,0.4)] h-20 flex justify-between items-center px-8">
+        <div class="flex items-center gap-3 group cursor-pointer">
+            <span
+                class="text-[#D4FF00] font-black italic text-2xl tracking-tighter uppercase font-headline">PadelPlay</span>
+        </div>
+
+        <nav class="hidden md:flex items-center gap-10">
+            <a class="font-headline tracking-tight font-bold uppercase text-sm text-[#D4FF00] border-b-2 border-[#D4FF00] pb-1"
+                href="/perfil/dashboard">Home</a>
+            <a class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
+                href="#">Partidos</a>
+            <a class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
+                href="#">Crear</a>
+            <a class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
+                href="#">Torneos</a>
+        </nav>
+
+        <div class="flex items-center gap-6">
+            <!-- Botón para cambiar de rol recuperando la funcionalidad de Thymeleaf -->
+            <div th:if="${estado != null && (estado.tienePerfilJugador || estado.tienePerfilEntrenador)}">
+                <form th:action="@{/perfil/cambiar-rol}" method="post" style="display: contents;">
+                    <input type="hidden" name="rol"
+                        th:value="${estado.rolActivo == 'JUGADOR' ? 'ENTRENADOR' : 'JUGADOR'}">
+                    <button type="submit"
+                        th:disabled="${estado.rolActivo == 'JUGADOR' ? !estado.tienePerfilEntrenador : !estado.tienePerfilJugador}"
+                        class="group px-6 py-2.5 rounded-full bg-[#1d2023] border border-slate-800 hover:bg-[#D4FF00] transition-all duration-300 flex items-center gap-2"
+                        th:classappend="${estado.rolActivo == 'JUGADOR' && !estado.tienePerfilEntrenador ? 'opacity-50 cursor-not-allowed' : ''} + ${estado.rolActivo == 'ENTRENADOR' && !estado.tienePerfilJugador ? 'opacity-50 cursor-not-allowed' : ''}">
+                        <span
+                            class="material-symbols-outlined text-[#D4FF00] group-hover:text-black transition-colors">swap_horiz</span>
+                        <span
+                            class="font-headline tracking-tight font-bold uppercase text-xs text-[#D4FF00] group-hover:text-black transition-colors"
+                            th:text="${estado.rolActivo == 'JUGADOR'} ? 'Switch to Coach' : 'Switch to Player'">Cambiar
+                            a entrenador</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Avatar con enlace al perfil solicitado -->
+            <a th:href="@{/perfil/dashboard}"
+                class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-700 hover:border-[#D4FF00] hover:shadow-[0_0_15px_rgba(212,255,0,0.5)] transition-all">
+                <img alt="Profile" class="w-full h-full object-cover"
+                    th:src="${estado != null && estado.pictureUrl != null ? estado.pictureUrl : 'https://lh3.googleusercontent.com/aida-public/AB6AXuCnoZNX12NJLATjw1LLNxe3nmhMuGUkfnnBRep2SPnmip00TUcU9y8ItbdFDrPwwErPuI_jSIQa6VJzWgcF2xv7nIkxTZp_s2_El6W8SZpk3TVSL2jMR8gHm9Gw5mc1-YqLZma5WBWpU1q5O5HnBz1a4d3hDqmaFvJZSLYVMHwjFsPAidYrG7i1JKMnR5V7BdAYCvDkREXKyldSl1DmDNPmKONTSlf5VnCMJTbAl76zux2frzzy9lBeN6u4S7aulOgf0XTmMVQ2v8Nw'}" />
+            </a>
+        </div>
+    </header>
+
+    <main class="pt-24" th:replace="${content}">
+    </main>
+
+</body>
+
+</html>
