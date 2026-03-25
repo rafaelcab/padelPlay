@@ -41,5 +41,4 @@ bin/
 Thumbs.db
 
 #Credenciales
-.env
 Credenciales.env
