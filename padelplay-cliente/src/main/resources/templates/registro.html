@@ -173,7 +173,7 @@
 
         <input type="email" name="email" placeholder="Correo electrónico" th:field="*{email}" required>
 
-        <input type="password" id="password" name="password" placeholder="Contraseña" th:field="*{password}" required>
+        <input type="password" id="password" name="password" placeholder="Contraseña" aria-label="Contraseña" th:field="*{password}" required>
 
         <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Repetir contraseña"
                aria-label="Repetir contraseña" required oninput="validarEnTiempoReal()">

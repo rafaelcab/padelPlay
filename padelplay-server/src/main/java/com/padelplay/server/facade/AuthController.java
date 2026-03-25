@@ -212,11 +212,15 @@ public class AuthController {
             SecureRandom secureRandom = new SecureRandom();
             secureRandom.nextBytes(salt);
             PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, PASSWORD_ITERATIONS, PASSWORD_KEY_LENGTH);
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-            byte[] hashed = factory.generateSecret(spec).getEncoded();
-            return PASSWORD_ITERATIONS + ":"
-                    + Base64.getEncoder().encodeToString(salt)
-                    + ":" + Base64.getEncoder().encodeToString(hashed);
+            try {
+                SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+                byte[] hashed = factory.generateSecret(spec).getEncoded();
+                return PASSWORD_ITERATIONS + ":"
+                        + Base64.getEncoder().encodeToString(salt)
+                        + ":" + Base64.getEncoder().encodeToString(hashed);
+            } finally {
+                spec.clearPassword();
+            }
         } catch (Exception e) {
             logger.error("Error al procesar la contraseña", e);
             throw new RuntimeException("Error al procesar la contraseña", e);
