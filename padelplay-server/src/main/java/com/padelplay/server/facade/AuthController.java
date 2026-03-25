@@ -13,12 +13,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 
 /**
  * Controller para autenticación (Google OAuth y futura autenticación local).
@@ -31,7 +31,6 @@ public class AuthController {
     private final GoogleAuthService googleAuthService;
     private final JwtService jwtService;
     private final UsuarioRepository usuarioRepository;
-    private final SecureRandom secureRandom = new SecureRandom();
 
     public AuthController(GoogleAuthService googleAuthService,
                           JwtService jwtService,
@@ -199,11 +198,16 @@ public class AuthController {
     private String hashPassword(String password) {
         try {
             byte[] salt = new byte[16];
+            SecureRandom secureRandom = new SecureRandom();
             secureRandom.nextBytes(salt);
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            digest.update(salt);
-            byte[] hashed = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(salt) + ":" + Base64.getEncoder().encodeToString(hashed);
+            int iterations = 65536;
+            int keyLength = 256;
+            PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, iterations, keyLength);
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            byte[] hashed = factory.generateSecret(spec).getEncoded();
+            return iterations + ":"
+                    + Base64.getEncoder().encodeToString(salt)
+                    + ":" + Base64.getEncoder().encodeToString(hashed);
         } catch (Exception e) {
             throw new RuntimeException("Error al procesar la contraseña", e);
         }

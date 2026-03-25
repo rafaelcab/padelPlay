@@ -55,9 +55,9 @@ public class RegistroController {
 
             session.setAttribute("token", auth.getToken());
             if (auth.isNuevoUsuario()) {
-                return "redirect:/perfil/seleccionar-rol?token=" + auth.getToken();
+                return "redirect:/perfil/seleccionar-rol";
             }
-            return "redirect:/perfil/dashboard?token=" + auth.getToken();
+            return "redirect:/perfil/dashboard";
         } catch (HttpClientErrorException ex) {
             String mensaje = "No se pudo completar el registro.";
             if (ex.getStatusCode().value() == 409) {
