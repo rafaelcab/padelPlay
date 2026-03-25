@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles Técnicos - PadelPlay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 35px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: #444;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Radio buttons estilizados */
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .radio-option {
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .radio-option input[type="radio"] {
+            display: none;
+        }
+
+        .radio-option label {
+            display: block;
+            padding: 16px 20px;
+            background: #f8f9fa;
+            border: 2px solid #e8e8e8;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .radio-option input[type="radio"]:checked + label {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .radio-option label:hover {
+            border-color: #667eea;
+        }
+
+        /* Checkboxes estilizados para golpes */
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        .checkbox-option {
+            position: relative;
+        }
+
+        .checkbox-option input[type="checkbox"] {
+            display: none;
+        }
+
+        .checkbox-option label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 16px;
+            background: #f8f9fa;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .checkbox-option label::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .checkbox-option input[type="checkbox"]:checked + label {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-color: #667eea;
+        }
+
+        .checkbox-option input[type="checkbox"]:checked + label::before {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: #667eea;
+            content: '✓';
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-back {
+            background: transparent;
+            color: #666;
+            border: none;
+            padding: 12px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .btn-back:hover {
+            color: #667eea;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .progress-step {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ddd;
+        }
+
+        .progress-step.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+        }
+
+        .section-icon {
+            margin-right: 8px;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .card {
+                padding: 25px;
+            }
+            
+            .radio-group {
+                flex-direction: column;
+            }
+            
+            .radio-option {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/perfil/jugador/configurar" class="btn-back">← Volver</a>
+        
+        <div class="header">
+            <div class="logo">🎯</div>
+            <h1>Detalles Técnico-Tácticos</h1>
+            <p class="subtitle">Define tu estilo de juego para encontrar compañeros compatibles</p>
+        </div>
+
+        <div class="progress-indicator">
+            <div class="progress-step active"></div>
+            <div class="progress-step active"></div>
+        </div>
+
+        <div class="error-message" th:if="${error}" th:text="${error}"></div>
+
+        <form method="post" th:action="@{/perfil/jugador/detalles-tecnicos/guardar}">
+            
+            <!-- Posición -->
+            <div class="card">
+                <div class="card-title"><span class="section-icon">📍</span> Posición en la Pista</div>
+                <div class="radio-group">
+                    <div class="radio-option" th:each="pos : ${opciones?.posiciones}">
+                        <input type="radio" 
+                               th:id="${'pos_' + pos.valor}" 
+                               name="posicion" 
+                               th:value="${pos.valor}"
+                               th:checked="${detalles?.posicion == pos.valor}">
+                        <label th:for="${'pos_' + pos.valor}" th:text="${pos.descripcion}"></label>
+                    </div>
+                </div>
+                <p class="help-text">¿En qué lado de la pista sueles jugar?</p>
+            </div>
+
+            <!-- Mano hábil -->
+            <div class="card">
+                <div class="card-title"><span class="section-icon">✋</span> Mano Hábil</div>
+                <div class="radio-group">
+                    <div class="radio-option" th:each="mano : ${opciones?.manosHabiles}">
+                        <input type="radio" 
+                               th:id="${'mano_' + mano.valor}" 
+                               name="manoHabil" 
+                               th:value="${mano.valor}"
+                               th:checked="${detalles?.manoHabil == mano.valor}">
+                        <label th:for="${'mano_' + mano.valor}" th:text="${mano.descripcion}"></label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estilo de juego -->
+            <div class="card">
+                <div class="card-title"><span class="section-icon">⚡</span> Estilo de Juego</div>
+                <div class="radio-group">
+                    <div class="radio-option" th:each="estilo : ${opciones?.estilosJuego}">
+                        <input type="radio" 
+                               th:id="${'estilo_' + estilo.valor}" 
+                               name="estiloJuego" 
+                               th:value="${estilo.valor}"
+                               th:checked="${detalles?.estiloJuego == estilo.valor}">
+                        <label th:for="${'estilo_' + estilo.valor}" th:text="${estilo.descripcion}"></label>
+                    </div>
+                </div>
+                <p class="help-text">¿Cómo describirías tu forma de jugar?</p>
+            </div>
+
+            <!-- Golpes fuertes -->
+            <div class="card">
+                <div class="card-title"><span class="section-icon">💪</span> Golpes Fuertes</div>
+                <p class="help-text" style="margin-bottom: 15px;">Selecciona los golpes en los que destacas (puedes elegir varios)</p>
+                <div class="checkbox-grid">
+                    <div class="checkbox-option" th:each="golpe : ${opciones?.tiposGolpe}">
+                        <input type="checkbox" 
+                               th:id="${'golpe_' + golpe.valor}" 
+                               name="golpesFuertesArray" 
+                               th:value="${golpe.valor}"
+                               th:checked="${detalles?.golpesFuertes?.contains(golpe.valor)}">
+                        <label th:for="${'golpe_' + golpe.valor}" th:text="${golpe.descripcion}"></label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observaciones -->
+            <div class="card">
+                <div class="card-title"><span class="section-icon">📝</span> Observaciones</div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <textarea name="observaciones" 
+                              rows="4" 
+                              placeholder="Añade cualquier información adicional sobre tu juego, lesiones a tener en cuenta, disponibilidad, etc."
+                              th:text="${detalles?.observaciones}"></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary">
+                ✓ Completar Configuración
+            </button>
+        </form>
+    </div>
+</body>
+</html>

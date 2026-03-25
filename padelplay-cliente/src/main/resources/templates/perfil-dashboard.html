@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{base :: layout(~{::title}, ~{::style}, ~{::main})}">
+
+<head>
+    <title>Mi Perfil - PadelPlay</title>
+    <style>
+        /* Contenido principal */
+        .main-content {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            color: #eeeef0;
+            margin-bottom: 30px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+        }
+
+        .card {
+            background: #1d2023;
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid #334155;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #eeeef0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-edit {
+            background: #D4FF00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-edit:hover {
+            background: #bade00;
+            box-shadow: 0 0 10px rgba(212, 255, 0, 0.3);
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .profile-item {
+            background: #0f1113;
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid #1e293b;
+        }
+
+        .profile-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .profile-value {
+            font-size: 16px;
+            font-weight: 500;
+            color: #eeeef0;
+        }
+
+        .profile-value.empty {
+            color: #64748b;
+            font-style: italic;
+        }
+
+        /* Tags para golpes */
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            background: rgba(212, 255, 0, 0.1);
+            color: #D4FF00;
+            border: 1px solid rgba(212, 255, 0, 0.2);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* Banner para añadir perfil */
+        .add-profile-banner {
+            background: #0f1113;
+            border: 2px dashed #334155;
+            padding: 30px;
+            text-align: center;
+            border-radius: 16px;
+            margin-bottom: 25px;
+        }
+
+        .add-profile-banner h3 {
+            color: #eeeef0;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .add-profile-banner p {
+            color: #94a3b8;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .btn-add-profile {
+            background: #D4FF00;
+            color: #000;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add-profile:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(212, 255, 0, 0.2);
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .alert-error {
+            background: rgba(220, 38, 38, 0.1);
+            color: #fca5a5;
+            border: 1px solid #7f1d1d;
+        }
+
+        .alert-success {
+            background: rgba(22, 163, 74, 0.1);
+            color: #86efac;
+            border: 1px solid #14532d;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #D4FF00;
+        }
+
+        @media (max-width: 768px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- El Header ha sido movido íntegramente a base.html y lo heredamos -->
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+        <h1 class="page-title">Mi Perfil</h1>
+
+        <div class="alert alert-error" th:if="${param.error}" th:text="${param.error}"></div>
+
+        <!-- Banner para añadir perfil adicional -->
+        <div class="add-profile-banner" th:if="${!estado.tienePerfilJugador || !estado.tienePerfilEntrenador}">
+            <h3 th:if="${!estado.tienePerfilJugador}">¿También eres jugador?</h3>
+            <h3 th:if="${!estado.tienePerfilEntrenador}">¿También eres entrenador?</h3>
+            <p th:if="${!estado.tienePerfilJugador}">Añade tu perfil de jugador para buscar partidos y compañeros.</p>
+            <p th:if="${!estado.tienePerfilEntrenador}">Añade tu perfil de entrenador para gestionar tus alumnos.</p>
+            <form th:action="@{/perfil/crear-perfil}" method="post">
+                <input type="hidden" name="rol" th:value="${!estado.tienePerfilJugador} ? 'JUGADOR' : 'ENTRENADOR'">
+                <button type="submit" class="btn-add-profile">
+                    + Añadir perfil de <span th:text="${!estado.tienePerfilJugador} ? 'Jugador' : 'Entrenador'"></span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Perfil de Jugador -->
+        <div th:if="${estado.tienePerfilJugador && estado.rolActivo == 'JUGADOR'}">
+            <!-- Información Básica -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><span class="material-symbols-outlined">edit_document</span> Información
+                        Básica</div>
+                    <a href="/perfil/jugador/configurar" class="btn-edit">Editar</a>
+                </div>
+                <div class="profile-grid" th:if="${estado.perfilJugador}">
+                    <div class="profile-item">
+                        <div class="profile-label">Apodo</div>
+                        <div class="profile-value" th:classappend="${estado.perfilJugador.apodo == null} ? 'empty'"
+                            th:text="${estado.perfilJugador.apodo} ?: 'Sin especificar'">-</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">Nivel</div>
+                        <div class="profile-value" th:classappend="${estado.perfilJugador.nivelJuego == null} ? 'empty'"
+                            th:text="${estado.perfilJugador.nivelJuego} ?: 'Sin especificar'">-</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">Experiencia</div>
+                        <div class="profile-value"
+                            th:classappend="${estado.perfilJugador.aniosExperiencia == null} ? 'empty'"
+                            th:text="${estado.perfilJugador.aniosExperiencia != null} ? ${estado.perfilJugador.aniosExperiencia} + ' años' : 'Sin especificar'">
+                            -</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">Teléfono</div>
+                        <div class="profile-value" th:classappend="${estado.perfilJugador.telefono == null} ? 'empty'"
+                            th:text="${estado.perfilJugador.telefono} ?: 'Sin especificar'">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detalles Técnicos -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><span class="material-symbols-outlined">sports_tennis</span> Detalles
+                        Técnicos</div>
+                    <a href="/perfil/jugador/detalles-tecnicos" class="btn-edit">Editar</a>
+                </div>
+                <div th:if="${estado.perfilJugador?.detallesTecnicos}">
+                    <div class="profile-grid">
+                        <div class="profile-item">
+                            <div class="profile-label">Posición</div>
+                            <div class="profile-value"
+                                th:classappend="${estado.perfilJugador.detallesTecnicos.posicion == null} ? 'empty'"
+                                th:text="${estado.perfilJugador.detallesTecnicos.posicion} ?: 'Sin especificar'">-</div>
+                        </div>
+                        <div class="profile-item">
+                            <div class="profile-label">Mano Hábil</div>
+                            <div class="profile-value"
+                                th:classappend="${estado.perfilJugador.detallesTecnicos.manoHabil == null} ? 'empty'"
+                                th:text="${estado.perfilJugador.detallesTecnicos.manoHabil} ?: 'Sin especificar'">-
+                            </div>
+                        </div>
+                        <div class="profile-item">
+                            <div class="profile-label">Estilo de Juego</div>
+                            <div class="profile-value"
+                                th:classappend="${estado.perfilJugador.detallesTecnicos.estiloJuego == null} ? 'empty'"
+                                th:text="${estado.perfilJugador.detallesTecnicos.estiloJuego} ?: 'Sin especificar'">-
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-item" style="margin-top: 20px;"
+                        th:if="${estado.perfilJugador.detallesTecnicos.golpesFuertes != null && !estado.perfilJugador.detallesTecnicos.golpesFuertes.empty}">
+                        <div class="profile-label">Golpes Fuertes</div>
+                        <div class="tags-container">
+                            <span class="tag" th:each="golpe : ${estado.perfilJugador.detallesTecnicos.golpesFuertes}"
+                                th:text="${golpe}">Golpe</span>
+                        </div>
+                    </div>
+
+                    <div class="profile-item" style="margin-top: 20px;"
+                        th:if="${estado.perfilJugador.detallesTecnicos.observaciones != null}">
+                        <div class="profile-label">Observaciones</div>
+                        <div class="profile-value" th:text="${estado.perfilJugador.detallesTecnicos.observaciones}">-
+                        </div>
+                    </div>
+                </div>
+                <div class="empty-state" th:if="${estado.perfilJugador?.detallesTecnicos == null}">
+                    <div class="empty-state-icon"><span class="material-symbols-outlined"
+                            style="font-size: 48px;">assignment</span></div>
+                    <p>No has configurado tus detalles técnicos aún.</p>
+                    <a href="/perfil/jugador/detalles-tecnicos" class="btn-edit"
+                        style="margin-top: 15px; display: inline-block;">Configurar ahora</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Perfil de Entrenador (Placeholder) -->
+        <div th:if="${estado.tienePerfilEntrenador && estado.rolActivo == 'ENTRENADOR'}">
+            <div class="card">
+                <div class="empty-state">
+                    <div class="empty-state-icon"><span class="material-symbols-outlined"
+                            style="font-size: 48px;">construction</span></div>
+                    <h3>Perfil de Entrenador</h3>
+                    <p>Esta sección estará disponible próximamente.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>
