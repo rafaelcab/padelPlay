@@ -60,7 +60,7 @@ URL: http://localhost:8080
 Abre una nueva terminal y ejecuta:
 
 ```
-gradlew.bat :padelplay-cliente:bootRun
+gradlew.bat :padelplay-client:bootRun
 ```
 
 URL: http://localhost:8081
