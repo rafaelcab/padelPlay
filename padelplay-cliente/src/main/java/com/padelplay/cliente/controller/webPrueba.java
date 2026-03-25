@@ -8,7 +8,7 @@ import org.springframework.web.client.RestTemplate;
 @Controller
 public class webPrueba {
 
-    @GetMapping("/")
+    @GetMapping("/prueba")
     public String home(Model model) {
 
         RestTemplate restTemplate = new RestTemplate();

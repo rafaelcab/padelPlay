@@ -2,6 +2,7 @@ package com.padelplay.server.facade;
 
 import com.padelplay.common.dto.AuthResponseDto;
 import com.padelplay.common.dto.GoogleAuthRequestDto;
+import com.padelplay.common.dto.RegistroRequestDto;
 import com.padelplay.server.entity.AuthProvider;
 import com.padelplay.server.entity.Usuario;
 import com.padelplay.server.repository.UsuarioRepository;
@@ -12,6 +13,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
 
@@ -26,6 +31,7 @@ public class AuthController {
     private final GoogleAuthService googleAuthService;
     private final JwtService jwtService;
     private final UsuarioRepository usuarioRepository;
+    private final SecureRandom secureRandom = new SecureRandom();
 
     public AuthController(GoogleAuthService googleAuthService,
                           JwtService jwtService,
@@ -108,6 +114,68 @@ public class AuthController {
     }
 
     /**
+     * Endpoint para registro manual con email y password.
+     */
+    @PostMapping("/register")
+    public ResponseEntity<?> registrarUsuario(@RequestBody RegistroRequestDto request) {
+        if (request == null
+                || request.getEmail() == null || request.getEmail().isBlank()
+                || request.getNombre() == null || request.getNombre().isBlank()
+                || request.getPassword() == null || request.getPassword().isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Nombre, email y contraseña son obligatorios"));
+        }
+
+        String email = request.getEmail().trim().toLowerCase();
+        String nombre = request.getNombre().trim();
+        String passwordHashed = hashPassword(request.getPassword());
+
+        Optional<Usuario> usuarioExistente = usuarioRepository.findByEmail(email);
+        if (usuarioExistente.isPresent()) {
+            Usuario usuario = usuarioExistente.get();
+
+            if (usuario.getPassword() == null) {
+                usuario.setPassword(passwordHashed);
+                if (usuario.getAuthProvider() == AuthProvider.GOOGLE) {
+                    usuario.setAuthProvider(AuthProvider.MIXED);
+                }
+                usuarioRepository.save(usuario);
+
+                String token = jwtService.generarToken(usuario.getId(), usuario.getEmail());
+                AuthResponseDto response = new AuthResponseDto(
+                        token,
+                        usuario.getEmail(),
+                        usuario.getNombre(),
+                        usuario.getPictureUrl(),
+                        false
+                );
+                return ResponseEntity.ok(response);
+            }
+
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Email ya registrado"));
+        }
+
+        Usuario usuario = new Usuario();
+        usuario.setEmail(email);
+        usuario.setNombre(nombre);
+        usuario.setPassword(passwordHashed);
+        usuario.setAuthProvider(AuthProvider.LOCAL);
+        usuarioRepository.save(usuario);
+
+        String token = jwtService.generarToken(usuario.getId(), usuario.getEmail());
+        AuthResponseDto response = new AuthResponseDto(
+                token,
+                usuario.getEmail(),
+                usuario.getNombre(),
+                usuario.getPictureUrl(),
+                true
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
      * Endpoint para verificar si un token JWT es válido.
      */
     @GetMapping("/verify")
@@ -126,5 +194,18 @@ public class AuthController {
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("valid", false, "error", "Token inválido o expirado"));
+    }
+
+    private String hashPassword(String password) {
+        try {
+            byte[] salt = new byte[16];
+            secureRandom.nextBytes(salt);
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            digest.update(salt);
+            byte[] hashed = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(salt) + ":" + Base64.getEncoder().encodeToString(hashed);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al procesar la contraseña", e);
+        }
     }
 }
