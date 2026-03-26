@@ -37,6 +37,7 @@ body {
   justify-content: center;
   min-height: 100vh;
   padding: 40px 20px;
+  padding-top: 120px; /* Espacio para el header fijo de 80px + margen */
   /* Efecto de selección de texto a juego */
   selection-background-color: var(--primary-color);
   selection-color: var(--primary-dark);

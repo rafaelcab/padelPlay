@@ -4,103 +4,233 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalles Técnicos - PadelPlay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <style>
-        * {
+        :root {
+            --color-background: #0c0e10;
+            --color-surface-container-low: #111416;
+            --color-surface-container-high: #1d2023;
+            --color-surface-container-highest: #232629;
+            --color-surface-bright: #292c30;
+            --color-primary: #f4ffc6;
+            --color-primary-fixed: #d1fc00;
+            --color-primary-dim: #c7ef00;
+            --color-on-primary-fixed: #3c4a00;
+            --color-secondary: #e2e2e5;
+            --color-on-surface: #eeeef0;
+            --color-on-surface-variant: #aaabad;
+            --color-outline-variant: #46484a;
+            --color-error: #ff7351;
+            --font-headline: 'Plus Jakarta Sans', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: #f5f7fa;
+            font-family: var(--font-body);
+            background-color: var(--color-background);
+            color: var(--color-on-surface);
             min-height: 100vh;
-            padding: 30px;
+            padding: 2rem 1.5rem;
+        }
+
+        .bg-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-radial {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at top center, rgba(209, 252, 0, 0.05) 0%, rgba(12, 14, 16, 1) 60%);
         }
 
         .container {
+            position: relative;
+            z-index: 10;
             max-width: 750px;
             margin: 0 auto;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: transparent;
+            color: var(--color-on-surface-variant);
+            border: none;
+            padding: 0.75rem 0;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 1.5rem;
+            transition: color 0.2s ease;
+            text-decoration: none;
         }
 
-        .logo {
-            font-size: 48px;
-            margin-bottom: 10px;
+        .btn-back:hover {
+            color: var(--color-primary-fixed);
+        }
+
+        .btn-back .material-symbols-outlined {
+            font-size: 1.125rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .brand-eyebrow {
+            font-family: var(--font-headline);
+            font-weight: 800;
+            font-style: italic;
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            color: var(--color-primary-fixed);
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
         }
 
         h1 {
-            color: #333;
-            font-size: 24px;
-            margin-bottom: 5px;
+            font-family: var(--font-headline);
+            font-weight: 700;
+            font-size: 1.75rem;
+            letter-spacing: -0.02em;
+            color: var(--color-secondary);
+            margin-bottom: 0.5rem;
         }
 
         .subtitle {
-            color: #666;
-            font-size: 14px;
+            color: var(--color-on-surface-variant);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 0.625rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .progress-step {
+            width: 2.5rem;
+            height: 0.375rem;
+            border-radius: 9999px;
+            background: var(--color-surface-container-highest);
+            transition: background-color 0.3s ease;
+        }
+
+        .progress-step.active {
+            background: var(--color-primary-fixed);
+        }
+
+        .error-message {
+            background: rgba(255, 115, 81, 0.12);
+            border: 1px solid rgba(255, 115, 81, 0.3);
+            color: var(--color-error);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
         }
 
         .card {
-            background: white;
-            border-radius: 16px;
-            padding: 35px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            margin-bottom: 25px;
+            background: rgba(17, 20, 22, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
         .card-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
+            font-family: var(--font-headline);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--color-on-surface);
+            margin-bottom: 1.25rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(70, 72, 74, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            letter-spacing: -0.01em;
+        }
+
+        .card-title .material-symbols-outlined {
+            color: var(--color-primary-fixed);
+            font-size: 1.25rem;
         }
 
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
         }
 
         .form-group label {
             display: block;
-            font-weight: 500;
-            color: #444;
-            margin-bottom: 12px;
-            font-size: 14px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-on-surface-variant);
+            margin-bottom: 0.625rem;
+            padding-left: 0.25rem;
         }
 
-        .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 14px 16px;
-            border: 2px solid #e8e8e8;
-            border-radius: 10px;
-            font-size: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .form-group select:focus,
-        .form-group textarea:focus {
+            background-color: var(--color-surface-container-high);
+            border: none;
+            border-radius: 0.75rem;
+            padding: 1rem 1.25rem;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            color: var(--color-on-surface);
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transition: background-color 0.2s, box-shadow 0.2s;
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.6;
         }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        .form-group textarea::placeholder {
+            color: rgba(170, 171, 173, 0.5);
         }
 
-        /* Radio buttons estilizados */
+        .form-group textarea:focus {
+            background-color: var(--color-surface-bright);
+            box-shadow: 0 0 0 2px rgba(209, 252, 0, 0.2);
+        }
+
+        .help-text {
+            font-size: 0.75rem;
+            color: var(--color-on-surface-variant);
+            margin-top: 0.5rem;
+            padding-left: 0.25rem;
+            opacity: 0.8;
+        }
+
+        /* Radio buttons */
         .radio-group {
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 0.75rem;
         }
 
         .radio-option {
@@ -114,31 +244,33 @@
 
         .radio-option label {
             display: block;
-            padding: 16px 20px;
-            background: #f8f9fa;
-            border: 2px solid #e8e8e8;
-            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            background: var(--color-surface-container-high);
+            border: 2px solid transparent;
+            border-radius: 0.75rem;
             cursor: pointer;
             text-align: center;
             transition: all 0.3s ease;
             font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--color-on-surface);
         }
 
         .radio-option input[type="radio"]:checked + label {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-            border-color: #667eea;
-            color: #667eea;
+            background: rgba(209, 252, 0, 0.1);
+            border-color: var(--color-primary-fixed);
+            color: var(--color-primary-fixed);
         }
 
         .radio-option label:hover {
-            border-color: #667eea;
+            background: var(--color-surface-bright);
         }
 
-        /* Checkboxes estilizados para golpes */
+        /* Checkboxes grid */
         .checkbox-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 12px;
+            gap: 0.75rem;
         }
 
         .checkbox-option {
@@ -152,124 +284,89 @@
         .checkbox-option label {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 14px 16px;
-            background: #f8f9fa;
-            border: 2px solid #e8e8e8;
-            border-radius: 10px;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--color-surface-container-high);
+            border: 2px solid transparent;
+            border-radius: 0.75rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 14px;
+            font-size: 0.875rem;
+            color: var(--color-on-surface);
+            font-weight: 500;
         }
 
         .checkbox-option label::before {
             content: '';
-            width: 20px;
-            height: 20px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid var(--color-outline-variant);
+            border-radius: 0.375rem;
             transition: all 0.3s ease;
             flex-shrink: 0;
         }
 
         .checkbox-option input[type="checkbox"]:checked + label {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-            border-color: #667eea;
+            background: rgba(209, 252, 0, 0.1);
+            border-color: var(--color-primary-fixed);
         }
 
         .checkbox-option input[type="checkbox"]:checked + label::before {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-color: #667eea;
+            background: var(--color-primary-fixed);
+            border-color: var(--color-primary-fixed);
             content: '✓';
-            color: white;
+            color: var(--color-on-primary-fixed);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 0.75rem;
             font-weight: bold;
         }
 
+        .checkbox-option label:hover {
+            background: var(--color-surface-bright);
+        }
+
         .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 16px 40px;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
             width: 100%;
+            background: linear-gradient(to right, var(--color-primary), var(--color-primary-fixed));
+            color: var(--color-on-primary-fixed);
+            font-family: var(--font-headline);
+            font-weight: 800;
+            font-size: 1rem;
+            letter-spacing: 0.05em;
+            padding: 1.125rem;
+            border: none;
+            border-radius: 9999px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(209, 252, 0, 0.25);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
         }
 
         .btn-primary:hover {
+            box-shadow: 0 15px 40px rgba(209, 252, 0, 0.35);
             transform: scale(1.02);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
         }
 
-        .btn-back {
-            background: transparent;
-            color: #666;
-            border: none;
-            padding: 12px 20px;
-            font-size: 14px;
-            cursor: pointer;
-            margin-bottom: 20px;
+        .btn-primary:active {
+            transform: scale(0.98);
         }
 
-        .btn-back:hover {
-            color: #667eea;
-        }
-
-        .error-message {
-            background: #ffebee;
-            color: #c62828;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .progress-indicator {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-
-        .progress-step {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #ddd;
-        }
-
-        .progress-step.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-        }
-
-        .help-text {
-            font-size: 12px;
-            color: #888;
-            margin-top: 8px;
-        }
-
-        .section-icon {
-            margin-right: 8px;
-        }
-
-        @media (max-width: 600px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            
+        @media (max-width: 640px) {
             .card {
-                padding: 25px;
+                padding: 1.5rem;
             }
-            
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
             .radio-group {
                 flex-direction: column;
             }
-            
+
             .radio-option {
                 min-width: 100%;
             }
@@ -277,11 +374,18 @@
     </style>
 </head>
 <body>
+    <div class="bg-layer">
+        <div class="bg-radial"></div>
+    </div>
+
     <div class="container">
-        <a href="/perfil/jugador/configurar" class="btn-back">← Volver</a>
+        <a href="/perfil/jugador/configurar" class="btn-back">
+            <span class="material-symbols-outlined">arrow_back</span>
+            Volver
+        </a>
         
         <div class="header">
-            <div class="logo">🎯</div>
+            <p class="brand-eyebrow">PadelPlay</p>
             <h1>Detalles Técnico-Tácticos</h1>
             <p class="subtitle">Define tu estilo de juego para encontrar compañeros compatibles</p>
         </div>
@@ -297,7 +401,10 @@
             
             <!-- Posición -->
             <div class="card">
-                <div class="card-title"><span class="section-icon">📍</span> Posición en la Pista</div>
+                <div class="card-title">
+                    <span class="material-symbols-outlined">pin_drop</span>
+                    Posición en la Pista
+                </div>
                 <div class="radio-group">
                     <div class="radio-option" th:each="pos : ${opciones?.posiciones}">
                         <input type="radio" 
@@ -313,7 +420,10 @@
 
             <!-- Mano hábil -->
             <div class="card">
-                <div class="card-title"><span class="section-icon">✋</span> Mano Hábil</div>
+                <div class="card-title">
+                    <span class="material-symbols-outlined">front_hand</span>
+                    Mano Hábil
+                </div>
                 <div class="radio-group">
                     <div class="radio-option" th:each="mano : ${opciones?.manosHabiles}">
                         <input type="radio" 
@@ -328,7 +438,10 @@
 
             <!-- Estilo de juego -->
             <div class="card">
-                <div class="card-title"><span class="section-icon">⚡</span> Estilo de Juego</div>
+                <div class="card-title">
+                    <span class="material-symbols-outlined">bolt</span>
+                    Estilo de Juego
+                </div>
                 <div class="radio-group">
                     <div class="radio-option" th:each="estilo : ${opciones?.estilosJuego}">
                         <input type="radio" 
@@ -344,8 +457,11 @@
 
             <!-- Golpes fuertes -->
             <div class="card">
-                <div class="card-title"><span class="section-icon">💪</span> Golpes Fuertes</div>
-                <p class="help-text" style="margin-bottom: 15px;">Selecciona los golpes en los que destacas (puedes elegir varios)</p>
+                <div class="card-title">
+                    <span class="material-symbols-outlined">fitness_center</span>
+                    Golpes Fuertes
+                </div>
+                <p class="help-text" style="margin-bottom: 1rem; margin-top: -0.5rem;">Selecciona los golpes en los que destacas (puedes elegir varios)</p>
                 <div class="checkbox-grid">
                     <div class="checkbox-option" th:each="golpe : ${opciones?.tiposGolpe}">
                         <input type="checkbox" 
@@ -360,7 +476,10 @@
 
             <!-- Observaciones -->
             <div class="card">
-                <div class="card-title"><span class="section-icon">📝</span> Observaciones</div>
+                <div class="card-title">
+                    <span class="material-symbols-outlined">edit_note</span>
+                    Observaciones
+                </div>
                 <div class="form-group" style="margin-bottom: 0;">
                     <textarea name="observaciones" 
                               rows="4" 
@@ -370,7 +489,7 @@
             </div>
 
             <button type="submit" class="btn-primary">
-                ✓ Completar Configuración
+                Completar Configuración
             </button>
         </form>
     </div>

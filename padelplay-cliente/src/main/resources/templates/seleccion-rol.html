@@ -4,132 +4,256 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Selecciona tu Perfil - PadelPlay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <style>
-        * {
+        :root {
+            --color-background: #0c0e10;
+            --color-surface-container-low: #111416;
+            --color-surface-container-high: #1d2023;
+            --color-surface-container-highest: #232629;
+            --color-surface-bright: #292c30;
+            --color-primary: #f4ffc6;
+            --color-primary-fixed: #d1fc00;
+            --color-primary-dim: #c7ef00;
+            --color-on-primary-fixed: #3c4a00;
+            --color-secondary: #e2e2e5;
+            --color-on-surface: #eeeef0;
+            --color-on-surface-variant: #aaabad;
+            --color-outline-variant: #46484a;
+            --color-error: #ff7351;
+            --font-headline: 'Plus Jakarta Sans', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: var(--font-body);
+            background-color: var(--color-background);
+            color: var(--color-on-surface);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
-            padding: 20px;
+            justify-content: center;
+            padding: 1.5rem;
+            overflow-x: hidden;
+        }
+
+        /* Background effects */
+        .bg-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-radial {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(209, 252, 0, 0.06) 0%, rgba(12, 14, 16, 1) 70%);
+        }
+
+        .orb-top-right,
+        .orb-bottom-left {
+            position: fixed;
+            border-radius: 9999px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb-top-right {
+            top: 0;
+            right: 0;
+            width: 500px;
+            height: 500px;
+            background: rgba(209, 252, 0, 0.08);
+            filter: blur(120px);
+            transform: translate(50%, -50%);
+        }
+
+        .orb-bottom-left {
+            bottom: 0;
+            left: 0;
+            width: 400px;
+            height: 400px;
+            background: rgba(185, 41, 2, 0.04);
+            filter: blur(100px);
+            transform: translate(-50%, 50%);
         }
 
         .container {
-            background: white;
-            border-radius: 20px;
-            padding: 50px;
-            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
-            text-align: center;
-            max-width: 700px;
+            position: relative;
+            z-index: 20;
             width: 100%;
+            max-width: 750px;
         }
 
-        .logo {
-            font-size: 60px;
-            margin-bottom: 15px;
+        .glass-card {
+            background: rgba(17, 20, 22, 0.7);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 1rem;
+            padding: 3rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .brand-title {
+            font-family: var(--font-headline);
+            font-weight: 900;
+            font-style: italic;
+            font-size: 2.5rem;
+            letter-spacing: -0.05em;
+            color: var(--color-primary-fixed);
+            margin-bottom: 0.5rem;
         }
 
         h1 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 28px;
+            font-family: var(--font-headline);
+            font-weight: 700;
+            font-size: 1.75rem;
+            letter-spacing: -0.02em;
+            color: var(--color-secondary);
+            margin-bottom: 0.5rem;
         }
 
         .subtitle {
-            color: #666;
-            margin-bottom: 40px;
-            font-size: 16px;
+            color: var(--color-on-surface-variant);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .error-message {
+            background: rgba(255, 115, 81, 0.12);
+            border: 1px solid rgba(255, 115, 81, 0.3);
+            color: var(--color-error);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
         }
 
         .user-info {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
-            margin-bottom: 40px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 12px;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            padding: 1.25rem;
+            background: var(--color-surface-container-high);
+            border-radius: 0.75rem;
         }
 
         .user-avatar {
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            border: 2px solid #667eea;
+            border: 2px solid var(--color-primary-fixed);
         }
 
         .user-name {
             font-weight: 600;
-            color: #333;
+            color: var(--color-on-surface);
+            font-size: 1rem;
         }
 
         .roles-container {
-            display: flex;
-            gap: 30px;
-            justify-content: center;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .role-card {
-            background: #f8f9fa;
-            border: 3px solid transparent;
-            border-radius: 16px;
-            padding: 40px 30px;
+            background: var(--color-surface-container-low);
+            border: 2px solid transparent;
+            border-radius: 1rem;
+            padding: 2rem 1.5rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            width: 280px;
+            text-align: center;
         }
 
         .role-card:hover {
-            border-color: #667eea;
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.2);
+            background: var(--color-surface-container-high);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
         .role-card.selected {
-            border-color: #667eea;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-color: var(--color-primary-fixed);
+            background: rgba(209, 252, 0, 0.08);
         }
 
         .role-icon {
-            font-size: 60px;
-            margin-bottom: 20px;
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1.25rem;
+            background: var(--color-surface-container-highest);
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .role-card.selected .role-icon {
+            background: rgba(209, 252, 0, 0.15);
+        }
+
+        .role-icon .material-symbols-outlined {
+            font-size: 32px;
+            color: var(--color-on-surface-variant);
+        }
+
+        .role-card.selected .role-icon .material-symbols-outlined {
+            color: var(--color-primary-fixed);
         }
 
         .role-title {
-            font-size: 22px;
+            font-family: var(--font-headline);
+            font-size: 1.25rem;
             font-weight: 700;
-            color: #333;
-            margin-bottom: 10px;
+            color: var(--color-on-surface);
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.02em;
+        }
+
+        .role-card.selected .role-title {
+            color: var(--color-primary-fixed);
         }
 
         .role-description {
-            color: #666;
-            font-size: 14px;
-            line-height: 1.5;
+            color: var(--color-on-surface-variant);
+            font-size: 0.875rem;
+            line-height: 1.6;
         }
 
         .btn-continue {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
+            width: 100%;
+            background: var(--color-primary-fixed);
+            color: var(--color-on-primary-fixed);
+            font-family: var(--font-headline);
+            font-weight: 800;
+            font-size: 1rem;
+            letter-spacing: 0.05em;
+            padding: 1.125rem;
             border: none;
-            padding: 16px 50px;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 9999px;
             cursor: pointer;
-            margin-top: 40px;
+            box-shadow: 0 0 20px rgba(209, 252, 0, 0.2);
             transition: all 0.3s ease;
-            opacity: 0.5;
+            opacity: 0.4;
             pointer-events: none;
+            text-transform: uppercase;
         }
 
         .btn-continue.active {
@@ -138,85 +262,114 @@
         }
 
         .btn-continue.active:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            background: var(--color-primary-dim);
+            box-shadow: 0 0 30px rgba(209, 252, 0, 0.35);
+            transform: scale(1.02);
         }
 
-        .error-message {
-            background: #ffebee;
-            color: #c62828;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        .btn-continue:active {
+            transform: scale(0.98);
         }
 
         .note {
-            color: #888;
-            font-size: 12px;
-            margin-top: 30px;
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: var(--color-on-surface-variant);
+        }
+
+        .note-icon {
+            color: var(--color-primary-fixed);
+            margin-right: 0.25rem;
+        }
+
+        @media (max-width: 640px) {
+            .glass-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .roles-container {
+                grid-template-columns: 1fr;
+            }
+
+            .brand-title {
+                font-size: 2rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="bg-layer">
+        <div class="bg-radial"></div>
+    </div>
+    <div class="orb-top-right"></div>
+    <div class="orb-bottom-left"></div>
+
     <div class="container">
-        <div class="logo">🎾</div>
-        <h1>¡Bienvenido a PadelPlay!</h1>
-        <p class="subtitle">Selecciona cómo quieres usar la aplicación</p>
-
-        <div class="error-message" th:if="${error}" th:text="${error}"></div>
-
-        <div class="user-info" th:if="${usuario}">
-            <img class="user-avatar" th:src="${usuario.pictureUrl}" alt="Avatar">
-            <span class="user-name" th:text="${usuario.nombre}">Usuario</span>
-        </div>
-
-        <form method="post" th:action="@{/perfil/seleccionar-rol}" id="roleForm">
-            <input type="hidden" name="rol" id="selectedRole" value="">
-            
-            <div class="roles-container">
-                <div class="role-card" onclick="selectRole('JUGADOR')">
-                    <div class="role-icon">🏸</div>
-                    <div class="role-title">Jugador</div>
-                    <div class="role-description">
-                        Busca partidos, encuentra compañeros de juego, 
-                        registra tus estadísticas y mejora tu nivel.
-                    </div>
-                </div>
-
-                <div class="role-card" onclick="selectRole('ENTRENADOR')">
-                    <div class="role-icon">📋</div>
-                    <div class="role-title">Entrenador</div>
-                    <div class="role-description">
-                        Gestiona tus alumnos, organiza sesiones de entrenamiento 
-                        y haz seguimiento del progreso.
-                    </div>
-                </div>
+        <div class="glass-card">
+            <div class="header">
+                <h2 class="brand-title">PADELPLAY</h2>
+                <h1>¡Bienvenido!</h1>
+                <p class="subtitle">Selecciona cómo quieres usar la aplicación</p>
             </div>
 
-            <button type="submit" class="btn-continue" id="btnContinue">
-                Continuar →
-            </button>
-        </form>
+            <div class="error-message" th:if="${error}" th:text="${error}"></div>
 
-        <p class="note">
-            💡 Podrás añadir el otro perfil más adelante desde tu cuenta.
-        </p>
+            <div class="user-info" th:if="${usuario}">
+                <img class="user-avatar" th:src="${usuario.pictureUrl}" alt="Avatar">
+                <span class="user-name" th:text="${usuario.nombre}">Usuario</span>
+            </div>
+
+            <form method="post" th:action="@{/perfil/seleccionar-rol}" id="roleForm">
+                <input type="hidden" name="rol" id="selectedRole" value="">
+                
+                <div class="roles-container">
+                    <div class="role-card" onclick="selectRole('JUGADOR')">
+                        <div class="role-icon">
+                            <span class="material-symbols-outlined">sports_tennis</span>
+                        </div>
+                        <div class="role-title">Jugador</div>
+                        <div class="role-description">
+                            Busca partidos, encuentra compañeros de juego, 
+                            registra tus estadísticas y mejora tu nivel.
+                        </div>
+                    </div>
+
+                    <div class="role-card" onclick="selectRole('ENTRENADOR')">
+                        <div class="role-icon">
+                            <span class="material-symbols-outlined">school</span>
+                        </div>
+                        <div class="role-title">Entrenador</div>
+                        <div class="role-description">
+                            Gestiona tus alumnos, organiza sesiones de entrenamiento 
+                            y haz seguimiento del progreso.
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-continue" id="btnContinue">
+                    CONTINUAR
+                </button>
+            </form>
+
+            <p class="note">
+                <span class="note-icon">💡</span> Podrás añadir el otro perfil más adelante desde tu cuenta.
+            </p>
+        </div>
     </div>
 
     <script>
         function selectRole(role) {
-            // Desmarcar todas las cards
             document.querySelectorAll('.role-card').forEach(card => {
                 card.classList.remove('selected');
             });
             
-            // Marcar la seleccionada
             event.currentTarget.classList.add('selected');
-            
-            // Guardar el valor
             document.getElementById('selectedRole').value = role;
-            
-            // Activar el botón
             document.getElementById('btnContinue').classList.add('active');
         }
     </script>

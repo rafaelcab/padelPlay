@@ -4,113 +4,200 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Certificaciones - PadelPlay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <style>
-        * {
+        :root {
+            --color-background: #0c0e10;
+            --color-surface-container-low: #111416;
+            --color-surface-container-high: #1d2023;
+            --color-surface-container-highest: #232629;
+            --color-surface-bright: #292c30;
+            --color-primary: #f4ffc6;
+            --color-primary-fixed: #d1fc00;
+            --color-primary-dim: #c7ef00;
+            --color-on-primary-fixed: #3c4a00;
+            --color-secondary: #e2e2e5;
+            --color-on-surface: #eeeef0;
+            --color-on-surface-variant: #aaabad;
+            --color-outline-variant: #46484a;
+            --color-error: #ff7351;
+            --color-success: #22c55e;
+            --color-warning: #eab308;
+            --font-headline: 'Plus Jakarta Sans', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: #f5f7fa;
+            font-family: var(--font-body);
+            background-color: var(--color-background);
+            color: var(--color-on-surface);
             min-height: 100vh;
-            padding: 30px;
+            padding: 2rem 1.5rem;
+        }
+
+        .bg-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-radial {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at top center, rgba(209, 252, 0, 0.05) 0%, rgba(12, 14, 16, 1) 60%);
         }
 
         .container {
+            position: relative;
+            z-index: 10;
             max-width: 800px;
             margin: 0 auto;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 2rem;
         }
 
-        .logo {
-            font-size: 48px;
-            margin-bottom: 10px;
+        .brand-eyebrow {
+            font-family: var(--font-headline);
+            font-weight: 800;
+            font-style: italic;
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            color: var(--color-primary-fixed);
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
         }
 
         h1 {
-            color: #333;
-            font-size: 24px;
-            margin-bottom: 5px;
+            font-family: var(--font-headline);
+            font-weight: 700;
+            font-size: 1.75rem;
+            letter-spacing: -0.02em;
+            color: var(--color-secondary);
+            margin-bottom: 0.5rem;
         }
 
         .subtitle {
-            color: #666;
-            font-size: 14px;
+            color: var(--color-on-surface-variant);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 0.625rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .progress-step {
+            width: 2.5rem;
+            height: 0.375rem;
+            border-radius: 9999px;
+            background: var(--color-surface-container-highest);
+            transition: background-color 0.3s ease;
+        }
+
+        .progress-step.active {
+            background: var(--color-primary-fixed);
+        }
+
+        .error-message {
+            background: rgba(255, 115, 81, 0.12);
+            border: 1px solid rgba(255, 115, 81, 0.3);
+            color: var(--color-error);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .success-message {
+            background: rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: var(--color-success);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
         }
 
         .card {
-            background: white;
-            border-radius: 16px;
-            padding: 35px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            margin-bottom: 25px;
+            background: rgba(17, 20, 22, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
         .card-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
+            font-family: var(--font-headline);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--color-on-surface);
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(70, 72, 74, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            letter-spacing: -0.01em;
         }
 
-        .form-group {
-            margin-bottom: 22px;
+        .card-title .material-symbols-outlined {
+            color: var(--color-primary-fixed);
+            font-size: 1.25rem;
         }
 
-        .form-group label {
-            display: block;
-            font-weight: 500;
-            color: #444;
-            margin-bottom: 8px;
-            font-size: 14px;
+        .empty-state {
+            text-align: center;
+            padding: 2.5rem;
+            color: var(--color-on-surface-variant);
         }
 
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px solid #e8e8e8;
-            border-radius: 10px;
-            font-size: 15px;
-            transition: all 0.3s ease;
+        .empty-state-icon {
+            margin-bottom: 1rem;
         }
 
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        .empty-state-icon .material-symbols-outlined {
+            font-size: 3rem;
+            color: var(--color-primary-fixed);
+            opacity: 0.6;
         }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        .empty-state p {
+            margin-bottom: 0.5rem;
         }
 
-        .form-row-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 15px;
+        .help-text {
+            font-size: 0.75rem;
+            color: var(--color-on-surface-variant);
+            margin-top: 0.5rem;
+            opacity: 0.8;
         }
 
         .certificacion-item {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
+            background: var(--color-surface-container-high);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-left: 4px solid #667eea;
+            border-left: 3px solid var(--color-primary-fixed);
         }
 
         .certificacion-info {
@@ -119,204 +206,256 @@
 
         .certificacion-tipo {
             font-weight: 600;
-            color: #333;
-            font-size: 16px;
-            margin-bottom: 5px;
+            color: var(--color-on-surface);
+            font-size: 1rem;
+            margin-bottom: 0.375rem;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
 
         .certificacion-detalles {
-            color: #666;
-            font-size: 14px;
+            color: var(--color-on-surface-variant);
+            font-size: 0.875rem;
         }
 
         .certificacion-badge {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            margin-left: 10px;
+            padding: 0.25rem 0.625rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .certificacion-badge.verified {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--color-success);
         }
 
         .certificacion-badge.pending {
-            background: #ffc107;
-            color: #333;
+            background: rgba(234, 179, 8, 0.15);
+            color: var(--color-warning);
         }
 
         .btn-delete {
-            background: #ffebee;
-            color: #c62828;
+            background: rgba(255, 115, 81, 0.1);
+            color: var(--color-error);
             border: none;
-            padding: 8px 15px;
-            border-radius: 8px;
+            padding: 0.625rem 1rem;
+            border-radius: 0.5rem;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 0.875rem;
+            font-weight: 500;
             transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
         }
 
         .btn-delete:hover {
-            background: #ffcdd2;
+            background: rgba(255, 115, 81, 0.2);
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 16px 40px;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-        }
-
-        .btn-primary:hover {
-            transform: scale(1.02);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #666;
-            border: none;
-            padding: 14px 30px;
-            border-radius: 25px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-        }
-
-        .btn-secondary:hover {
-            background: #e0e0e0;
-        }
-
-        .btn-add {
-            background: white;
-            color: #667eea;
-            border: 2px dashed #667eea;
-            padding: 14px 30px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            margin-top: 15px;
-        }
-
-        .btn-add:hover {
-            background: rgba(102, 126, 234, 0.05);
-        }
-
-        .error-message {
-            background: #ffebee;
-            color: #c62828;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .success-message {
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .progress-indicator {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-
-        .progress-step {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #ddd;
-        }
-
-        .progress-step.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #888;
-        }
-
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-
-        .help-text {
-            font-size: 12px;
-            color: #888;
-            margin-top: 5px;
+        .btn-delete .material-symbols-outlined {
+            font-size: 1.125rem;
         }
 
         .add-form {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 25px;
-            margin-top: 20px;
-            border: 2px dashed #ddd;
+            background: var(--color-surface-container-low);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border: 2px dashed rgba(70, 72, 74, 0.4);
         }
 
         .add-form-title {
+            font-family: var(--font-headline);
             font-weight: 600;
-            color: #333;
-            margin-bottom: 20px;
+            color: var(--color-on-surface);
+            margin-bottom: 1.25rem;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 0.625rem;
+            font-size: 0.95rem;
+        }
+
+        .add-form-title .material-symbols-outlined {
+            color: var(--color-primary-fixed);
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-on-surface-variant);
+            margin-bottom: 0.625rem;
+            padding-left: 0.25rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            background-color: var(--color-surface-container-high);
+            border: none;
+            border-radius: 0.75rem;
+            padding: 1rem 1.25rem;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            color: var(--color-on-surface);
+            outline: none;
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input::placeholder {
+            color: rgba(170, 171, 173, 0.5);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            background-color: var(--color-surface-bright);
+            box-shadow: 0 0 0 2px rgba(209, 252, 0, 0.2);
+        }
+
+        .form-group select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23aaabad' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1rem;
+            padding-right: 3rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+
+        .btn-add {
+            width: 100%;
+            background: transparent;
+            color: var(--color-primary-fixed);
+            border: 2px dashed var(--color-primary-fixed);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            font-family: var(--font-headline);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-add:hover {
+            background: rgba(209, 252, 0, 0.08);
         }
 
         .button-row {
             display: flex;
-            gap: 15px;
-            margin-top: 25px;
+            gap: 1rem;
+            margin-top: 0.5rem;
         }
 
-        .button-row .btn-primary {
+        .btn-primary {
             flex: 2;
+            background: linear-gradient(to right, var(--color-primary), var(--color-primary-fixed));
+            color: var(--color-on-primary-fixed);
+            font-family: var(--font-headline);
+            font-weight: 800;
+            font-size: 1rem;
+            letter-spacing: 0.05em;
+            padding: 1.125rem;
+            border: none;
+            border-radius: 9999px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(209, 252, 0, 0.25);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
         }
 
-        .button-row .btn-secondary {
+        .btn-primary:hover {
+            box-shadow: 0 15px 40px rgba(209, 252, 0, 0.35);
+            transform: scale(1.02);
+        }
+
+        .btn-secondary {
             flex: 1;
+            background: var(--color-surface-container-highest);
+            color: var(--color-on-surface-variant);
+            font-family: var(--font-headline);
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 1rem;
+            border: none;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
-        @media (max-width: 600px) {
-            .form-row, .form-row-3 {
+        .btn-secondary:hover {
+            background: var(--color-surface-bright);
+            color: var(--color-on-surface);
+        }
+
+        @media (max-width: 640px) {
+            .form-row {
                 grid-template-columns: 1fr;
             }
-            
+
             .card {
-                padding: 25px;
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
             }
 
             .certificacion-item {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 15px;
+                gap: 1rem;
             }
 
             .button-row {
                 flex-direction: column;
             }
+
+            .btn-primary,
+            .btn-secondary {
+                flex: none;
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="bg-layer">
+        <div class="bg-radial"></div>
+    </div>
+
     <div class="container">
         <div class="header">
-            <div class="logo">🏆</div>
+            <p class="brand-eyebrow">PadelPlay</p>
             <h1>Tus Certificaciones</h1>
             <p class="subtitle">Añade tus titulaciones para generar confianza en tus alumnos</p>
         </div>
@@ -329,10 +468,15 @@
         <div class="error-message" th:if="${param.error}" th:text="${param.error}"></div>
 
         <div class="card">
-            <div class="card-title">📜 Certificaciones Actuales</div>
+            <div class="card-title">
+                <span class="material-symbols-outlined">workspace_premium</span>
+                Certificaciones Actuales
+            </div>
             
             <div th:if="${certificaciones == null or certificaciones.empty}" class="empty-state">
-                <div class="empty-state-icon">📋</div>
+                <div class="empty-state-icon">
+                    <span class="material-symbols-outlined">badge</span>
+                </div>
                 <p>Aún no has añadido ninguna certificación</p>
                 <p class="help-text">Las certificaciones aumentan la confianza de los alumnos</p>
             </div>
@@ -341,7 +485,7 @@
                 <div class="certificacion-info">
                     <div class="certificacion-tipo">
                         <span th:text="${cert.tipoCertificacion}">Tipo</span>
-                        <span th:if="${cert.verificada}" class="certificacion-badge">✓ Verificada</span>
+                        <span th:if="${cert.verificada}" class="certificacion-badge verified">✓ Verificada</span>
                         <span th:unless="${cert.verificada}" class="certificacion-badge pending">Pendiente verificación</span>
                     </div>
                     <div class="certificacion-detalles">
@@ -352,7 +496,8 @@
                 </div>
                 <form th:action="@{/perfil/entrenador/certificaciones/eliminar/{id}(id=${cert.id})}" method="post" style="margin: 0;">
                     <button type="submit" class="btn-delete" onclick="return confirm('¿Eliminar esta certificación?')">
-                        🗑️ Eliminar
+                        <span class="material-symbols-outlined">delete</span>
+                        Eliminar
                     </button>
                 </form>
             </div>
@@ -360,7 +505,8 @@
             <!-- Formulario para añadir nueva certificación -->
             <div class="add-form">
                 <div class="add-form-title">
-                    ➕ Añadir Nueva Certificación
+                    <span class="material-symbols-outlined">add_circle</span>
+                    Añadir Nueva Certificación
                 </div>
                 <form th:action="@{/perfil/entrenador/certificaciones/agregar}" method="post" th:object="${nuevaCertificacion}">
                     <div class="form-row">
@@ -403,7 +549,8 @@
                     </div>
 
                     <button type="submit" class="btn-add">
-                        ➕ Añadir Certificación
+                        <span class="material-symbols-outlined">add</span>
+                        Añadir Certificación
                     </button>
                 </form>
             </div>
@@ -412,11 +559,12 @@
         <div class="button-row">
             <form th:action="@{/perfil/entrenador/finalizar}" method="post" style="flex: 2;">
                 <button type="submit" class="btn-primary">
-                    ✓ Finalizar Configuración
+                    Finalizar Configuración
                 </button>
             </form>
-            <a href="/perfil/entrenador/configurar" class="btn-secondary" style="display: flex; align-items: center; justify-content: center; text-decoration: none;">
-                ← Volver
+            <a href="/perfil/entrenador/configurar" class="btn-secondary">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Volver
             </a>
         </div>
     </div>

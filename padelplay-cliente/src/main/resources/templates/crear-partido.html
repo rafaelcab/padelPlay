@@ -1,13 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{base :: layout(~{::title}, ~{::#page-styles}, ~{::main})}">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Create Match | PADELPLAY</title>
-  <link rel="stylesheet" th:href="@{/css/crear-partido.css}"/>
-  
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <title>Crear Partido | PADELPLAY</title>
+  <th:block id="page-styles">
+    <link rel="stylesheet" th:href="@{/css/crear-partido.css}"/>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet"/>
+  </th:block>
 </head>
 <body>
 
@@ -73,46 +71,46 @@
 
       </form>
     </div>
-  </main>
 
-  <script>
-    // --- NUEVO SCRIPT PARA LOS BOTONES DE TIPO DE PARTIDO ---
-    const matchTypeInput = document.getElementById('match_type_value');
-    
-    // Forzamos que por defecto sea "open" si está vacío
-    if (!matchTypeInput.value) {
-        matchTypeInput.value = 'open';
-    }
-
-    document.querySelectorAll('.type-card').forEach(btn => {
-      if(!btn.disabled) {
-          btn.addEventListener('click', () => {
-            // Quitamos la clase active de todos y se la ponemos al pulsado
-            document.querySelectorAll('.type-card').forEach(c => c.classList.remove('active'));
-            btn.classList.add('active');
-            // Guardamos el valor (open o private) en el campo oculto para enviarlo
-            matchTypeInput.value = btn.dataset.value;
-          });
+    <script>
+      // --- SCRIPT PARA LOS BOTONES DE TIPO DE PARTIDO ---
+      const matchTypeInput = document.getElementById('match_type_value');
+      
+      // Forzamos que por defecto sea "open" si está vacío
+      if (!matchTypeInput.value) {
+          matchTypeInput.value = 'open';
       }
-    });
 
-    // --- SCRIPT DEL SLIDER ---
-    const slider = document.querySelector('.slider');
-    const levelDisplay = document.getElementById('level-display');
+      document.querySelectorAll('.type-card').forEach(btn => {
+        if(!btn.disabled) {
+            btn.addEventListener('click', () => {
+              // Quitamos la clase active de todos y se la ponemos al pulsado
+              document.querySelectorAll('.type-card').forEach(c => c.classList.remove('active'));
+              btn.classList.add('active');
+              // Guardamos el valor (open o private) en el campo oculto para enviarlo
+              matchTypeInput.value = btn.dataset.value;
+            });
+        }
+      });
 
-    function updateSlider() {
-      levelDisplay.textContent = 'LVL ' + parseFloat(slider.value).toFixed(1); 
-    }
-    
-    if(slider) {
-        slider.addEventListener('input', updateSlider);
-        updateSlider(); 
-    }
-    
-    // Forzamos el valor de Paco justo antes de enviar
-    document.querySelector('.form').addEventListener('submit', function() {
-        document.getElementById('idCreador').value = 1;
-    });
-  </script>
+      // --- SCRIPT DEL SLIDER ---
+      const slider = document.querySelector('.slider');
+      const levelDisplay = document.getElementById('level-display');
+
+      function updateSlider() {
+        levelDisplay.textContent = 'LVL ' + parseFloat(slider.value).toFixed(1); 
+      }
+      
+      if(slider) {
+          slider.addEventListener('input', updateSlider);
+          updateSlider(); 
+      }
+      
+      // Forzamos el valor de idCreador justo antes de enviar
+      document.querySelector('.form').addEventListener('submit', function() {
+          document.getElementById('idCreador').value = 1;
+      });
+    </script>
+  </main>
 </body>
 </html>
