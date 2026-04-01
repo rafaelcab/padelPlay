@@ -1,9 +1,9 @@
 package com.padelplay.server.service;
 
 import com.padelplay.common.dto.PartidoDto;
-import com.padelplay.server.entity.Jugador;
+import com.padelplay.server.entity.PerfilJugador;
 import com.padelplay.server.entity.Partido;
-import com.padelplay.server.repository.JugadorRepository;
+import com.padelplay.server.repository.PerfilJugadorRepository;
 import com.padelplay.server.repository.PartidoRepository;
 import org.springframework.stereotype.Service;
 
@@ -14,17 +14,17 @@ import java.util.ArrayList;
 public class PartidoService {
 
     private final PartidoRepository partidoRepository;
-    private final JugadorRepository jugadorRepository;
+    private final PerfilJugadorRepository perfilJugadorRepository;
 
     // Inyección de dependencias a través del constructor
-    public PartidoService(PartidoRepository partidoRepository, JugadorRepository jugadorRepository) {
+    public PartidoService(PartidoRepository partidoRepository, PerfilJugadorRepository perfilJugadorRepository) {
         this.partidoRepository = partidoRepository;
-        this.jugadorRepository = jugadorRepository;
+        this.perfilJugadorRepository = perfilJugadorRepository;
     }
 
     public Partido crearPartido(PartidoDto dto) {
         // 1. Buscar al Creador
-        Jugador creador = jugadorRepository.findById(dto.getIdCreador())
+        PerfilJugador creador = perfilJugadorRepository.findById(dto.getIdCreador())
                 .orElseThrow(() -> new IllegalArgumentException("El jugador con ID " + dto.getIdCreador() + " no existe."));
 
         // 2. Validar Reglas de Negocio

@@ -3,6 +3,7 @@ package com.padelplay.server.entity;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Detalles técnico-tácticos del perfil de jugador.
@@ -16,6 +17,7 @@ public class DetallesTecnicos {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "perfil_jugador_id", nullable = false, unique = true)
     private PerfilJugador perfilJugador;

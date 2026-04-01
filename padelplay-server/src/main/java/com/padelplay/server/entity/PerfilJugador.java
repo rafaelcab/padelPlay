@@ -2,6 +2,9 @@ package com.padelplay.server.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Perfil de jugador vinculado a un usuario.
@@ -15,6 +18,7 @@ public class PerfilJugador {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
@@ -37,6 +41,16 @@ public class PerfilJugador {
     private LocalDateTime fechaCreacion;
 
     private LocalDateTime fechaActualizacion;
+
+    private Double nivel; // Migrado de Jugador
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "creador", cascade = CascadeType.ALL)
+    private List<Partido> partidosCreados = new ArrayList<>();
+
+    @JsonIgnore
+    @ManyToMany(mappedBy = "jugadoresApuntados")
+    private List<Partido> partidosApuntados = new ArrayList<>();
 
     public PerfilJugador() {
         this.fechaCreacion = LocalDateTime.now();
@@ -119,5 +133,29 @@ public class PerfilJugador {
 
     public LocalDateTime getFechaActualizacion() {
         return fechaActualizacion;
+    }
+
+    public Double getNivel() {
+        return nivel;
+    }
+
+    public void setNivel(Double nivel) {
+        this.nivel = nivel;
+    }
+
+    public List<Partido> getPartidosCreados() {
+        return partidosCreados;
+    }
+
+    public void setPartidosCreados(List<Partido> partidosCreados) {
+        this.partidosCreados = partidosCreados;
+    }
+
+    public List<Partido> getPartidosApuntados() {
+        return partidosApuntados;
+    }
+
+    public void setPartidosApuntados(List<Partido> partidosApuntados) {
+        this.partidosApuntados = partidosApuntados;
     }
 }

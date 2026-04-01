@@ -32,15 +32,15 @@ public class Partido {
 
     @ManyToOne
     @JoinColumn(name = "creador_id", nullable = false)
-    private Jugador creador;
+    private PerfilJugador creador;
 
     @ManyToMany
     @JoinTable(
         name = "partido_jugadores",
         joinColumns = @JoinColumn(name = "partido_id"),
-        inverseJoinColumns = @JoinColumn(name = "jugador_id")
+        inverseJoinColumns = @JoinColumn(name = "perfil_jugador_id")
     )
-    private List<Jugador> jugadoresApuntados;
+    private List<PerfilJugador> jugadoresApuntados;
 
     public Partido() {
     }
@@ -101,19 +101,19 @@ public class Partido {
         this.codigoAcceso = codigoAcceso;
     }
 
-    public Jugador getCreador() {
+    public PerfilJugador getCreador() {
         return creador;
     }
 
-    public void setCreador(Jugador creador) {
+    public void setCreador(PerfilJugador creador) {
         this.creador = creador;
     }
 
-    public List<Jugador> getJugadoresApuntados() {
+    public List<PerfilJugador> getJugadoresApuntados() {
         return jugadoresApuntados;
     }
 
-    public void setJugadoresApuntados(List<Jugador> jugadoresApuntados) {
+    public void setJugadoresApuntados(List<PerfilJugador> jugadoresApuntados) {
         this.jugadoresApuntados = jugadoresApuntados;
     }
 }

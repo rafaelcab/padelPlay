@@ -60,6 +60,15 @@ public class PartidoWebController {
                                      Model model, 
                                      HttpSession session) {
         try {
+            // Obtenemos el perfil jugador real a través de la sesión
+            String token = (String) session.getAttribute("token");
+            if (token != null) {
+                EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
+                if (estado != null && estado.getPerfilJugador() != null) {
+                    partidoDto.setIdCreador(estado.getPerfilJugador().getId());
+                }
+            }
+            
             // Hacemos la petición al servidor y guardamos la respuesta
             ResponseEntity<PartidoDto> respuestaServidor = restTemplate.postForEntity(BACKEND_URL, partidoDto, PartidoDto.class);
             PartidoDto partidoCreado = respuestaServidor.getBody();

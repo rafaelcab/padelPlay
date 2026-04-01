@@ -40,11 +40,11 @@ public class PerfilViewController {
         } else {
             token = (String) session.getAttribute("token");
         }
-        
+
         if (token == null) {
             return "redirect:/login";
         }
-        
+
         try {
             EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
             if (!estado.isRequiereSeleccionPerfil()) {
@@ -64,8 +64,9 @@ public class PerfilViewController {
     @PostMapping("/seleccionar-rol")
     public String procesarSeleccionRol(@RequestParam String rol, HttpSession session, Model model) {
         String token = (String) session.getAttribute("token");
-        if (token == null) return "redirect:/login";
-        
+        if (token == null)
+            return "redirect:/login";
+
         try {
             perfilServiceProxy.seleccionarRol(token, rol);
             if ("JUGADOR".equals(rol)) {
@@ -76,7 +77,8 @@ public class PerfilViewController {
                 return "redirect:/perfil/dashboard";
             }
         } catch (Exception e) {
-            if (esSesionInvalida(e)) return redirigirALogin(session);
+            if (esSesionInvalida(e))
+                return redirigirALogin(session);
             model.addAttribute("error", "Error al seleccionar rol: " + e.getMessage());
             return "seleccion-rol";
         }
@@ -89,9 +91,10 @@ public class PerfilViewController {
         } else {
             token = (String) session.getAttribute("token");
         }
-        
-        if (token == null) return "redirect:/login";
-        
+
+        if (token == null)
+            return "redirect:/login";
+
         try {
             EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
             if (estado.isRequiereSeleccionPerfil()) {
@@ -100,7 +103,8 @@ public class PerfilViewController {
             model.addAttribute("estado", estado);
             return "perfil-dashboard";
         } catch (Exception e) {
-            if (esSesionInvalida(e)) return redirigirALogin(session);
+            if (esSesionInvalida(e))
+                return redirigirALogin(session);
             model.addAttribute("error", "Error al cargar el dashboard: " + e.getMessage());
             return "perfil-dashboard";
         }
@@ -111,8 +115,9 @@ public class PerfilViewController {
     @GetMapping("/jugador/configurar")
     public String configurarPerfilJugador(HttpSession session, Model model) {
         String token = (String) session.getAttribute("token");
-        if (token == null) return "redirect:/login";
-        
+        if (token == null)
+            return "redirect:/login";
+
         try {
             PerfilJugadorDto perfil = perfilServiceProxy.obtenerPerfilJugador(token);
             Map<String, Object> opciones = perfilServiceProxy.obtenerOpcionesTecnicas();
@@ -120,7 +125,8 @@ public class PerfilViewController {
             model.addAttribute("opciones", opciones);
             return "perfil-jugador";
         } catch (Exception e) {
-            if (esSesionInvalida(e)) return redirigirALogin(session);
+            if (esSesionInvalida(e))
+                return redirigirALogin(session);
             model.addAttribute("error", "Error al cargar el perfil: " + e.getMessage());
             return "perfil-jugador";
         }
@@ -129,13 +135,15 @@ public class PerfilViewController {
     @PostMapping("/jugador/guardar")
     public String guardarPerfilJugador(@ModelAttribute PerfilJugadorDto perfil, HttpSession session, Model model) {
         String token = (String) session.getAttribute("token");
-        if (token == null) return "redirect:/login";
-        
+        if (token == null)
+            return "redirect:/login";
+
         try {
             perfilServiceProxy.actualizarPerfilJugador(token, perfil);
             return "redirect:/perfil/jugador/detalles-tecnicos";
         } catch (Exception e) {
-            if (esSesionInvalida(e)) return redirigirALogin(session);
+            if (esSesionInvalida(e))
+                return redirigirALogin(session);
             model.addAttribute("error", "Error al guardar el perfil: " + e.getMessage());
             model.addAttribute("perfil", perfil);
             return "perfil-jugador";
@@ -145,28 +153,32 @@ public class PerfilViewController {
     @GetMapping("/jugador/detalles-tecnicos")
     public String configurarDetallesTecnicos(HttpSession session, Model model) {
         String token = (String) session.getAttribute("token");
-        if (token == null) return "redirect:/login";
-        
+        if (token == null)
+            return "redirect:/login";
+
         try {
             PerfilJugadorDto perfil = perfilServiceProxy.obtenerPerfilJugador(token);
             Map<String, Object> opciones = perfilServiceProxy.obtenerOpcionesTecnicas();
             model.addAttribute("perfil", perfil);
-            model.addAttribute("detalles", perfil.getDetallesTecnicos() != null ? 
-                    perfil.getDetallesTecnicos() : new DetallesTecnicosDto());
+            model.addAttribute("detalles",
+                    perfil.getDetallesTecnicos() != null ? perfil.getDetallesTecnicos() : new DetallesTecnicosDto());
             model.addAttribute("opciones", opciones);
             return "detalles-tecnicos";
         } catch (Exception e) {
-            if (esSesionInvalida(e)) return redirigirALogin(session);
+            if (esSesionInvalida(e))
+                return redirigirALogin(session);
             model.addAttribute("error", "Error al cargar los detalles: " + e.getMessage());
             return "detalles-tecnicos";
         }
     }
 
     @PostMapping("/jugador/detalles-tecnicos/guardar")
-    public String guardarDetallesTecnicos(@ModelAttribute DetallesTecnicosDto detalles, @RequestParam(required = false) String[] golpesFuertesArray, HttpSession session, Model model) {
+    public String guardarDetallesTecnicos(@ModelAttribute DetallesTecnicosDto detalles,
+            @RequestParam(required = false) String[] golpesFuertesArray, HttpSession session, Model model) {
         String token = (String) session.getAttribute("token");
-        if (token == null) return "redirect:/login";
-        
+        if (token == null)
+            return "redirect:/login";
+
         try {
             if (golpesFuertesArray != null) {
                 detalles.setGolpesFuertes(new HashSet<>(java.util.Arrays.asList(golpesFuertesArray)));
@@ -174,7 +186,8 @@ public class PerfilViewController {
             perfilServiceProxy.actualizarDetallesTecnicos(token, detalles);
             return "redirect:/perfil/dashboard";
         } catch (Exception e) {
-            if (esSesionInvalida(e)) return redirigirALogin(session);
+            if (esSesionInvalida(e))
+                return redirigirALogin(session);
             model.addAttribute("error", "Error al guardar los detalles: " + e.getMessage());
             model.addAttribute("detalles", detalles);
             return "detalles-tecnicos";
@@ -184,13 +197,15 @@ public class PerfilViewController {
     @PostMapping("/cambiar-rol")
     public String cambiarRol(@RequestParam String rol, HttpSession session) {
         String token = (String) session.getAttribute("token");
-        if (token == null) return "redirect:/login";
-        
+        if (token == null)
+            return "redirect:/login";
+
         try {
             perfilServiceProxy.cambiarRol(token, rol);
             return "redirect:/perfil/dashboard";
         } catch (Exception e) {
-            if (esSesionInvalida(e)) return redirigirALogin(session);
+            if (esSesionInvalida(e))
+                return redirigirALogin(session);
             return "redirect:/perfil/dashboard?error=" + e.getMessage();
         }
     }
@@ -198,15 +213,19 @@ public class PerfilViewController {
     @PostMapping("/crear-perfil")
     public String crearPerfil(@RequestParam String rol, HttpSession session) {
         String token = (String) session.getAttribute("token");
-        if (token == null) return "redirect:/login";
-        
+        if (token == null)
+            return "redirect:/login";
+
         try {
             perfilServiceProxy.crearPerfilAdicional(token, rol);
-            if ("JUGADOR".equals(rol)) return "redirect:/perfil/jugador/configurar";
-            if ("ENTRENADOR".equals(rol)) return "redirect:/perfil/entrenador/configurar";
+            if ("JUGADOR".equals(rol))
+                return "redirect:/perfil/jugador/configurar";
+            if ("ENTRENADOR".equals(rol))
+                return "redirect:/perfil/entrenador/configurar";
             return "redirect:/perfil/dashboard";
         } catch (Exception e) {
-            if (esSesionInvalida(e)) return redirigirALogin(session);
+            if (esSesionInvalida(e))
+                return redirigirALogin(session);
             return "redirect:/perfil/dashboard?error=" + e.getMessage();
         }
     }
@@ -216,15 +235,16 @@ public class PerfilViewController {
     @GetMapping("/entrenador/configurar")
     public String configurarPerfilEntrenador(HttpSession session, Model model) {
         String token = (String) session.getAttribute("token");
-        if (token == null) return "redirect:/login";
-        
+        if (token == null)
+            return "redirect:/login";
+
         try {
             Map<String, Object> opciones = perfilServiceProxy.obtenerOpcionesEntrenador();
             model.addAttribute("opciones", opciones);
         } catch (Exception e) {
             model.addAttribute("opciones", new java.util.HashMap<>());
         }
-        
+
         try {
             PerfilEntrenadorDto perfil = perfilServiceProxy.obtenerPerfilEntrenador(token);
             model.addAttribute("perfil", perfil != null ? perfil : new PerfilEntrenadorDto());
@@ -235,10 +255,12 @@ public class PerfilViewController {
     }
 
     @PostMapping("/entrenador/guardar")
-    public String guardarPerfilEntrenador(@ModelAttribute PerfilEntrenadorDto perfil, @RequestParam(required = false) String[] especialidadesArray, HttpSession session, Model model) {
+    public String guardarPerfilEntrenador(@ModelAttribute PerfilEntrenadorDto perfil,
+            @RequestParam(required = false) String[] especialidadesArray, HttpSession session, Model model) {
         String token = (String) session.getAttribute("token");
-        if (token == null) return "redirect:/login";
-        
+        if (token == null)
+            return "redirect:/login";
+
         try {
             if (especialidadesArray != null) {
                 perfil.setEspecialidades(new HashSet<>(java.util.Arrays.asList(especialidadesArray)));
@@ -256,29 +278,33 @@ public class PerfilViewController {
     @GetMapping("/entrenador/certificaciones")
     public String gestionarCertificaciones(HttpSession session, Model model) {
         String token = (String) session.getAttribute("token");
-        if (token == null) return "redirect:/login";
-        
+        if (token == null)
+            return "redirect:/login";
+
         try {
             Map<String, Object> opciones = perfilServiceProxy.obtenerOpcionesEntrenador();
             model.addAttribute("opciones", opciones);
             PerfilEntrenadorDto perfil = perfilServiceProxy.obtenerPerfilEntrenador(token);
             model.addAttribute("perfil", perfil);
-            model.addAttribute("certificaciones", perfil != null && perfil.getCertificaciones() != null ? 
-                    perfil.getCertificaciones() : new ArrayList<>());
+            model.addAttribute("certificaciones",
+                    perfil != null && perfil.getCertificaciones() != null ? perfil.getCertificaciones()
+                            : new ArrayList<>());
         } catch (Exception e) {
             model.addAttribute("perfil", new PerfilEntrenadorDto());
             model.addAttribute("certificaciones", new ArrayList<>());
         }
-        
+
         model.addAttribute("nuevaCertificacion", new CertificacionDto());
         return "certificaciones-entrenador";
     }
 
     @PostMapping("/entrenador/certificaciones/agregar")
-    public String agregarCertificacion(@ModelAttribute CertificacionDto certificacion, HttpSession session, Model model) {
+    public String agregarCertificacion(@ModelAttribute CertificacionDto certificacion, HttpSession session,
+            Model model) {
         String token = (String) session.getAttribute("token");
-        if (token == null) return "redirect:/login";
-        
+        if (token == null)
+            return "redirect:/login";
+
         try {
             perfilServiceProxy.agregarCertificacion(token, certificacion);
             return "redirect:/perfil/entrenador/certificaciones";
@@ -290,8 +316,9 @@ public class PerfilViewController {
     @PostMapping("/entrenador/certificaciones/eliminar/{id}")
     public String eliminarCertificacion(@PathVariable Long id, HttpSession session) {
         String token = (String) session.getAttribute("token");
-        if (token == null) return "redirect:/login";
-        
+        if (token == null)
+            return "redirect:/login";
+
         try {
             perfilServiceProxy.eliminarCertificacion(token, id);
             return "redirect:/perfil/entrenador/certificaciones";

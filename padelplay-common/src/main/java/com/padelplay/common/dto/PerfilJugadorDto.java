@@ -10,6 +10,7 @@ public class PerfilJugadorDto {
     private Integer aniosExperiencia;
     private String nivelJuego;
     private String telefono;
+    private Double nivel;
     private DetallesTecnicosDto detallesTecnicos;
 
     public PerfilJugadorDto() {
@@ -63,5 +64,13 @@ public class PerfilJugadorDto {
 
     public void setDetallesTecnicos(DetallesTecnicosDto detallesTecnicos) {
         this.detallesTecnicos = detallesTecnicos;
+    }
+
+    public Double getNivel() {
+        return nivel;
+    }
+
+    public void setNivel(Double nivel) {
+        this.nivel = nivel;
     }
 }
