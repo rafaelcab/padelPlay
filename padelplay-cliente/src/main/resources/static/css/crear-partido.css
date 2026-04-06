@@ -6,17 +6,18 @@
   --surface-low: #111416;
   --surface-high: #171a1c;
   --surface-highest: #232629;
-  
+
   --primary-color: #d1fc00;
   --primary-light: #f4ffc6;
   --primary-dark: #3c4a00;
-  
+
   --text-main: #eeeef0;
   --text-secondary: #e2e2e5;
   --text-muted: #aaabad;
   --text-label: #5a5c5e;
-  
-  --font-title: 'Barlow Condensed', sans-serif; /* Mantenemos tu fuente */
+
+  --font-title: 'Barlow Condensed', sans-serif;
+  /* Mantenemos tu fuente */
   --font-body: 'Barlow', sans-serif;
 }
 
@@ -37,7 +38,8 @@ body {
   justify-content: center;
   min-height: 100vh;
   padding: 40px 20px;
-  padding-top: 120px; /* Espacio para el header fijo de 80px + margen */
+  padding-top: 120px;
+  /* Espacio para el header fijo de 80px + margen */
   /* Efecto de selección de texto a juego */
   selection-background-color: var(--primary-color);
   selection-color: var(--primary-dark);
@@ -45,11 +47,14 @@ body {
 
 .page {
   width: 100%;
-  max-width: 768px; /* max-w-3xl equivalente */
+  max-width: 768px;
+  /* max-w-3xl equivalente */
 }
 
 /* Ocultar <br> para usar flex/grid gaps de forma limpia */
-br { display: none; }
+br {
+  display: none;
+}
 
 /* =========================================
    CABECERA (HEADER)
@@ -71,7 +76,8 @@ br { display: none; }
 .title {
   font-family: var(--font-title);
   color: var(--text-secondary);
-  font-size: clamp(2.5rem, 6vw, 4rem); /* Responsive como text-4xl a text-6xl */
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  /* Responsive como text-4xl a text-6xl */
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.05em;
@@ -92,7 +98,8 @@ br { display: none; }
 .form {
   display: flex;
   flex-direction: column;
-  gap: 48px; /* space-y-12 equivalente */
+  gap: 48px;
+  /* space-y-12 equivalente */
 }
 
 .field {
@@ -128,7 +135,8 @@ br { display: none; }
   width: 100%;
   background-color: var(--surface-high);
   border: 2px solid transparent;
-  border-radius: 12px; /* rounded-xl */
+  border-radius: 12px;
+  /* rounded-xl */
   padding: 16px;
   color: var(--text-main);
   font-family: var(--font-body);
@@ -138,16 +146,19 @@ br { display: none; }
 }
 
 .input::placeholder {
-  color: #747578; /* outline color */
+  color: #747578;
+  /* outline color */
 }
 
 .input:focus {
-  border-color: rgba(209, 252, 0, 0.2); /* ring-primary-fixed/20 */
-  background-color: #292c30; /* surface-bright */
+  border-color: rgba(209, 252, 0, 0.2);
+  /* ring-primary-fixed/20 */
+  background-color: #292c30;
+  /* surface-bright */
 }
 
 .input-date {
-  color-scheme: dark; 
+  color-scheme: dark;
   appearance: none;
 }
 
@@ -163,7 +174,8 @@ br { display: none; }
 .type-card {
   background-color: var(--surface-low);
   border: 2px solid transparent;
-  border-radius: 16px; /* rounded-2xl */
+  border-radius: 16px;
+  /* rounded-2xl */
   padding: 24px 16px;
   color: var(--text-label);
   font-family: var(--font-body);
@@ -181,7 +193,8 @@ br { display: none; }
 }
 
 .type-card.active {
-  background-color: rgba(209, 252, 0, 0.1); /* primary-fixed/10 */
+  background-color: rgba(209, 252, 0, 0.1);
+  /* primary-fixed/10 */
   border-color: var(--primary-color);
   color: var(--primary-color);
 }
@@ -266,7 +279,8 @@ br { display: none; }
   background: linear-gradient(to right, var(--primary-light), var(--primary-color));
   color: var(--primary-dark);
   border: none;
-  border-radius: 9999px; /* rounded-full */
+  border-radius: 9999px;
+  /* rounded-full */
   padding: 24px;
   font-family: var(--font-title);
   font-size: 1.25rem;
@@ -309,7 +323,7 @@ br { display: none; }
     grid-template-columns: 1fr;
     gap: 24px;
   }
-  
+
   .match-types {
     grid-template-columns: 1fr;
   }

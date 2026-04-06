@@ -6,17 +6,27 @@ import java.util.List;
 public class PartidoDto {
 
     private Long id;
-    private Long idCreador;
+
+    // Cambiamos el ID suelto por el DTO completo para mostrar el Apodo/Nivel en la
+    // tarjeta
+    private PerfilJugadorDto creador;
+
     private LocalDateTime fechaHora;
     private String ubicacion;
-    private String tipoPartido;
+    private String tipoPartido; // "PÚBLICO" o "PRIVADO"
     private Double nivelRequerido;
     private Integer huecosDisponibles;
     private String codigoAcceso;
-    private List<Long> idsJugadoresApuntados;
+
+    // Cambiamos la lista de IDs por la lista de perfiles para los iconos/avatares
+    private List<PerfilJugadorDto> jugadoresApuntados;
 
     public PartidoDto() {
     }
+
+    // ==========================================
+    // Getters y Setters
+    // ==========================================
 
     public Long getId() {
         return id;
@@ -26,12 +36,12 @@ public class PartidoDto {
         this.id = id;
     }
 
-    public Long getIdCreador() {
-        return idCreador;
+    public PerfilJugadorDto getCreador() {
+        return creador;
     }
 
-    public void setIdCreador(Long idCreador) {
-        this.idCreador = idCreador;
+    public void setCreador(PerfilJugadorDto creador) {
+        this.creador = creador;
     }
 
     public LocalDateTime getFechaHora() {
@@ -82,11 +92,11 @@ public class PartidoDto {
         this.codigoAcceso = codigoAcceso;
     }
 
-    public List<Long> getIdsJugadoresApuntados() {
-        return idsJugadoresApuntados;
+    public List<PerfilJugadorDto> getJugadoresApuntados() {
+        return jugadoresApuntados;
     }
 
-    public void setIdsJugadoresApuntados(List<Long> idsJugadoresApuntados) {
-        this.idsJugadoresApuntados = idsJugadoresApuntados;
+    public void setJugadoresApuntados(List<PerfilJugadorDto> jugadoresApuntados) {
+        this.jugadoresApuntados = jugadoresApuntados;
     }
 }

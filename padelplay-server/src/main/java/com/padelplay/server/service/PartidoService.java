@@ -1,14 +1,18 @@
 package com.padelplay.server.service;
 
 import com.padelplay.common.dto.PartidoDto;
+import com.padelplay.common.dto.PerfilJugadorDto;
 import com.padelplay.server.entity.PerfilJugador;
 import com.padelplay.server.entity.Partido;
 import com.padelplay.server.repository.PerfilJugadorRepository;
 import com.padelplay.server.repository.PartidoRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PartidoService {
@@ -16,63 +20,152 @@ public class PartidoService {
     private final PartidoRepository partidoRepository;
     private final PerfilJugadorRepository perfilJugadorRepository;
 
-    // Inyección de dependencias a través del constructor
     public PartidoService(PartidoRepository partidoRepository, PerfilJugadorRepository perfilJugadorRepository) {
         this.partidoRepository = partidoRepository;
         this.perfilJugadorRepository = perfilJugadorRepository;
     }
 
-    public Partido crearPartido(PartidoDto dto) {
-        // 1. Buscar al Creador
-        PerfilJugador creador = perfilJugadorRepository.findById(dto.getIdCreador())
-                .orElseThrow(() -> new IllegalArgumentException("El jugador con ID " + dto.getIdCreador() + " no existe."));
+    /**
+     * Obtiene todos los partidos para el Dashboard y los convierte a DTO.
+     */
+    @Transactional(readOnly = true)
+    public List<PartidoDto> listarPartidos() {
+        return partidoRepository.findAll()
+                .stream()
+                .map(this::convertirADto)
+                .collect(Collectors.toList());
+    }
 
-        // 2. Validar Reglas de Negocio
-        if (dto.getNivelRequerido() < 1.0 || dto.getNivelRequerido() > 5.0) {
-            throw new IllegalArgumentException("El nivel requerido debe estar entre 1.0 y 5.0");
-        }
-        
-        if (dto.getFechaHora() == null || dto.getFechaHora().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("La fecha del partido debe ser en el futuro.");
+    /**
+     * Crea un nuevo partido a partir de la información del DTO.
+     */
+    @Transactional
+    public PartidoDto crearPartido(PartidoDto dto) {
+        if (dto.getCreador() == null || dto.getCreador().getId() == null) {
+            throw new IllegalArgumentException("Es necesario especificar un perfil de creador válido.");
         }
 
-        // 3. Transformación (Mapping)
+        Long idCreador = dto.getCreador().getId();
+        PerfilJugador creador = perfilJugadorRepository.findById(idCreador)
+                .orElseThrow(() -> new IllegalArgumentException("El perfil con ID " + idCreador + " no existe."));
+
+        validarPartido(dto);
+
         Partido partido = new Partido();
         partido.setFechaHora(dto.getFechaHora());
         partido.setUbicacion(dto.getUbicacion());
         partido.setNivelRequerido(dto.getNivelRequerido());
-        
-        // === NUEVA LÓGICA DE PARTIDO PRIVADO VS ABIERTO ===
-        // Leemos el valor que viene desde el HTML ("open" o "private")
+
         if ("private".equalsIgnoreCase(dto.getTipoPartido())) {
             partido.setTipoPartido("PRIVADO");
-            partido.setCodigoAcceso(generarCodigoAleatorio()); // La app genera el código automáticamente
+            partido.setCodigoAcceso(generarCodigoAleatorio());
         } else {
             partido.setTipoPartido("ABIERTO");
-            partido.setCodigoAcceso(null); // Los abiertos no tienen contraseña
+            partido.setCodigoAcceso(null);
         }
-        
-        // Siempre nacen con 3 huecos libres (el creador ya ocupa uno)
-        partido.setHuecosDisponibles(3); 
 
-        // 4. Vincular las Relaciones
+        partido.setHuecosDisponibles(3);
         partido.setCreador(creador);
-        
-        // Inicializamos la lista de apuntados y metemos al creador
+
         partido.setJugadoresApuntados(new ArrayList<>());
         partido.getJugadoresApuntados().add(creador);
 
-        // 5. Guardar en Base de Datos y devolver el resultado
-        return partidoRepository.save(partido);
+        Partido partidoGuardado = partidoRepository.save(partido);
+        return convertirADto(partidoGuardado);
     }
 
-    // === HERRAMIENTA AUXILIAR ===
-    // Método privado para generar un código alfanumérico de 6 caracteres
+    // =========================================================================
+    // UNIRSE A UN PARTIDO (Actualizado con validación de código)
+    // =========================================================================
+    @Transactional
+    public PartidoDto unirseAPartido(Long partidoId, Long jugadorId, String codigoAcceso) {
+        // 1. Buscar el partido
+        Partido partido = partidoRepository.findById(partidoId)
+                .orElseThrow(() -> new IllegalArgumentException("El partido no existe."));
+
+        // 2. Buscar al jugador
+        PerfilJugador jugador = perfilJugadorRepository.findById(jugadorId)
+                .orElseThrow(() -> new IllegalArgumentException("El jugador no existe."));
+
+        // 3. Comprobar aforo
+        if (partido.getHuecosDisponibles() <= 0) {
+            throw new IllegalStateException("El partido ya está completo.");
+        }
+
+        // 4. Comprobar que no sea el creador intentando unirse como invitado
+        if (partido.getCreador().getId().equals(jugadorId)) {
+            throw new IllegalStateException("Eres el creador, ya estás en este partido.");
+        }
+
+        // 5. Comprobar que no esté ya en la lista
+        boolean yaApuntado = partido.getJugadoresApuntados().stream()
+                .anyMatch(j -> j.getId().equals(jugadorId));
+
+        if (yaApuntado) {
+            throw new IllegalStateException("Ya estás apuntado a este partido.");
+        }
+
+        // --- NUEVA REGLA: Validar código si es privado ---
+        if ("PRIVADO".equalsIgnoreCase(partido.getTipoPartido())) {
+            if (codigoAcceso == null || !codigoAcceso.equalsIgnoreCase(partido.getCodigoAcceso())) {
+                throw new IllegalStateException("Código de acceso incorrecto para este partido privado.");
+            }
+        }
+
+        // 6. Acción: Añadir jugador y restar hueco
+        partido.getJugadoresApuntados().add(jugador);
+        partido.setHuecosDisponibles(partido.getHuecosDisponibles() - 1);
+
+        // 7. Guardar y devolver DTO actualizado
+        Partido partidoActualizado = partidoRepository.save(partido);
+        return convertirADto(partidoActualizado);
+    }
+
+    // === MÉTODOS AUXILIARES ===
+
+    private void validarPartido(PartidoDto dto) {
+        if (dto.getNivelRequerido() < 1.0 || dto.getNivelRequerido() > 5.0) {
+            throw new IllegalArgumentException("El nivel requerido debe estar entre 1.0 y 5.0");
+        }
+        if (dto.getFechaHora() == null || dto.getFechaHora().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("La fecha del partido debe ser en el futuro.");
+        }
+    }
+
+    private PartidoDto convertirADto(Partido p) {
+        PartidoDto dto = new PartidoDto();
+        dto.setId(p.getId());
+        dto.setFechaHora(p.getFechaHora());
+        dto.setUbicacion(p.getUbicacion());
+        dto.setTipoPartido(p.getTipoPartido());
+        dto.setNivelRequerido(p.getNivelRequerido());
+        dto.setHuecosDisponibles(p.getHuecosDisponibles());
+        dto.setCodigoAcceso(p.getCodigoAcceso());
+
+        PerfilJugadorDto creadorDto = new PerfilJugadorDto();
+        creadorDto.setId(p.getCreador().getId());
+        creadorDto.setApodo(p.getCreador().getApodo());
+        creadorDto.setNivel(p.getCreador().getNivel());
+        dto.setCreador(creadorDto);
+
+        List<PerfilJugadorDto> jugadoresDtos = p.getJugadoresApuntados().stream()
+                .map(j -> {
+                    PerfilJugadorDto jDto = new PerfilJugadorDto();
+                    jDto.setId(j.getId());
+                    jDto.setApodo(j.getApodo());
+                    return jDto;
+                }).collect(Collectors.toList());
+
+        dto.setJugadoresApuntados(jugadoresDtos);
+
+        return dto;
+    }
+
     private String generarCodigoAleatorio() {
         String caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         StringBuilder codigo = new StringBuilder();
         java.util.Random rnd = new java.util.Random();
-        while (codigo.length() < 6) { 
+        while (codigo.length() < 6) {
             int index = (int) (rnd.nextFloat() * caracteres.length());
             codigo.append(caracteres.charAt(index));
         }

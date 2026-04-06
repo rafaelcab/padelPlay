@@ -1,55 +1,63 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{base :: layout(~{::title}, ~{::#page-styles}, ~{::main})}">
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{base :: layout(~{::title}, ~{::#page-styles}, ~{::main})}">
+
 <head>
   <title>Crear Partido | PADELPLAY</title>
   <th:block id="page-styles">
-    <link rel="stylesheet" th:href="@{/css/crear-partido.css}"/>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/crear-partido.css}" />
   </th:block>
 </head>
+
 <body>
 
-  <main class="page">
+  <main class="page pt-18 pb-12">
     <div class="container">
 
-      <header class="header">
-        <span class="eyebrow">PADELPLAY</span>
-        <h1 class="title">CREA TU PARTIDO</h1>
-        <p class="subtitle">Crea el partido, fija las reglas y convoca a la élite</p>
+      <header class="header mb-12">
+        <span
+          class="text-[#D4FF00] font-headline font-bold tracking-widest text-xs uppercase mb-2 block">PADELPLAY</span>
+        <h1 class="font-headline text-5xl md:text-7xl font-extrabold tracking-tighter text-white mb-4 italic uppercase">
+          CREA TU <span class="text-[#D4FF00]">PARTIDO</span>
+        </h1>
+        <p class="text-slate-400 font-body text-lg max-w-xl">Fija las reglas, selecciona la pista y convoca a la élite
+          del pádel.</p>
       </header>
-      
-      <div th:if="${error}" style="color: red; font-weight: bold; margin-bottom: 20px;">
-          <span th:text="${error}"></span>
+
+      <div th:if="${error}"
+        class="bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-xl mb-8 text-center font-bold">
+        <span th:text="${error}"></span>
       </div>
 
       <form class="form" autocomplete="off" th:action="@{/partidos/crear}" th:object="${partido}" method="POST">
-        
-        <input type="hidden" th:field="*{idCreador}" value="1" id="idCreador" />
 
         <div class="row-2">
           <div class="field">
             <label class="label">SELECCIONA LA PISTA:</label>
             <div class="input-wrap">
-              <input class="input" type="text" th:field="*{ubicacion}" placeholder="Search club or court..." required/>
+              <input class="input" type="text" th:field="*{ubicacion}" placeholder="Ej: Padel Club Central..."
+                required />
             </div>
           </div>
-          <br>
+
           <div class="field">
             <label class="label">HORARIO:</label>
             <div class="input-wrap">
-              <input class="input input-date" type="datetime-local" th:field="*{fechaHora}" required/>
+              <input class="input input-date" type="datetime-local" th:field="*{fechaHora}" required />
             </div>
           </div>
         </div>
         <br>
 
         <input type="hidden" th:field="*{tipoPartido}" id="match_type_value" />
+
         <div class="field">
           <label class="label">TIPO DE PARTIDO:</label>
           <div class="match-types">
             <button type="button" class="type-card active" data-value="open">ABIERTO</button>
             <button type="button" class="type-card" data-value="private">PRIVADO</button>
-            <button type="button" class="type-card" data-value="competitive" disabled>COMPETITIVO (Deshabilitado)</button>
+            <button type="button" class="type-card" data-value="competitive" disabled>COMPETITIVO
+              (Próximamente)</button>
           </div>
         </div>
         <br>
@@ -60,52 +68,50 @@
             <span class="level-value" id="level-display">LVL 4.0</span>
           </div>
           <div class="slider-wrap">
-            <input class="slider" type="range" th:field="*{nivelRequerido}" min="1" max="5" step="0.5" value="4.0"/>
+            <input class="slider" type="range" th:field="*{nivelRequerido}" min="1" max="5" step="0.5" value="4.0" />
           </div>
         </div>
         <br>
 
         <div class="cta-wrap">
-          <button class="cta-btn" type="submit">CREA EL PARTIDO</button>
+          <button class="cta-btn shadow-[0_0_20px_rgba(212,255,0,0.2)]" type="submit">CREA EL PARTIDO</button>
         </div>
 
       </form>
     </div>
 
     <script>
-      // --- SCRIPT PARA LOS BOTONES DE TIPO DE PARTIDO ---
+      // Lógica de botones de tipo de partido
       const matchTypeInput = document.getElementById('match_type_value');
-      
-      // Forzamos que por defecto sea "open" si está vacío
+
       if (!matchTypeInput.value) {
-          matchTypeInput.value = 'open';
+        matchTypeInput.value = 'open';
       }
 
       document.querySelectorAll('.type-card').forEach(btn => {
-        if(!btn.disabled) {
-            btn.addEventListener('click', () => {
-              // Quitamos la clase active de todos y se la ponemos al pulsado
-              document.querySelectorAll('.type-card').forEach(c => c.classList.remove('active'));
-              btn.classList.add('active');
-              // Guardamos el valor (open o private) en el campo oculto para enviarlo
-              matchTypeInput.value = btn.dataset.value;
-            });
+        if (!btn.disabled) {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.type-card').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            matchTypeInput.value = btn.dataset.value;
+          });
         }
       });
 
-      // --- SCRIPT DEL SLIDER ---
+      // Lógica del slider de nivel
       const slider = document.querySelector('.slider');
       const levelDisplay = document.getElementById('level-display');
 
       function updateSlider() {
-        levelDisplay.textContent = 'LVL ' + parseFloat(slider.value).toFixed(1); 
+        levelDisplay.textContent = 'LVL ' + parseFloat(slider.value).toFixed(1);
       }
-      
-      if(slider) {
-          slider.addEventListener('input', updateSlider);
-          updateSlider(); 
+
+      if (slider) {
+        slider.addEventListener('input', updateSlider);
+        updateSlider();
       }
     </script>
   </main>
 </body>
+
 </html>

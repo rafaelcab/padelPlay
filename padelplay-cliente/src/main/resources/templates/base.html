@@ -40,8 +40,14 @@
             background: rgba(12, 14, 16, 0.7);
             backdrop-filter: blur(20px);
         }
+
+        /* Estilo para que el menú flote con efecto cristal */
+        .glass-dropdown {
+            background: rgba(12, 14, 16, 0.9);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
     </style>
-    <!-- Elementos dinámicos del head (hojas de estilo especificas) -->
     <th:block th:replace="${links}" />
 </head>
 
@@ -49,7 +55,7 @@
 
     <header
         class="fixed top-0 w-full z-50 glass-nav shadow-[0_20px_40px_rgba(0,0,0,0.4)] h-20 flex justify-between items-center px-8">
-        <div class="flex items-center gap-3 group cursor-pointer">
+        <div class="flex items-center gap-3 group cursor-pointer" onclick="window.location.href='/perfil/dashboard'">
             <span
                 class="text-[#D4FF00] font-black italic text-2xl tracking-tighter uppercase font-headline">PadelPlay</span>
         </div>
@@ -58,7 +64,7 @@
             <a class="font-headline tracking-tight font-bold uppercase text-sm text-[#D4FF00] border-b-2 border-[#D4FF00] pb-1"
                 href="/perfil/dashboard">Home</a>
             <a class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
-                href="#">Partidos</a>
+                href="/partidos">Partidos</a>
             <a class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
                 href="/partidos/crear">Crear</a>
             <a class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
@@ -66,7 +72,12 @@
         </nav>
 
         <div class="flex items-center gap-6">
-            <!-- Botón para cambiar de rol recuperando la funcionalidad de Thymeleaf -->
+
+            <button
+                class="text-slate-400 hover:text-[#D4FF00] transition-colors p-2 rounded-full hover:bg-white/5 active:scale-90">
+                <span class="material-symbols-outlined">notifications</span>
+            </button>
+
             <div th:if="${estado != null && (estado.tienePerfilJugador || estado.tienePerfilEntrenador)}">
                 <form th:action="@{/perfil/cambiar-rol}" method="post" style="display: contents;">
                     <input type="hidden" name="rol"
@@ -74,24 +85,51 @@
                     <button type="submit"
                         th:disabled="${estado.rolActivo == 'JUGADOR' ? !estado.tienePerfilEntrenador : !estado.tienePerfilJugador}"
                         class="group px-6 py-2.5 rounded-full bg-[#1d2023] border border-slate-800 hover:bg-[#D4FF00] transition-all duration-300 flex items-center gap-2"
-                        th:classappend="${estado.rolActivo == 'JUGADOR' && !estado.tienePerfilEntrenador ? 'opacity-50 cursor-not-allowed' : ''} + ${estado.rolActivo == 'ENTRENADOR' && !estado.tienePerfilJugador ? 'opacity-50 cursor-not-allowed' : ''}">
+                        th:classappend="${(estado.rolActivo == 'JUGADOR' && !estado.tienePerfilEntrenador) || (estado.rolActivo == 'ENTRENADOR' && !estado.tienePerfilJugador) ? 'opacity-50 cursor-not-allowed' : ''}">
                         <span
                             class="material-symbols-outlined text-[#D4FF00] group-hover:text-black transition-colors">swap_horiz</span>
                         <span
                             class="font-headline tracking-tight font-bold uppercase text-xs text-[#D4FF00] group-hover:text-black transition-colors"
-                            th:text="${estado.rolActivo == 'JUGADOR'} ? 'Switch to Coach' : 'Switch to Player'">Cambiar
-                            a entrenador</span>
+                            th:text="${estado.rolActivo == 'JUGADOR'} ? 'Switch to Coach' : 'Switch to Player'">Switch</span>
                     </button>
                 </form>
             </div>
 
-            <!-- Avatar con enlace al perfil solicitado -->
-            <a th:href="@{/perfil/dashboard}"
-                class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-700 hover:border-[#D4FF00] hover:shadow-[0_0_15px_rgba(212,255,0,0.5)] transition-all">
-                <img alt="Profile" class="w-full h-full object-cover"
-                    th:src="${estado != null && estado.pictureUrl != null ? estado.pictureUrl : 'https://lh3.googleusercontent.com/aida-public/AB6AXuCnoZNX12NJLATjw1LLNxe3nmhMuGUkfnnBRep2SPnmip00TUcU9y8ItbdFDrPwwErPuI_jSIQa6VJzWgcF2xv7nIkxTZp_s2_El6W8SZpk3TVSL2jMR8gHm9Gw5mc1-YqLZma5WBWpU1q5O5HnBz1a4d3hDqmaFvJZSLYVMHwjFsPAidYrG7i1JKMnR5V7BdAYCvDkREXKyldSl1DmDNPmKONTSlf5VnCMJTbAl76zux2frzzy9lBeN6u4S7aulOgf0XTmMVQ2v8Nw'}" />
-            </a>
-        </div>
+            <div class="relative group pt-2">
+                <div
+                    class="w-11 h-11 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border-2 border-slate-700 group-hover:border-[#D4FF00] cursor-pointer transition-all duration-300">
+                    <img alt="Profile" class="w-full h-full object-cover"
+                        th:src="${estado != null && estado.pictureUrl != null ? estado.pictureUrl : 'https://lh3.googleusercontent.com/aida-public/AB6AXuCnoZNX12NJLATjw1LLNxe3nmhMuGUkfnnBRep2SPnmip00TUcU9y8ItbdFDrPwwErPuI_jSIQa6VJzWgcF2xv7nIkxTZp_s2_El6W8SZpk3TVSL2jMR8gHm9Gw5mc1-YqLZma5WBWpU1q5O5HnBz1a4d3hDqmaFvJZSLYVMHwjFsPAidYrG7i1JKMnR5V7BdAYCvDkREXKyldSl1DmDNPmKONTSlf5VnCMJTbAl76zux2frzzy9lBeN6u4S7aulOgf0XTmMVQ2v8Nw'}" />
+                </div>
+
+                <div class="absolute right-0 mt-5 w-52 origin-top-right rounded-2xl glass-dropdown shadow-2xl 
+                opacity-0 invisible group-hover:opacity-100 group-hover:visible 
+                transition-all duration-300 delay-150 z-50 py-2 px-1">
+
+                    <div
+                        class="absolute -top-2 right-4 w-4 h-4 bg-[#0c0e10]/90 rotate-45 border-l border-t border-white/10">
+                    </div>
+
+                    <div class="relative z-10">
+                        <a href="/perfil/dashboard"
+                            class="flex items-center gap-3 px-4 py-3 text-sm text-slate-200 hover:bg-[#D4FF00]/10 hover:text-[#D4FF00] rounded-xl transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">person</span>
+                            <span class="font-medium">Mi Perfil</span>
+                        </a>
+                        <a href="#"
+                            class="flex items-center gap-3 px-4 py-3 text-sm text-slate-200 hover:bg-[#D4FF00]/10 hover:text-[#D4FF00] rounded-xl transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">history</span>
+                            <span class="font-medium">Mis Partidos</span>
+                        </a>
+                        <div class="my-1 border-t border-white/10 mx-2"></div>
+                        <a href="/logout"
+                            class="flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 rounded-xl transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">logout</span>
+                            <span class="font-medium">Cerrar Sesión</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
     </header>
 
     <main class="pt-24" th:replace="${content}">

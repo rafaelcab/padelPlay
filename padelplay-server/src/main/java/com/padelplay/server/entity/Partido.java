@@ -35,11 +35,7 @@ public class Partido {
     private PerfilJugador creador;
 
     @ManyToMany
-    @JoinTable(
-        name = "partido_jugadores",
-        joinColumns = @JoinColumn(name = "partido_id"),
-        inverseJoinColumns = @JoinColumn(name = "perfil_jugador_id")
-    )
+    @JoinTable(name = "partido_jugadores", joinColumns = @JoinColumn(name = "partido_id"), inverseJoinColumns = @JoinColumn(name = "perfil_jugador_id"))
     private List<PerfilJugador> jugadoresApuntados;
 
     public Partido() {
@@ -115,5 +111,13 @@ public class Partido {
 
     public void setJugadoresApuntados(List<PerfilJugador> jugadoresApuntados) {
         this.jugadoresApuntados = jugadoresApuntados;
+    }
+
+    // Método de ayuda para gestionar la inscripción
+    public void añadirJugador(PerfilJugador jugador) {
+        if (this.huecosDisponibles > 0) {
+            this.jugadoresApuntados.add(jugador);
+            this.huecosDisponibles--;
+        }
     }
 }
