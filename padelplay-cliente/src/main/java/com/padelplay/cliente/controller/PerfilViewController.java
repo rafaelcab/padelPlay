@@ -3,18 +3,25 @@ package com.padelplay.cliente.controller;
 import com.padelplay.common.dto.CertificacionDto;
 import com.padelplay.common.dto.DetallesTecnicosDto;
 import com.padelplay.common.dto.EstadoPerfilDto;
+import com.padelplay.common.dto.PartidoDto;
 import com.padelplay.common.dto.PerfilEntrenadorDto;
 import com.padelplay.common.dto.PerfilJugadorDto;
 import com.padelplay.cliente.proxies.PerfilServiceProxy;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Controller para las vistas de perfil de usuario.
@@ -24,9 +31,11 @@ import java.util.Map;
 public class PerfilViewController {
 
     private final PerfilServiceProxy perfilServiceProxy;
+    private final RestTemplate restTemplate;
 
-    public PerfilViewController(PerfilServiceProxy perfilServiceProxy) {
+    public PerfilViewController(PerfilServiceProxy perfilServiceProxy, RestTemplate restTemplate) {
         this.perfilServiceProxy = perfilServiceProxy;
+        this.restTemplate = restTemplate;
     }
 
     /**
@@ -100,6 +109,10 @@ public class PerfilViewController {
                 return "redirect:/perfil/seleccionar-rol";
             }
             model.addAttribute("estado", estado);
+
+            if (estado.getPerfilJugador() != null) {
+                cargarResumenAdmin(model, estado.getPerfilJugador().getId());
+            }
             return "perfil-dashboard";
         } catch (Exception e) {
             if (esSesionInvalida(e))
@@ -341,5 +354,33 @@ public class PerfilViewController {
     private String redirigirALogin(HttpSession session) {
         session.invalidate();
         return "redirect:/login";
+    }
+
+    private void cargarResumenAdmin(Model model, Long perfilJugadorId) {
+        try {
+            ResponseEntity<PartidoDto[]> response = restTemplate.getForEntity("http://localhost:8080/api/partidos", PartidoDto[].class);
+            List<PartidoDto> partidos = java.util.Arrays.asList(response.getBody() != null ? response.getBody() : new PartidoDto[0]);
+
+            long creados = partidos.stream()
+                    .filter(partido -> partido.getCreador() != null && perfilJugadorId.equals(partido.getCreador().getId()))
+                    .count();
+            long activos = partidos.stream()
+                    .filter(partido -> partido.getCreador() != null && perfilJugadorId.equals(partido.getCreador().getId()))
+                    .filter(partido -> !partido.isCancelado())
+                    .filter(partido -> partido.getFechaHora() != null && partido.getFechaHora().isAfter(LocalDateTime.now().minusMinutes(5)))
+                    .count();
+            long cancelados = partidos.stream()
+                    .filter(partido -> partido.getCreador() != null && perfilJugadorId.equals(partido.getCreador().getId()))
+                    .filter(PartidoDto::isCancelado)
+                    .count();
+
+            model.addAttribute("adminPartidosCreados", creados);
+            model.addAttribute("adminPartidosActivos", activos);
+            model.addAttribute("adminPartidosCancelados", cancelados);
+        } catch (Exception ignored) {
+            model.addAttribute("adminPartidosCreados", 0L);
+            model.addAttribute("adminPartidosActivos", 0L);
+            model.addAttribute("adminPartidosCancelados", 0L);
+        }
     }
 }

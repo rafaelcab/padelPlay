@@ -17,6 +17,7 @@ public class PartidoDto {
     private Double nivelRequerido;
     private Integer huecosDisponibles;
     private String codigoAcceso;
+    private boolean cancelado;
 
     // Cambiamos la lista de IDs por la lista de perfiles para los iconos/avatares
     private List<PerfilJugadorDto> jugadoresApuntados;
@@ -90,6 +91,14 @@ public class PartidoDto {
 
     public void setCodigoAcceso(String codigoAcceso) {
         this.codigoAcceso = codigoAcceso;
+    }
+
+    public boolean isCancelado() {
+        return cancelado;
+    }
+
+    public void setCancelado(boolean cancelado) {
+        this.cancelado = cancelado;
     }
 
     public List<PerfilJugadorDto> getJugadoresApuntados() {

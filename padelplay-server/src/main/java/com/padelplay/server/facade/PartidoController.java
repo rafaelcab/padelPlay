@@ -89,4 +89,28 @@ public class PartidoController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PostMapping("/{id}/cancelar")
+    public ResponseEntity<?> cancelarAsistencia(
+            @PathVariable("id") Long partidoId,
+            @RequestParam("usuarioId") Long usuarioId) {
+        try {
+            PartidoDto partidoActualizado = partidoService.cancelarAsistencia(partidoId, usuarioId);
+            return ResponseEntity.ok(partidoActualizado);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/eliminar")
+    public ResponseEntity<?> eliminarPartidoSiSolo(
+            @PathVariable("id") Long partidoId,
+            @RequestParam("usuarioId") Long usuarioId) {
+        try {
+            partidoService.eliminarPartidoSiSolo(partidoId, usuarioId);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

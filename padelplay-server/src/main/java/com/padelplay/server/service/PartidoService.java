@@ -28,10 +28,20 @@ public class PartidoService {
     /**
      * Obtiene todos los partidos para el Dashboard y los convierte a DTO.
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public List<PartidoDto> listarPartidos() {
-        return partidoRepository.findAll()
-                .stream()
+        List<Partido> partidos = partidoRepository.findAll();
+
+        List<Partido> sinJugadores = partidos.stream()
+                .filter(p -> p.getJugadoresApuntados() == null || p.getJugadoresApuntados().isEmpty())
+                .toList();
+
+        if (!sinJugadores.isEmpty()) {
+            partidoRepository.deleteAll(sinJugadores);
+        }
+
+        return partidos.stream()
+                .filter(p -> p.getJugadoresApuntados() != null && !p.getJugadoresApuntados().isEmpty())
                 .map(this::convertirADto)
                 .collect(Collectors.toList());
     }
@@ -83,6 +93,10 @@ public class PartidoService {
         Partido partido = partidoRepository.findById(partidoId)
                 .orElseThrow(() -> new IllegalArgumentException("El partido no existe."));
 
+        if (partido.isCancelado()) {
+            throw new IllegalStateException("Este partido está cancelado y no admite inscripciones.");
+        }
+
         // 2. Buscar al jugador
         PerfilJugador jugador = perfilJugadorRepository.findById(jugadorId)
                 .orElseThrow(() -> new IllegalArgumentException("El jugador no existe."));
@@ -121,6 +135,61 @@ public class PartidoService {
         return convertirADto(partidoActualizado);
     }
 
+    @Transactional
+    public PartidoDto cancelarAsistencia(Long partidoId, Long usuarioId) {
+        Partido partido = partidoRepository.findById(partidoId)
+                .orElseThrow(() -> new IllegalArgumentException("El partido no existe."));
+
+        PerfilJugador usuario = perfilJugadorRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("El usuario no existe."));
+
+        boolean estaApuntado = partido.getJugadoresApuntados().stream()
+                .anyMatch(j -> j.getId().equals(usuarioId));
+
+        if (!estaApuntado) {
+            throw new IllegalStateException("El usuario no está apuntado a este partido.");
+        }
+
+        partido.getJugadoresApuntados().removeIf(j -> j.getId().equals(usuarioId));
+
+        if (partido.getJugadoresApuntados().isEmpty()) {
+            PartidoDto dto = convertirADto(partido);
+            partidoRepository.delete(partido);
+            return dto;
+        }
+
+        if (partido.getCreador().getId().equals(usuarioId)) {
+            partido.setCancelado(true);
+            partido.setHuecosDisponibles(0);
+        } else {
+            partido.setHuecosDisponibles(Math.min(3, partido.getHuecosDisponibles() + 1));
+        }
+
+        Partido partidoActualizado = partidoRepository.save(partido);
+        return convertirADto(partidoActualizado);
+    }
+
+    @Transactional
+    public void eliminarPartidoSiSolo(Long partidoId, Long usuarioId) {
+        Partido partido = partidoRepository.findById(partidoId)
+                .orElseThrow(() -> new IllegalArgumentException("El partido no existe."));
+
+        perfilJugadorRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("El usuario no existe."));
+
+        boolean esCreador = partido.getCreador().getId().equals(usuarioId);
+        if (!esCreador) {
+            throw new IllegalStateException("Solo el creador puede eliminar el partido.");
+        }
+
+        boolean esUnicoJugador = partido.getJugadoresApuntados() != null && partido.getJugadoresApuntados().size() == 1;
+        if (!esUnicoJugador) {
+            throw new IllegalStateException("Solo puedes eliminar el partido cuando estás solo en él.");
+        }
+
+        partidoRepository.delete(partido);
+    }
+
     // === MÉTODOS AUXILIARES ===
 
     private void validarPartido(PartidoDto dto) {
@@ -141,6 +210,7 @@ public class PartidoService {
         dto.setNivelRequerido(p.getNivelRequerido());
         dto.setHuecosDisponibles(p.getHuecosDisponibles());
         dto.setCodigoAcceso(p.getCodigoAcceso());
+        dto.setCancelado(p.isCancelado());
 
         PerfilJugadorDto creadorDto = new PerfilJugadorDto();
         creadorDto.setId(p.getCreador().getId());

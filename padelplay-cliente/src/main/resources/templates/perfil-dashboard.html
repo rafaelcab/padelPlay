@@ -200,6 +200,26 @@
 
         <div class="alert alert-error" th:if="${param.error}" th:text="${param.error}"></div>
 
+        <div class="card" th:if="${esAdminClub}">
+            <div class="card-header">
+                <div class="card-title"><span class="material-symbols-outlined">analytics</span> Panel de Admin</div>
+            </div>
+            <div class="profile-grid">
+                <div class="profile-item">
+                    <div class="profile-label">Partidos creados</div>
+                    <div class="profile-value" th:text="${adminPartidosCreados != null ? adminPartidosCreados : 0}">0</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">Partidos activos</div>
+                    <div class="profile-value" th:text="${adminPartidosActivos != null ? adminPartidosActivos : 0}">0</div>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">Partidos cancelados</div>
+                    <div class="profile-value" th:text="${adminPartidosCancelados != null ? adminPartidosCancelados : 0}">0</div>
+                </div>
+            </div>
+        </div>
+
         <!-- Banner para añadir perfil adicional -->
         <div class="add-profile-banner" th:if="${!estado.tienePerfilJugador || !estado.tienePerfilEntrenador}">
             <h3 th:if="${!estado.tienePerfilJugador}">¿También eres jugador?</h3>

@@ -43,23 +43,26 @@
                     <div
                         class="flex-1 flex items-center bg-[#111416] rounded-lg px-4 py-2 border border-transparent focus-within:border-[#D4FF00]/30 transition-all">
                         <span class="material-symbols-outlined text-slate-400 mr-3">location_on</span>
-                        <input
+                        <input id="filtro-texto"
                             class="bg-transparent border-none focus:ring-0 text-white w-full placeholder:text-slate-500 outline-none"
                             placeholder="Buscar pistas o ciudad..." type="text" />
                     </div>
 
                     <div class="flex flex-wrap items-center gap-3">
-                        <div
-                            class="bg-[#111416] px-4 py-2 rounded-lg flex items-center gap-2 cursor-pointer hover:bg-[#292c30] transition-colors border border-slate-800">
+                        <div class="bg-[#111416] px-3 py-2 rounded-lg border border-slate-800 flex items-center gap-2">
                             <span class="material-symbols-outlined text-[#D4FF00] text-sm">signal_cellular_alt</span>
-                            <span class="text-sm font-medium text-slate-300">Nivel</span>
-                            <span class="material-symbols-outlined text-slate-400 text-sm">expand_more</span>
+                            <select id="filtro-nivel"
+                                class="bg-transparent text-sm font-medium text-slate-300 outline-none pr-1">
+                                <option value="TODOS">Todos los niveles</option>
+                                <option value="PRINCIPIANTE">Principiante</option>
+                                <option value="INTERMEDIO">Intermedio</option>
+                                <option value="AVANZADO">Avanzado</option>
+                            </select>
                         </div>
-                        <div
-                            class="bg-[#111416] px-4 py-2 rounded-lg flex items-center gap-2 cursor-pointer hover:bg-[#292c30] transition-colors border border-slate-800">
+                        <div class="bg-[#111416] px-3 py-2 rounded-lg border border-slate-800 flex items-center gap-2">
                             <span class="material-symbols-outlined text-[#D4FF00] text-sm">calendar_today</span>
-                            <span class="text-sm font-medium text-slate-300">Fecha</span>
-                            <span class="material-symbols-outlined text-slate-400 text-sm">expand_more</span>
+                            <input id="filtro-fecha" type="date"
+                                class="bg-transparent text-sm font-medium text-slate-300 outline-none" />
                         </div>
                         <div class="flex bg-[#111416] rounded-lg p-1 ml-auto border border-slate-800">
                             <button
@@ -71,26 +74,31 @@
                 </div>
 
                 <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
-                    <button
+                    <button data-chip-nivel="TODOS"
                         class="whitespace-nowrap bg-[#D4FF00] text-black px-6 py-2 rounded-full text-xs font-bold tracking-widest uppercase">Todos</button>
-                    <button
+                    <button data-chip-nivel="PRINCIPIANTE"
                         class="whitespace-nowrap bg-[#1d2023] text-slate-400 hover:text-white border border-slate-800 px-6 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-colors">Principiante</button>
-                    <button
+                    <button data-chip-nivel="INTERMEDIO"
                         class="whitespace-nowrap bg-[#1d2023] text-slate-400 hover:text-white border border-slate-800 px-6 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-colors">Intermedio</button>
-                    <button
+                    <button data-chip-nivel="AVANZADO"
                         class="whitespace-nowrap bg-[#1d2023] text-slate-400 hover:text-white border border-slate-800 px-6 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-colors">Avanzado</button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="lista-partidos">
 
                 <div th:if="${partidos.empty}" class="col-span-full text-center py-12">
                     <p class="text-slate-400 font-medium text-lg">No hay partidos disponibles ahora mismo. ¡Anímate a
                         crear uno!</p>
                 </div>
 
+                <div id="mensaje-sin-resultados" class="col-span-full text-center py-12 hidden">
+                    <p class="text-slate-400 font-medium text-lg">No hay resultados con los filtros actuales.</p>
+                </div>
+
                 <div th:each="partido : ${partidos}"
-                    class="bg-[#1d2023] border border-slate-800 rounded-2xl overflow-hidden group hover:bg-[#232629] transition-all duration-300">
+                    th:attr="data-ubicacion=${partido.ubicacion},data-fecha=${#temporals.format(partido.fechaHora, 'yyyy-MM-dd')},data-nivel=${partido.nivelRequerido}"
+                    class="partido-card bg-[#1d2023] border border-slate-800 rounded-2xl overflow-hidden group hover:bg-[#232629] transition-all duration-300">
 
                     <div class="relative h-48">
                         <img alt="Padel Court" class="w-full h-full object-cover"
@@ -100,6 +108,11 @@
                         <div class="absolute top-4 left-4 bg-[#D4FF00] text-black px-3 py-1 rounded-md text-xs font-black italic tracking-widest"
                             th:text="${partido.tipoPartido == 'PRIVADO' ? 'PRIVADO' : 'ABIERTO'}">
                             ABIERTO
+                        </div>
+
+                        <div th:if="${partido.cancelado}"
+                            class="absolute top-14 left-4 bg-red-500 text-white px-3 py-1 rounded-md text-xs font-black italic tracking-widest">
+                            CANCELADO
                         </div>
 
                         <div
@@ -149,15 +162,42 @@
                                 </div>
                             </div>
 
-                            <button th:disabled="${partido.huecosDisponibles == 0}" th:data-id="${partido.id}"
+                            <button th:if="${partidosApuntadoIds == null || !partidosApuntadoIds.contains(partido.id)}"
+                                th:disabled="${partido.huecosDisponibles == 0 || partido.cancelado}" th:data-id="${partido.id}"
                                 th:data-ubicacion="${partido.ubicacion}"
                                 th:data-fecha="${#temporals.format(partido.fechaHora, 'dd MMM - HH:mm')}"
                                 th:data-nivel="${partido.nivelRequerido}" th:data-tipo="${partido.tipoPartido}"
                                 onclick="openJoinModal(this)"
-                                th:classappend="${partido.huecosDisponibles == 0 ? 'opacity-50 cursor-not-allowed bg-slate-700 text-slate-400' : 'bg-[#D4FF00] text-black hover:bg-[#bce600] shadow-[0_0_15px_rgba(212,255,0,0.2)]'}"
+                                th:classappend="${(partido.huecosDisponibles == 0 || partido.cancelado) ? 'opacity-50 cursor-not-allowed bg-slate-700 text-slate-400' : 'bg-[#D4FF00] text-black hover:bg-[#bce600] shadow-[0_0_15px_rgba(212,255,0,0.2)]'}"
                                 class="px-8 py-3 rounded-full font-headline font-black text-sm tracking-tighter transition-all active:scale-95">
-                                <span th:text="${partido.huecosDisponibles == 0 ? 'LLENO' : 'JOIN'}">JOIN</span>
+                                <span th:text="${partido.cancelado ? 'CANCELADO' : (partido.huecosDisponibles == 0 ? 'LLENO' : 'JOIN')}">JOIN</span>
                             </button>
+
+                            <div th:if="${partidosApuntadoIds != null && partidosApuntadoIds.contains(partido.id)}"
+                                class="px-6 py-3 rounded-full font-headline font-black text-sm tracking-tighter bg-slate-700 text-slate-200">
+                                INSCRITO
+                            </div>
+                        </div>
+
+                        <div class="mt-4" th:if="${partidosApuntadoIds != null && partidosApuntadoIds.contains(partido.id)}">
+                            <form th:action="@{'/partidos/' + ${partido.id} + '/cancelar'}" method="post">
+                                <button type="submit"
+                                    th:disabled="${partido.cancelado || (partidosCreadosIds != null && partidosCreadosIds.contains(partido.id))}"
+                                    th:classappend="${partido.cancelado ? 'opacity-50 cursor-not-allowed' : ''}"
+                                    class="w-full px-4 py-2 rounded-full border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-colors font-bold text-xs uppercase tracking-widest">
+                                    Cancelar mi asistencia
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="mt-3"
+                            th:if="${partidosEliminablesIds != null && partidosEliminablesIds.contains(partido.id)}">
+                            <form th:action="@{'/partidos/' + ${partido.id} + '/eliminar'}" method="post">
+                                <button type="submit"
+                                    class="w-full px-4 py-2 rounded-full border border-amber-400/40 text-amber-300 hover:bg-amber-400/10 transition-colors font-bold text-xs uppercase tracking-widest">
+                                    Eliminar partido (estoy solo)
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -280,6 +320,88 @@
         </footer>
 
         <script>
+            function categoriaNivel(nivel) {
+                const valor = parseFloat(nivel || "0");
+                if (valor <= 2.0) return "PRINCIPIANTE";
+                if (valor <= 3.5) return "INTERMEDIO";
+                return "AVANZADO";
+            }
+
+            function normalizar(texto) {
+                return (texto || "")
+                    .toString()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .toLowerCase();
+            }
+
+            function aplicarFiltrosPartidos() {
+                const texto = normalizar(document.getElementById('filtro-texto')?.value);
+                const nivel = document.getElementById('filtro-nivel')?.value || 'TODOS';
+                const fecha = document.getElementById('filtro-fecha')?.value || '';
+
+                const cards = Array.from(document.querySelectorAll('.partido-card'));
+                let visibles = 0;
+
+                cards.forEach(card => {
+                    const ubicacion = normalizar(card.dataset.ubicacion);
+                    const fechaPartido = card.dataset.fecha || '';
+                    const nivelPartido = categoriaNivel(card.dataset.nivel);
+
+                    const pasaTexto = !texto || ubicacion.includes(texto);
+                    const pasaNivel = nivel === 'TODOS' || nivelPartido === nivel;
+                    const pasaFecha = !fecha || fechaPartido === fecha;
+
+                    const visible = pasaTexto && pasaNivel && pasaFecha;
+                    card.style.display = visible ? '' : 'none';
+                    if (visible) visibles++;
+                });
+
+                const vacio = document.getElementById('mensaje-sin-resultados');
+                if (vacio) {
+                    vacio.classList.toggle('hidden', visibles > 0);
+                }
+            }
+
+            function activarChipNivel(valor) {
+                const chips = document.querySelectorAll('[data-chip-nivel]');
+                chips.forEach(chip => {
+                    const activo = chip.dataset.chipNivel === valor;
+                    if (activo) {
+                        chip.className = 'whitespace-nowrap bg-[#D4FF00] text-black px-6 py-2 rounded-full text-xs font-bold tracking-widest uppercase';
+                    } else {
+                        chip.className = 'whitespace-nowrap bg-[#1d2023] text-slate-400 hover:text-white border border-slate-800 px-6 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-colors';
+                    }
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const texto = document.getElementById('filtro-texto');
+                const nivel = document.getElementById('filtro-nivel');
+                const fecha = document.getElementById('filtro-fecha');
+
+                texto?.addEventListener('input', aplicarFiltrosPartidos);
+                nivel?.addEventListener('change', function () {
+                    activarChipNivel(nivel.value);
+                    aplicarFiltrosPartidos();
+                });
+                fecha?.addEventListener('change', aplicarFiltrosPartidos);
+
+                document.querySelectorAll('[data-chip-nivel]').forEach(chip => {
+                    chip.addEventListener('click', function () {
+                        const valor = chip.dataset.chipNivel;
+                        if (nivel) {
+                            nivel.value = valor;
+                        }
+                        activarChipNivel(valor);
+                        aplicarFiltrosPartidos();
+                    });
+                });
+
+                activarChipNivel('TODOS');
+                aplicarFiltrosPartidos();
+            });
+
             // Función ejecutada al hacer clic en un botón "JOIN" de cualquier tarjeta
             function openJoinModal(btn) {
                 // PASO 1: Extraemos los datos que escondimos previamente en los atributos 'data-*' del botón

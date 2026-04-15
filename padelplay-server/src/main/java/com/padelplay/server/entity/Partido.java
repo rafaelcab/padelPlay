@@ -30,6 +30,9 @@ public class Partido {
     @Column(name = "codigo_acceso")
     private String codigoAcceso;
 
+    @Column(nullable = false)
+    private boolean cancelado = false;
+
     @ManyToOne
     @JoinColumn(name = "creador_id", nullable = false)
     private PerfilJugador creador;
@@ -95,6 +98,14 @@ public class Partido {
 
     public void setCodigoAcceso(String codigoAcceso) {
         this.codigoAcceso = codigoAcceso;
+    }
+
+    public boolean isCancelado() {
+        return cancelado;
+    }
+
+    public void setCancelado(boolean cancelado) {
+        this.cancelado = cancelado;
     }
 
     public PerfilJugador getCreador() {

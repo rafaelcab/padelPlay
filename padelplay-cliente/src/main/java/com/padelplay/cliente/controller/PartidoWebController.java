@@ -15,6 +15,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/partidos")
@@ -36,11 +38,16 @@ public class PartidoWebController {
     @GetMapping
     public String mostrarDashboard(Model model, HttpSession session) {
         String token = (String) session.getAttribute("token");
+        Long perfilJugadorId = null;
 
         if (token != null) {
             try {
                 EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
                 model.addAttribute("estado", estado);
+                if (estado != null && estado.getPerfilJugador() != null) {
+                    perfilJugadorId = estado.getPerfilJugador().getId();
+                    model.addAttribute("perfilJugadorId", perfilJugadorId);
+                }
             } catch (Exception e) {
             }
         }
@@ -50,6 +57,30 @@ public class PartidoWebController {
             List<PartidoDto> partidos = Arrays
                     .asList(response.getBody() != null ? response.getBody() : new PartidoDto[0]);
             model.addAttribute("partidos", partidos);
+
+                if (perfilJugadorId != null) {
+                Long finalPerfilJugadorId = perfilJugadorId;
+                Set<Long> partidosApuntadoIds = partidos.stream()
+                    .filter(p -> p.getJugadoresApuntados() != null && p.getJugadoresApuntados().stream()
+                        .anyMatch(j -> finalPerfilJugadorId.equals(j.getId())))
+                    .map(PartidoDto::getId)
+                    .collect(Collectors.toSet());
+
+                Set<Long> partidosCreadosIds = partidos.stream()
+                    .filter(p -> p.getCreador() != null && finalPerfilJugadorId.equals(p.getCreador().getId()))
+                    .map(PartidoDto::getId)
+                    .collect(Collectors.toSet());
+
+                Set<Long> partidosEliminablesIds = partidos.stream()
+                    .filter(p -> p.getCreador() != null && finalPerfilJugadorId.equals(p.getCreador().getId()))
+                    .filter(p -> p.getJugadoresApuntados() != null && p.getJugadoresApuntados().size() == 1)
+                    .map(PartidoDto::getId)
+                    .collect(Collectors.toSet());
+
+                model.addAttribute("partidosApuntadoIds", partidosApuntadoIds);
+                model.addAttribute("partidosCreadosIds", partidosCreadosIds);
+                model.addAttribute("partidosEliminablesIds", partidosEliminablesIds);
+                }
         } catch (Exception e) {
             model.addAttribute("error", "No se pudieron cargar los partidos. Inténtalo más tarde.");
             model.addAttribute("partidos", List.of());
@@ -166,6 +197,68 @@ public class PartidoWebController {
         }
 
         // 5. Redirigimos siempre al Dashboard
+        return "redirect:/partidos";
+    }
+
+    @PostMapping("/{id}/cancelar")
+    public String cancelarAsistencia(@PathVariable("id") Long partidoId,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        String token = (String) session.getAttribute("token");
+        if (token == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
+            if (estado == null || estado.getPerfilJugador() == null) {
+                redirectAttributes.addFlashAttribute("error", "Necesitas perfil de jugador para cancelar asistencia.");
+                return "redirect:/partidos";
+            }
+
+            Long jugadorId = estado.getPerfilJugador().getId();
+            String url = BACKEND_URL + "/" + partidoId + "/cancelar?usuarioId=" + jugadorId;
+            restTemplate.postForEntity(url, null, PartidoDto.class);
+            redirectAttributes.addFlashAttribute("exito", "Tu asistencia se ha cancelado correctamente.");
+        } catch (HttpClientErrorException e) {
+            String mensajeError = e.getResponseBodyAsString();
+            redirectAttributes.addFlashAttribute("error", mensajeError != null && !mensajeError.isEmpty() ? mensajeError
+                    : "No se ha podido procesar la cancelación.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Ocurrió un error al contactar con el servidor.");
+        }
+
+        return "redirect:/partidos";
+    }
+
+    @PostMapping("/{id}/eliminar")
+    public String eliminarPartidoSiSolo(@PathVariable("id") Long partidoId,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        String token = (String) session.getAttribute("token");
+        if (token == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
+            if (estado == null || estado.getPerfilJugador() == null) {
+                redirectAttributes.addFlashAttribute("error", "Necesitas perfil de jugador para eliminar el partido.");
+                return "redirect:/partidos";
+            }
+
+            Long jugadorId = estado.getPerfilJugador().getId();
+            String url = BACKEND_URL + "/" + partidoId + "/eliminar?usuarioId=" + jugadorId;
+            restTemplate.postForEntity(url, null, Void.class);
+            redirectAttributes.addFlashAttribute("exito", "Partido eliminado correctamente.");
+        } catch (HttpClientErrorException e) {
+            String mensajeError = e.getResponseBodyAsString();
+            redirectAttributes.addFlashAttribute("error", mensajeError != null && !mensajeError.isEmpty() ? mensajeError
+                    : "No se ha podido eliminar el partido.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Ocurrió un error al contactar con el servidor.");
+        }
+
         return "redirect:/partidos";
     }
 }
