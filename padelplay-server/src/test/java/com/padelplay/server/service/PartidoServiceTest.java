@@ -327,6 +327,25 @@ class PartidoServiceTest {
     }
 
     @Test
+    void cancelarAsistencia_creadorConMasJugadoresDebeCancelarElPartido() {
+        PerfilJugador jugador = perfil(2L, "pepe", 3.0);
+        Partido partido = partidoAbiertoConCreador(1L);
+        partido.getJugadoresApuntados().add(jugador);
+        partido.setHuecosDisponibles(2);
+
+        when(partidoRepository.findById(61L)).thenReturn(Optional.of(partido));
+        when(perfilJugadorRepository.findById(1L)).thenReturn(Optional.of(perfil(1L, "creador", 3.0)));
+        when(partidoRepository.save(any(Partido.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        PartidoDto resultado = partidoService.cancelarAsistencia(61L, 1L);
+
+        assertTrue(resultado.isCancelado());
+        assertEquals(0, resultado.getHuecosDisponibles());
+        assertEquals(1, resultado.getJugadoresApuntados().size());
+        assertEquals(2L, resultado.getJugadoresApuntados().get(0).getId());
+    }
+
+    @Test
     void cancelarAsistencia_jugadorNoApuntadoDebeLanzarExcepcion() {
         Partido partido = partidoAbiertoConCreador(1L);
 
@@ -337,6 +356,46 @@ class PartidoServiceTest {
                 () -> partidoService.cancelarAsistencia(70L, 9L));
 
         assertTrue(ex.getMessage().contains("no está apuntado"));
+    }
+
+    @Test
+    void eliminarPartidoSiSolo_debeEliminarSiEsCreadorYEstaSolo() {
+        Partido partido = partidoAbiertoConCreador(1L);
+
+        when(partidoRepository.findById(80L)).thenReturn(Optional.of(partido));
+        when(perfilJugadorRepository.findById(1L)).thenReturn(Optional.of(perfil(1L, "creador", 3.0)));
+
+        partidoService.eliminarPartidoSiSolo(80L, 1L);
+
+        verify(partidoRepository).delete(partido);
+    }
+
+    @Test
+    void eliminarPartidoSiSolo_debeFallarSiNoEsCreador() {
+        Partido partido = partidoAbiertoConCreador(1L);
+
+        when(partidoRepository.findById(81L)).thenReturn(Optional.of(partido));
+        when(perfilJugadorRepository.findById(2L)).thenReturn(Optional.of(perfil(2L, "pepe", 3.0)));
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> partidoService.eliminarPartidoSiSolo(81L, 2L));
+
+        assertTrue(ex.getMessage().contains("Solo el creador"));
+    }
+
+    @Test
+    void eliminarPartidoSiSolo_debeFallarSiNoEstaSolo() {
+        PerfilJugador jugador = perfil(2L, "pepe", 3.0);
+        Partido partido = partidoAbiertoConCreador(1L);
+        partido.getJugadoresApuntados().add(jugador);
+
+        when(partidoRepository.findById(82L)).thenReturn(Optional.of(partido));
+        when(perfilJugadorRepository.findById(1L)).thenReturn(Optional.of(perfil(1L, "creador", 3.0)));
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> partidoService.eliminarPartidoSiSolo(82L, 1L));
+
+        assertTrue(ex.getMessage().contains("estás solo"));
     }
 
     private PartidoDto baseDto() {
