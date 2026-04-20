@@ -188,6 +188,78 @@
                 grid-template-columns: 1fr;
             }
         }
+        /* Estilos para Partidos Recientes */
+        .match-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .match-item {
+            background: #0f1113;
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 1px solid #1e293b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s ease;
+        }
+
+        .match-item:hover {
+            border-color: #334155;
+            background: #16191c;
+        }
+
+        .match-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .match-date {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .match-location {
+            font-size: 15px;
+            color: #eeeef0;
+            font-weight: 600;
+        }
+
+        .match-score {
+            text-align: right;
+        }
+
+        .score-badge {
+            background: #1d2023;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace; /* O cualquier fuente mono */
+            font-weight: bold;
+            color: #D4FF00;
+            border: 1px solid rgba(212, 255, 0, 0.2);
+        }
+
+        .match-result-win {
+            color: #22c55e;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .match-result-loss {
+            color: #ef4444;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            display: block;
+        }
     </style>
 </head>
 
@@ -304,6 +376,38 @@
                         style="margin-top: 15px; display: inline-block;">Configurar ahora</a>
                 </div>
             </div>
+  <div th:if="${estado.tienePerfilJugador}">
+    
+    <div class="card">
+        </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <span class="material-symbols-outlined">history</span> 
+                Partidos Recientes
+            </div>
+            <a href="/partidos/historial" class="btn-edit">Ver todos</a>
+        </div>
+
+        <div class="match-list" th:if="${partidosRecientes != null && !partidosRecientes.empty}">
+            <div th:each="partido : ${partidosRecientes}" class="match-item">
+                <div class="match-info">
+                    <span class="match-date" th:text="${#temporals.format(partido.fechaHora, 'dd MMM, yyyy')}"></span>
+                    <div class="match-location">
+                        <span class="material-symbols-outlined" style="color: #D4FF00; font-size: 18px;">location_on</span>
+                        <span th:text="${partido.ubicacion}">Ubicación</span>
+                    </div>
+                </div>
+                </div>
+        </div>
+
+        <div class="empty-state" th:if="${partidosRecientes == null || partidosRecientes.empty}">
+            <p>No tienes partidos registrados aún.</p>
+        </div>
+    </div>
+
+</div>
         </div>
 
         <!-- Perfil de Entrenador -->

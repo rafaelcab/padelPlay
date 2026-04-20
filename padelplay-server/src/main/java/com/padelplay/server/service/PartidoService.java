@@ -37,6 +37,18 @@ public class PartidoService {
     }
 
     /**
+     * Obtiene los partidos recientes de un jugador (creados o a los que se unió).
+     */
+    @Transactional(readOnly = true)
+    public List<PartidoDto> obtenerPartidosRecientesPorJugador(Long jugadorId) {
+        return partidoRepository.findPartidosByJugador(jugadorId)
+                .stream()
+                .limit(5) // Limitar a los 5 más recientes
+                .map(this::convertirADto)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Crea un nuevo partido a partir de la información del DTO.
      */
     @Transactional

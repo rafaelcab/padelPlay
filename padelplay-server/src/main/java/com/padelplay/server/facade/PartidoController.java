@@ -46,6 +46,20 @@ public class PartidoController {
     }
 
     // =========================================================================
+    // 1.5. OBTENER PARTIDOS RECIENTES POR JUGADOR
+    // GET /api/partidos/jugador/{jugadorId}/recientes
+    // =========================================================================
+    @Operation(summary = "Obtener partidos recientes de un jugador", description = "Recupera los partidos más recientes en los que participa un jugador (creados o unidos).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de partidos recuperada con éxito")
+    })
+    @GetMapping("/jugador/{jugadorId}/recientes")
+    public ResponseEntity<List<PartidoDto>> obtenerPartidosRecientesPorJugador(@PathVariable("jugadorId") Long jugadorId) {
+        List<PartidoDto> partidos = partidoService.obtenerPartidosRecientesPorJugador(jugadorId);
+        return new ResponseEntity<>(partidos, HttpStatus.OK);
+    }
+
+    // =========================================================================
     // 2. CREAR PARTIDO
     // POST /api/partidos
     // =========================================================================

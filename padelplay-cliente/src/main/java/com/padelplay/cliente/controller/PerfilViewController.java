@@ -3,17 +3,22 @@ package com.padelplay.cliente.controller;
 import com.padelplay.common.dto.CertificacionDto;
 import com.padelplay.common.dto.DetallesTecnicosDto;
 import com.padelplay.common.dto.EstadoPerfilDto;
+import com.padelplay.common.dto.PartidoDto;
 import com.padelplay.common.dto.PerfilEntrenadorDto;
 import com.padelplay.common.dto.PerfilJugadorDto;
 import com.padelplay.cliente.proxies.PerfilServiceProxy;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,9 +29,13 @@ import java.util.Map;
 public class PerfilViewController {
 
     private final PerfilServiceProxy perfilServiceProxy;
+    private final RestTemplate restTemplate;
 
-    public PerfilViewController(PerfilServiceProxy perfilServiceProxy) {
+    private final String BACKEND_URL = "http://localhost:8080/api";
+
+    public PerfilViewController(PerfilServiceProxy perfilServiceProxy, RestTemplate restTemplate) {
         this.perfilServiceProxy = perfilServiceProxy;
+        this.restTemplate = restTemplate;
     }
 
     /**
@@ -100,6 +109,21 @@ public class PerfilViewController {
                 return "redirect:/perfil/seleccionar-rol";
             }
             model.addAttribute("estado", estado);
+
+            // Obtener partidos recientes si el usuario tiene perfil de jugador
+            if (estado.getPerfilJugador() != null) {
+                try {
+                    String url = BACKEND_URL + "/partidos/jugador/" + estado.getPerfilJugador().getId() + "/recientes";
+                    ResponseEntity<PartidoDto[]> response = restTemplate.getForEntity(url, PartidoDto[].class);
+                    List<PartidoDto> partidosRecientes = Arrays.asList(response.getBody() != null ? response.getBody() : new PartidoDto[0]);
+                    model.addAttribute("partidosRecientes", partidosRecientes);
+                } catch (Exception e) {
+                    model.addAttribute("partidosRecientes", List.of());
+                }
+            } else {
+                model.addAttribute("partidosRecientes", List.of());
+            }
+
             return "perfil-dashboard";
         } catch (Exception e) {
             if (esSesionInvalida(e))
