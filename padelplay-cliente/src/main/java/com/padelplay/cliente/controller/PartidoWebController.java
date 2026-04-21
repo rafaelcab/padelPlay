@@ -168,4 +168,42 @@ public class PartidoWebController {
         // 5. Redirigimos siempre al Dashboard
         return "redirect:/partidos";
     }
+
+    // =========================================================================
+    // 6. HISTORIAL DE PARTIDOS DEL USUARIO
+    // GET /partidos/historial
+    // =========================================================================
+    @GetMapping("/historial")
+    public String mostrarHistorialPartidos(Model model, HttpSession session) {
+        String token = (String) session.getAttribute("token");
+
+        if (token == null)
+            return "redirect:/login";
+
+        try {
+            EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
+            model.addAttribute("estado", estado);
+
+            // Obtener todos los partidos del usuario si tiene perfil de jugador
+            if (estado.getPerfilJugador() != null) {
+                try {
+                    String url = BACKEND_URL + "/jugador/" + estado.getPerfilJugador().getId() + "/todos";
+                    ResponseEntity<PartidoDto[]> response = restTemplate.getForEntity(url, PartidoDto[].class);
+                    List<PartidoDto> partidosHistorial = Arrays
+                            .asList(response.getBody() != null ? response.getBody() : new PartidoDto[0]);
+                    model.addAttribute("partidosHistorial", partidosHistorial);
+                } catch (Exception e) {
+                    model.addAttribute("error", "No se pudieron cargar los partidos del historial.");
+                    model.addAttribute("partidosHistorial", List.of());
+                }
+            } else {
+                model.addAttribute("partidosHistorial", List.of());
+            }
+
+        } catch (Exception e) {
+            model.addAttribute("error", "Error al cargar el historial: " + e.getMessage());
+        }
+
+        return "historial-partidos";
+    }
 }

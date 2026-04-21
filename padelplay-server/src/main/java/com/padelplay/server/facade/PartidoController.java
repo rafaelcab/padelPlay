@@ -60,6 +60,20 @@ public class PartidoController {
     }
 
     // =========================================================================
+    // 1.6. OBTENER TODOS LOS PARTIDOS POR JUGADOR
+    // GET /api/partidos/jugador/{jugadorId}/todos
+    // =========================================================================
+    @Operation(summary = "Obtener todos los partidos de un jugador", description = "Recupera todos los partidos en los que participa un jugador (creados o unidos).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de partidos recuperada con éxito")
+    })
+    @GetMapping("/jugador/{jugadorId}/todos")
+    public ResponseEntity<List<PartidoDto>> obtenerTodosLosPartidosPorJugador(@PathVariable("jugadorId") Long jugadorId) {
+        List<PartidoDto> partidos = partidoService.obtenerTodosLosPartidosPorJugador(jugadorId);
+        return new ResponseEntity<>(partidos, HttpStatus.OK);
+    }
+
+    // =========================================================================
     // 2. CREAR PARTIDO
     // POST /api/partidos
     // =========================================================================

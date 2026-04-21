@@ -49,6 +49,17 @@ public class PartidoService {
     }
 
     /**
+     * Obtiene todos los partidos de un jugador (creados o a los que se unió).
+     */
+    @Transactional(readOnly = true)
+    public List<PartidoDto> obtenerTodosLosPartidosPorJugador(Long jugadorId) {
+        return partidoRepository.findPartidosByJugador(jugadorId)
+                .stream()
+                .map(this::convertirADto)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Crea un nuevo partido a partir de la información del DTO.
      */
     @Transactional
