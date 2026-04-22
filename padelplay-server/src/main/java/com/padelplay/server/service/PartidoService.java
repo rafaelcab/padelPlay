@@ -75,6 +75,7 @@ public class PartidoService {
         }
 
         partido.setHuecosDisponibles(3);
+        partido.setTerminado(false);
         partido.setCreador(creador);
 
         partido.setJugadoresApuntados(new ArrayList<>());
@@ -95,6 +96,10 @@ public class PartidoService {
 
         if (partido.isCancelado()) {
             throw new IllegalStateException("Este partido está cancelado y no admite inscripciones.");
+        }
+
+        if (partido.isTerminado()) {
+            throw new IllegalStateException("Este partido ya está terminado y no admite inscripciones.");
         }
 
         // 2. Buscar al jugador
@@ -143,6 +148,10 @@ public class PartidoService {
         PerfilJugador usuario = perfilJugadorRepository.findById(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("El usuario no existe."));
 
+        if (partido.isTerminado()) {
+            throw new IllegalStateException("No puedes cancelar asistencia en un partido terminado.");
+        }
+
         boolean estaApuntado = partido.getJugadoresApuntados().stream()
                 .anyMatch(j -> j.getId().equals(usuarioId));
 
@@ -182,12 +191,46 @@ public class PartidoService {
             throw new IllegalStateException("Solo el creador puede eliminar el partido.");
         }
 
+        if (partido.isTerminado()) {
+            throw new IllegalStateException("No puedes eliminar un partido terminado.");
+        }
+
         boolean esUnicoJugador = partido.getJugadoresApuntados() != null && partido.getJugadoresApuntados().size() == 1;
         if (!esUnicoJugador) {
             throw new IllegalStateException("Solo puedes eliminar el partido cuando estás solo en él.");
         }
 
         partidoRepository.delete(partido);
+    }
+
+    @Transactional
+    public PartidoDto terminarPartido(Long partidoId, Long usuarioId) {
+        Partido partido = partidoRepository.findById(partidoId)
+                .orElseThrow(() -> new IllegalArgumentException("El partido no existe."));
+
+        PerfilJugador solicitante = perfilJugadorRepository.findByUsuarioId(usuarioId)
+                .orElseThrow(() -> new IllegalStateException("El usuario autenticado no tiene perfil de jugador."));
+
+        if (!partido.getCreador().getId().equals(solicitante.getId())) {
+            throw new IllegalStateException("Solo el creador puede terminar el partido.");
+        }
+
+        if (partido.isCancelado()) {
+            throw new IllegalStateException("No puedes terminar un partido cancelado.");
+        }
+
+        if (partido.isTerminado()) {
+            throw new IllegalStateException("El partido ya está terminado.");
+        }
+
+        if (!partido.getFechaHora().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("Solo puedes terminar el partido después de su hora de inicio.");
+        }
+
+        partido.setTerminado(true);
+
+        Partido partidoActualizado = partidoRepository.save(partido);
+        return convertirADto(partidoActualizado);
     }
 
     // === MÉTODOS AUXILIARES ===
@@ -211,6 +254,7 @@ public class PartidoService {
         dto.setHuecosDisponibles(p.getHuecosDisponibles());
         dto.setCodigoAcceso(p.getCodigoAcceso());
         dto.setCancelado(p.isCancelado());
+        dto.setTerminado(p.isTerminado());
 
         PerfilJugadorDto creadorDto = new PerfilJugadorDto();
         creadorDto.setId(p.getCreador().getId());

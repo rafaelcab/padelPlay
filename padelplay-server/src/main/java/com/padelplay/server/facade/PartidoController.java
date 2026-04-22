@@ -8,11 +8,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.padelplay.common.dto.PartidoDto;
+import com.padelplay.server.service.JwtService;
 import com.padelplay.server.service.PartidoService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,9 +28,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class PartidoController {
 
     private final PartidoService partidoService;
+    private final JwtService jwtService;
 
-    public PartidoController(PartidoService partidoService) {
+    public PartidoController(PartidoService partidoService, JwtService jwtService) {
         this.partidoService = partidoService;
+        this.jwtService = jwtService;
     }
 
     // =========================================================================
@@ -112,5 +116,33 @@ public class PartidoController {
         } catch (IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PostMapping("/{id}/terminar")
+    public ResponseEntity<?> terminarPartido(
+            @PathVariable("id") Long partidoId,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            Long usuarioId = extraerUsuarioId(authHeader);
+            PartidoDto partidoActualizado = partidoService.terminarPartido(partidoId, usuarioId);
+            return ResponseEntity.ok(partidoActualizado);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+    }
+
+    private Long extraerUsuarioId(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Token no proporcionado");
+        }
+
+        String token = authHeader.substring(7);
+        if (!jwtService.validarToken(token)) {
+            throw new RuntimeException("Token invalido o expirado");
+        }
+
+        return jwtService.extraerUsuarioId(token);
     }
 }

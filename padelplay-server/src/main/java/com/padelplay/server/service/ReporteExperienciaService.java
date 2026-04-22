@@ -1,5 +1,6 @@
 package com.padelplay.server.service;
 
+import com.padelplay.common.dto.PartidoPendienteReporteDto;
 import com.padelplay.common.dto.ParticipantePendienteReporteDto;
 import com.padelplay.common.dto.ReporteExperienciaDto;
 import com.padelplay.common.dto.ReporteExperienciaRequestDto;
@@ -40,7 +41,7 @@ public class ReporteExperienciaService {
     @Transactional(readOnly = true)
     public List<ParticipantePendienteReporteDto> listarParticipantesPendientes(Long partidoId, Long usuarioId) {
         PerfilJugador reportante = obtenerPerfilJugador(usuarioId);
-        Partido partido = obtenerPartidoValido(partidoId);
+        Partido partido = obtenerPartidoReportable(partidoId);
         validarParticipacionEnPartido(partido, reportante);
 
         Set<Long> yaReportados = reporteExperienciaRepository
@@ -54,7 +55,7 @@ public class ReporteExperienciaService {
     @Transactional
     public ReporteExperienciaDto crearReporte(Long partidoId, Long usuarioId, ReporteExperienciaRequestDto request) {
         PerfilJugador reportante = obtenerPerfilJugador(usuarioId);
-        Partido partido = obtenerPartidoValido(partidoId);
+        Partido partido = obtenerPartidoReportable(partidoId);
         validarParticipacionEnPartido(partido, reportante);
         validarRequest(request);
 
@@ -91,12 +92,22 @@ public class ReporteExperienciaService {
         return convertirADto(reporteExperienciaRepository.save(reporte));
     }
 
+    @Transactional(readOnly = true)
+    public List<PartidoPendienteReporteDto> listarPartidosPendientesDeReportar(Long usuarioId) {
+        PerfilJugador reportante = obtenerPerfilJugador(usuarioId);
+
+        return partidoRepository.findPartidosTerminadosNoCanceladosByJugadorId(reportante.getId()).stream()
+                .map(partido -> convertirAPartidoPendienteDto(partido, reportante))
+                .filter(dto -> dto.getParticipantesPendientes() > 0)
+                .collect(Collectors.toList());
+    }
+
     private PerfilJugador obtenerPerfilJugador(Long usuarioId) {
         return perfilJugadorRepository.findByUsuarioId(usuarioId)
                 .orElseThrow(() -> new IllegalStateException("El usuario autenticado no tiene perfil de jugador."));
     }
 
-    private Partido obtenerPartidoValido(Long partidoId) {
+    private Partido obtenerPartidoReportable(Long partidoId) {
         Partido partido = partidoRepository.findById(partidoId)
                 .orElseThrow(() -> new IllegalArgumentException("El partido no existe."));
 
@@ -104,8 +115,8 @@ public class ReporteExperienciaService {
             throw new IllegalStateException("No se pueden registrar reportes en un partido cancelado.");
         }
 
-        if (partido.getFechaHora().isAfter(LocalDateTime.now())) {
-            throw new IllegalStateException("Solo puedes reportar la experiencia cuando el partido ya ha comenzado.");
+        if (!partido.isTerminado()) {
+            throw new IllegalStateException("Solo puedes reportar la experiencia cuando el partido esté terminado.");
         }
 
         if (partido.getJugadoresApuntados() == null || partido.getJugadoresApuntados().isEmpty()) {
@@ -160,6 +171,21 @@ public class ReporteExperienciaService {
         ParticipantePendienteReporteDto dto = new ParticipantePendienteReporteDto();
         dto.setPerfilJugadorId(perfilJugador.getId());
         dto.setApodo(perfilJugador.getApodo());
+        return dto;
+    }
+
+    private PartidoPendienteReporteDto convertirAPartidoPendienteDto(Partido partido, PerfilJugador reportante) {
+        Set<Long> yaReportados = reporteExperienciaRepository
+                .findReportadoIdsByPartidoIdAndReportanteId(partido.getId(), reportante.getId());
+
+        int participantesPendientes = obtenerParticipantesReportables(partido, reportante, yaReportados).size();
+
+        PartidoPendienteReporteDto dto = new PartidoPendienteReporteDto();
+        dto.setId(partido.getId());
+        dto.setFechaHora(partido.getFechaHora());
+        dto.setUbicacion(partido.getUbicacion());
+        dto.setTipoPartido(partido.getTipoPartido());
+        dto.setParticipantesPendientes(participantesPendientes);
         return dto;
     }
 
