@@ -521,6 +521,34 @@
                 </div>
             </div>
         </div>
+            <!-- Historial de Partidos (modo Entrenador) -->
+        <div th:if="${estado.tienePerfilEntrenador && estado.rolActivo == 'ENTRENADOR'}">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="material-symbols-outlined">history</span>
+                        Partidos Recientes
+                    </div>
+                    <a href="/perfil/entrenador/historial-partidos" class="btn-edit">Ver todos</a>
+                </div>
+
+                <div class="match-list" th:if="${partidosRecientes != null && !partidosRecientes.empty}">
+                    <div th:each="partido : ${partidosRecientes}" class="match-item">
+                        <div class="match-info">
+                            <span class="match-date" th:text="${#temporals.format(partido.fechaHora, 'dd MMM, yyyy')}"></span>
+                            <div class="match-location">
+                                <span class="material-symbols-outlined" style="color: #D4FF00; font-size: 18px;">location_on</span>
+                                <span th:text="${partido.ubicacion}">Ubicación</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="empty-state" th:if="${partidosRecientes == null || partidosRecientes.empty}">
+                    <p>No tienes partidos registrados aún.</p>
+                </div>
+            </div>
+        </div>
     </main>
 </body>
 
