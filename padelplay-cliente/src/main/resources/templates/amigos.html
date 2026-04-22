@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{base :: layout(~{::title}, ~{::style}, ~{::main})}">
+
+<head>
+    <title>Amigos - PadelPlay</title>
+    <style>
+        .friend-card {
+            background: #1d2023;
+            border: 1px solid #334155;
+            transition: all 0.25s ease;
+        }
+
+        .friend-card:hover {
+            transform: translateY(-2px);
+            border-color: #D4FF00;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+        }
+
+        .badge {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 4px 10px;
+        }
+    </style>
+</head>
+
+<body>
+<main class="max-w-screen-2xl mx-auto px-6 pt-32 pb-20">
+    <div class="mb-10">
+        <h1 class="font-headline text-5xl md:text-6xl font-extrabold tracking-tighter text-[#D4FF00] italic">AMIGOS</h1>
+        <p class="text-slate-400 mt-3 max-w-2xl">Descubre perfiles de la comunidad, revisa su información y síguelos para tenerlos en tu radar.</p>
+    </div>
+
+    <div th:if="${error}" class="mb-6 rounded-xl border border-red-800 bg-red-900/20 text-red-300 px-4 py-3 font-semibold" th:text="${error}"></div>
+
+    <div th:if="${#lists.isEmpty(amigos)}" class="rounded-2xl border border-slate-800 bg-[#1d2023] p-10 text-center text-slate-400">
+        No hay perfiles disponibles todavía.
+    </div>
+
+    <section th:if="${!#lists.isEmpty(amigos)}" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <article th:each="amigo : ${amigos}" class="friend-card rounded-2xl p-6">
+            <div class="flex items-start gap-4">
+                <img class="w-14 h-14 rounded-full object-cover border-2 border-slate-700"
+                     th:src="${amigo.pictureUrl != null && !amigo.pictureUrl.isBlank()} ? ${amigo.pictureUrl} : 'https://via.placeholder.com/80x80.png?text=A'"
+                     alt="Avatar"/>
+                <div class="flex-1 min-w-0">
+                    <h2 class="text-xl font-headline font-bold text-white truncate" th:text="${amigo.nombre}">Nombre</h2>
+                    <p class="text-sm text-slate-400 truncate" th:text="${amigo.email}">email</p>
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        <span th:if="${amigo.tienePerfilJugador}" class="badge bg-[#D4FF00]/10 text-[#D4FF00] border border-[#D4FF00]/30">Jugador</span>
+                        <span th:if="${amigo.tienePerfilEntrenador}" class="badge bg-sky-500/10 text-sky-300 border border-sky-400/30">Entrenador</span>
+                        <span th:if="${amigo.seguido}" class="badge bg-emerald-500/10 text-emerald-300 border border-emerald-400/30">Siguiendo</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 grid grid-cols-2 gap-3 text-sm">
+                <div class="rounded-xl bg-[#0f1113] border border-slate-800 px-3 py-2">
+                    <p class="text-slate-500 uppercase tracking-wider text-[11px]">Apodo jugador</p>
+                    <p class="text-white font-semibold" th:text="${amigo.jugadorApodo != null && !amigo.jugadorApodo.isBlank()} ? ${amigo.jugadorApodo} : 'No especifica'">No especifica</p>
+                </div>
+                <div class="rounded-xl bg-[#0f1113] border border-slate-800 px-3 py-2">
+                    <p class="text-slate-500 uppercase tracking-wider text-[11px]">Seguidores</p>
+                    <p class="text-white font-semibold" th:text="${amigo.totalSeguidores}">0</p>
+                </div>
+            </div>
+
+            <a th:href="@{|/amigos/${amigo.usuarioId}|}"
+               class="mt-6 inline-flex items-center justify-center w-full rounded-full bg-[#D4FF00] text-black font-black tracking-tight py-3 hover:bg-[#bfe800] transition-colors">
+                Ver perfil
+            </a>
+        </article>
+    </section>
+</main>
+</body>
+
+</html>
