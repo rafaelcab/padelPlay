@@ -82,7 +82,7 @@
                     type="button" aria-haspopup="true" aria-expanded="false">
                     <span class="material-symbols-outlined">notifications</span>
                     <span id="notifications-badge"
-                        class="absolute -top-0.5 -right-0.5 hidden min-w-5 h-5 px-1.5 rounded-full bg-[#D4FF00] text-black text-[11px] font-black items-center justify-center">0</span>
+                        class="absolute top-1.5 right-1.5 hidden w-2.5 h-2.5 rounded-full bg-red-500 border border-black"></span>
                 </button>
 
                 <div id="notifications-panel"
@@ -166,7 +166,6 @@
         document.addEventListener('DOMContentLoaded', function () {
             var currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
             var navLinks = document.querySelectorAll('#main-nav a[data-nav-path], #main-nav a[data-nav-prefix]');
-            var serverApiUrl = 'http://localhost:8080';
             var notificationsButton = document.getElementById('notifications-button');
             var notificationsPanel = document.getElementById('notifications-panel');
             var notificationsRefresh = document.getElementById('notifications-refresh');
@@ -174,12 +173,9 @@
             var notificationsEmpty = document.getElementById('notifications-empty');
             var notificationsBadge = document.getElementById('notifications-badge');
             var seenStorageKey = 'padelplay_seen_notifications';
-            var currentNotifications = [];
+            var currentUnseenNotifications = [];
+            var currentAllNotifications = [];
             var notificationsOpen = false;
-
-            function getToken() {
-                return sessionStorage.getItem('padelplay_token');
-            }
 
             function getSeenNotifications() {
                 try {
@@ -219,12 +215,9 @@
                 }
 
                 if (count > 0) {
-                    notificationsBadge.textContent = String(count);
                     notificationsBadge.classList.remove('hidden');
-                    notificationsBadge.classList.add('flex');
                 } else {
                     notificationsBadge.classList.add('hidden');
-                    notificationsBadge.classList.remove('flex');
                 }
             }
 
@@ -253,19 +246,20 @@
                 notificationsEmpty.classList.add('hidden');
 
                 notifications.forEach(function (notification) {
+                    var seen = isSeen(notification.id);
                     var item = document.createElement('a');
                     item.href = '/partidos';
-                    item.className = 'flex items-start gap-3 px-3 py-3 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10';
+                    item.className = 'flex items-start gap-3 px-3 py-3 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10 ' + (seen ? 'opacity-70' : '');
 
                     var icon = document.createElement('div');
-                    icon.className = 'mt-0.5 w-9 h-9 rounded-full bg-[#D4FF00]/10 text-[#D4FF00] flex items-center justify-center flex-shrink-0';
+                    icon.className = 'mt-0.5 w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ' + (seen ? 'bg-slate-700/40 text-slate-400' : 'bg-[#D4FF00]/10 text-[#D4FF00]');
                     icon.innerHTML = '<span class="material-symbols-outlined text-[18px]">sports_tennis</span>';
 
                     var content = document.createElement('div');
                     content.className = 'min-w-0 flex-1';
 
                     var title = document.createElement('p');
-                    title.className = 'text-sm font-bold text-white leading-tight';
+                    title.className = 'text-sm font-bold leading-tight ' + (seen ? 'text-slate-300' : 'text-white');
                     title.textContent = notification.titulo;
 
                     var message = document.createElement('p');
@@ -275,6 +269,12 @@
                     var meta = document.createElement('p');
                     meta.className = 'text-xs text-slate-500 mt-2';
                     meta.textContent = formatDate(notification.programadoPara) + ' · ' + notification.ubicacion;
+
+                    if (!seen) {
+                        var dot = document.createElement('span');
+                        dot.className = 'inline-block w-2 h-2 rounded-full bg-red-500 ml-2';
+                        title.appendChild(dot);
+                    }
 
                     content.appendChild(title);
                     content.appendChild(message);
@@ -288,23 +288,17 @@
             function loadNotifications(options) {
                 options = options || {};
                 var renderPanel = !!options.renderPanel;
-                var token = getToken();
-
-                if (!token) {
-                    currentNotifications = [];
-                    setBadgeCount(0);
-                    if (renderPanel) {
-                        renderNotifications([]);
-                    }
-                    return Promise.resolve();
-                }
-
-                return fetch(serverApiUrl + '/api/notificaciones/recordatorios', {
-                    headers: {
-                        'Authorization': 'Bearer ' + token
-                    }
-                })
+                return fetch('/api/notificaciones/recordatorios')
                     .then(function (response) {
+                        if (response.status === 401) {
+                            currentUnseenNotifications = [];
+                            currentAllNotifications = [];
+                            setBadgeCount(0);
+                            if (renderPanel) {
+                                renderNotifications([]);
+                            }
+                            return [];
+                        }
                         if (!response.ok) {
                             throw new Error('No se pudieron cargar las notificaciones');
                         }
@@ -316,21 +310,22 @@
                             return !isSeen(notification.id);
                         });
 
-                        currentNotifications = unseen;
-                        setBadgeCount(unseen.length);
+                        currentAllNotifications = notifications;
+                        currentUnseenNotifications = unseen;
+                        setBadgeCount(notifications.length);
 
                         if (renderPanel) {
-                            renderNotifications(unseen);
+                            renderNotifications(notifications);
                             markAsSeen(unseen);
-                            currentNotifications = [];
-                            setBadgeCount(0);
+                            currentUnseenNotifications = [];
+                            setBadgeCount(currentAllNotifications.length);
                         }
                     })
                     .catch(function () {
                         if (renderPanel) {
-                            renderNotifications([]);
+                            renderNotifications(currentAllNotifications);
                         }
-                        setBadgeCount(currentNotifications.length);
+                        setBadgeCount(currentAllNotifications.length);
                     });
             }
 
