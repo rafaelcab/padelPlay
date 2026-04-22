@@ -14,7 +14,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
 @Controller
-@RequestMapping("/amigos")
+@RequestMapping("/comunidad")
 public class AmigosWebController {
 
     private final AmigosServiceProxy amigosServiceProxy;
@@ -38,7 +38,7 @@ public class AmigosWebController {
             model.addAttribute("error", "No se pudieron cargar los perfiles.");
         }
 
-        return "amigos";
+        return "comunidad";
     }
 
     @GetMapping("/{usuarioId}")
@@ -53,14 +53,14 @@ public class AmigosWebController {
             model.addAttribute("amigo", amigo);
             return "amigo-detalle";
         } catch (Exception e) {
-            return "redirect:/amigos?error=not-found";
+            return "redirect:/comunidad?error=not-found";
         }
     }
 
     @PostMapping("/{usuarioId}/seguir")
     public String seguir(@PathVariable Long usuarioId,
-                         HttpSession session,
-                         RedirectAttributes redirectAttributes) {
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
         String token = (String) session.getAttribute("token");
         if (token == null || token.isBlank()) {
             return "redirect:/login";
@@ -73,6 +73,6 @@ public class AmigosWebController {
             redirectAttributes.addFlashAttribute("error", "No se pudo seguir al perfil.");
         }
 
-        return "redirect:/amigos/" + usuarioId;
+        return "redirect:/comunidad/" + usuarioId;
     }
 }

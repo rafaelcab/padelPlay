@@ -26,6 +26,13 @@ public class AmigoPerfilDto {
     private String entrenadorMetodologia;
     private String entrenadorUbicacion;
     private String entrenadorClubActual;
+    private String entrenadorDispLunes;
+    private String entrenadorDispMartes;
+    private String entrenadorDispMiercoles;
+    private String entrenadorDispJueves;
+    private String entrenadorDispViernes;
+    private String entrenadorDispSabado;
+    private String entrenadorDispDomingo;
 
     private boolean seguido;
     private Long totalSeguidores;
@@ -204,6 +211,62 @@ public class AmigoPerfilDto {
 
     public void setEntrenadorClubActual(String entrenadorClubActual) {
         this.entrenadorClubActual = entrenadorClubActual;
+    }
+
+    public String getEntrenadorDispLunes() {
+        return entrenadorDispLunes;
+    }
+
+    public void setEntrenadorDispLunes(String entrenadorDispLunes) {
+        this.entrenadorDispLunes = entrenadorDispLunes;
+    }
+
+    public String getEntrenadorDispMartes() {
+        return entrenadorDispMartes;
+    }
+
+    public void setEntrenadorDispMartes(String entrenadorDispMartes) {
+        this.entrenadorDispMartes = entrenadorDispMartes;
+    }
+
+    public String getEntrenadorDispMiercoles() {
+        return entrenadorDispMiercoles;
+    }
+
+    public void setEntrenadorDispMiercoles(String entrenadorDispMiercoles) {
+        this.entrenadorDispMiercoles = entrenadorDispMiercoles;
+    }
+
+    public String getEntrenadorDispJueves() {
+        return entrenadorDispJueves;
+    }
+
+    public void setEntrenadorDispJueves(String entrenadorDispJueves) {
+        this.entrenadorDispJueves = entrenadorDispJueves;
+    }
+
+    public String getEntrenadorDispViernes() {
+        return entrenadorDispViernes;
+    }
+
+    public void setEntrenadorDispViernes(String entrenadorDispViernes) {
+        this.entrenadorDispViernes = entrenadorDispViernes;
+    }
+
+    public String getEntrenadorDispSabado() {
+        return entrenadorDispSabado;
+    }
+
+    public void setEntrenadorDispSabado(String entrenadorDispSabado) {
+        this.entrenadorDispSabado = entrenadorDispSabado;
+    }
+
+    public String getEntrenadorDispDomingo() {
+        return entrenadorDispDomingo;
+    }
+
+    public void setEntrenadorDispDomingo(String entrenadorDispDomingo) {
+        this.entrenadorDispDomingo = entrenadorDispDomingo;
     }
 
     public boolean isSeguido() {

@@ -113,11 +113,41 @@ public class PerfilViewController {
             if (estado.getPerfilJugador() != null) {
                 cargarResumenAdmin(model, estado.getPerfilJugador().getId());
             }
-            return "perfil-dashboard";
+            return "dashboard-principal";
         } catch (Exception e) {
             if (esSesionInvalida(e))
                 return redirigirALogin(session);
             model.addAttribute("error", "Error al cargar el dashboard: " + e.getMessage());
+            return "dashboard-principal";
+        }
+    }
+
+    @GetMapping("/mi-perfil")
+    public String miPerfil(@RequestParam(required = false) String token, HttpSession session, Model model) {
+        if (token != null && !token.isBlank()) {
+            session.setAttribute("token", token);
+        } else {
+            token = (String) session.getAttribute("token");
+        }
+
+        if (token == null)
+            return "redirect:/login";
+
+        try {
+            EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
+            if (estado.isRequiereSeleccionPerfil()) {
+                return "redirect:/perfil/seleccionar-rol";
+            }
+            model.addAttribute("estado", estado);
+
+            if (estado.getPerfilJugador() != null) {
+                cargarResumenAdmin(model, estado.getPerfilJugador().getId());
+            }
+            return "perfil-dashboard";
+        } catch (Exception e) {
+            if (esSesionInvalida(e))
+                return redirigirALogin(session);
+            model.addAttribute("error", "Error al cargar el perfil: " + e.getMessage());
             return "perfil-dashboard";
         }
     }
@@ -336,6 +366,42 @@ public class PerfilViewController {
             return "redirect:/perfil/entrenador/certificaciones";
         } catch (Exception e) {
             return "redirect:/perfil/entrenador/certificaciones?error=" + e.getMessage();
+        }
+    }
+
+    @PostMapping("/entrenador/guardar-disponibilidad")
+    public String guardarDisponibilidadEntrenador(
+            @RequestParam(required = false) String dispLunes,
+            @RequestParam(required = false) String dispMartes,
+            @RequestParam(required = false) String dispMiercoles,
+            @RequestParam(required = false) String dispJueves,
+            @RequestParam(required = false) String dispViernes,
+            @RequestParam(required = false) String dispSabado,
+            @RequestParam(required = false) String dispDomingo,
+            HttpSession session) {
+        String token = (String) session.getAttribute("token");
+        if (token == null)
+            return "redirect:/login";
+
+        try {
+            // Recuperar el perfil existente para no sobreescribir otros campos
+            PerfilEntrenadorDto perfil = perfilServiceProxy.obtenerPerfilEntrenador(token);
+            if (perfil == null) perfil = new PerfilEntrenadorDto();
+
+            perfil.setDispLunes(dispLunes != null ? dispLunes : "");
+            perfil.setDispMartes(dispMartes != null ? dispMartes : "");
+            perfil.setDispMiercoles(dispMiercoles != null ? dispMiercoles : "");
+            perfil.setDispJueves(dispJueves != null ? dispJueves : "");
+            perfil.setDispViernes(dispViernes != null ? dispViernes : "");
+            perfil.setDispSabado(dispSabado != null ? dispSabado : "");
+            perfil.setDispDomingo(dispDomingo != null ? dispDomingo : "");
+
+            perfilServiceProxy.actualizarPerfilEntrenador(token, perfil);
+            return "redirect:/perfil/mi-perfil?exito=disponibilidad";
+        } catch (Exception e) {
+            if (esSesionInvalida(e))
+                return redirigirALogin(session);
+            return "redirect:/perfil/mi-perfil?error=" + e.getMessage();
         }
     }
 

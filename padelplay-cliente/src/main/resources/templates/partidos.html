@@ -15,7 +15,7 @@
 <body>
     <div id="content-wrapper" class="w-full pt-32 relative">
 
-        <main class="max-w-screen-2xl mx-auto px-6 pb-24 md:pb-12 pt-8 relative">
+        <main class="max-w-7xl mx-auto px-6 md:px-12 w-full pb-24 md:pb-12 pt-8 relative">
 
             <div th:if="${exito}"
                 class="bg-green-500/10 border border-green-500 text-green-500 p-4 rounded-xl mb-8 text-center font-bold">
@@ -163,14 +163,15 @@
                             </div>
 
                             <button th:if="${partidosApuntadoIds == null || !partidosApuntadoIds.contains(partido.id)}"
-                                th:disabled="${partido.huecosDisponibles == 0 || partido.cancelado}" th:data-id="${partido.id}"
-                                th:data-ubicacion="${partido.ubicacion}"
+                                th:disabled="${partido.huecosDisponibles == 0 || partido.cancelado}"
+                                th:data-id="${partido.id}" th:data-ubicacion="${partido.ubicacion}"
                                 th:data-fecha="${#temporals.format(partido.fechaHora, 'dd MMM - HH:mm')}"
                                 th:data-nivel="${partido.nivelRequerido}" th:data-tipo="${partido.tipoPartido}"
                                 onclick="openJoinModal(this)"
                                 th:classappend="${(partido.huecosDisponibles == 0 || partido.cancelado) ? 'opacity-50 cursor-not-allowed bg-slate-700 text-slate-400' : 'bg-[#D4FF00] text-black hover:bg-[#bce600] shadow-[0_0_15px_rgba(212,255,0,0.2)]'}"
                                 class="px-8 py-3 rounded-full font-headline font-black text-sm tracking-tighter transition-all active:scale-95">
-                                <span th:text="${partido.cancelado ? 'CANCELADO' : (partido.huecosDisponibles == 0 ? 'LLENO' : 'JOIN')}">JOIN</span>
+                                <span
+                                    th:text="${partido.cancelado ? 'CANCELADO' : (partido.huecosDisponibles == 0 ? 'LLENO' : 'JOIN')}">JOIN</span>
                             </button>
 
                             <div th:if="${partidosApuntadoIds != null && partidosApuntadoIds.contains(partido.id)}"
@@ -179,7 +180,8 @@
                             </div>
                         </div>
 
-                        <div class="mt-4" th:if="${partidosApuntadoIds != null && partidosApuntadoIds.contains(partido.id)}">
+                        <div class="mt-4"
+                            th:if="${partidosApuntadoIds != null && partidosApuntadoIds.contains(partido.id)}">
                             <form th:action="@{'/partidos/' + ${partido.id} + '/cancelar'}" method="post">
                                 <button type="submit"
                                     th:disabled="${partido.cancelado || (partidosCreadosIds != null && partidosCreadosIds.contains(partido.id))}"

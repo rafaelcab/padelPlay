@@ -14,14 +14,61 @@
             background: #0f1113;
             border: 1px solid #1e293b;
         }
+
+        /* Schedule grid (Visual only) */
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: 50px repeat(7, 1fr);
+            gap: 4px;
+            margin-top: 1rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+        .schedule-cell {
+            background-color: #232629;
+            border-radius: 6px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            color: #aaabad;
+            border: 1px solid transparent;
+            pointer-events: none; /* Make it read-only */
+        }
+        .schedule-cell.selected {
+            background-color: #D4FF00;
+            color: #3c4a00;
+            font-weight: 700;
+            border-color: #D4FF00;
+        }
+        .schedule-header-cell {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #eeeef0;
+            text-align: center;
+            padding-bottom: 8px;
+            letter-spacing: 0.05em;
+        }
+        .schedule-time-cell {
+            font-size: 0.65rem;
+            color: #aaabad;
+            text-align: right;
+            padding-right: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            font-weight: 600;
+        }
     </style>
 </head>
 
 <body>
 <main class="max-w-screen-xl mx-auto px-6 pt-32 pb-20" th:if="${amigo != null}">
     <div class="flex items-center justify-between mb-8 gap-4 flex-wrap">
-        <a href="/amigos" class="text-slate-400 hover:text-[#D4FF00] transition-colors flex items-center gap-2">
-            <span class="material-symbols-outlined">arrow_back</span> Volver a amigos
+        <a href="/comunidad" class="text-slate-400 hover:text-[#D4FF00] transition-colors flex items-center gap-2">
+            <span class="material-symbols-outlined">arrow_back</span> Volver a la comunidad
         </a>
         <div class="flex items-center gap-2 text-slate-400 text-sm">
             <span class="material-symbols-outlined text-[18px]">groups</span>
@@ -42,7 +89,7 @@
                     <span th:if="${amigo.tienePerfilEntrenador}" class="px-3 py-1 rounded-full text-xs font-bold bg-sky-500/10 text-sky-300 border border-sky-400/30">Entrenador</span>
                 </div>
             </div>
-            <form th:if="${!amigo.seguido}" th:action="@{|/amigos/${amigo.usuarioId}/seguir|}" method="post">
+            <form th:if="${!amigo.seguido}" th:action="@{|/comunidad/${amigo.usuarioId}/seguir|}" method="post">
                 <button type="submit" class="px-6 py-3 rounded-full bg-[#D4FF00] text-black font-black hover:bg-[#bfe800] transition-colors">Seguir</button>
             </form>
             <span th:if="${amigo.seguido}" class="px-5 py-3 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 font-bold">Siguiendo</span>
@@ -53,8 +100,12 @@
     <div th:if="${error}" class="mb-4 rounded-xl border border-red-800 bg-red-900/20 text-red-300 px-4 py-3 font-semibold" th:text="${error}"></div>
 
     <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <article class="info-card rounded-2xl p-6">
-            <h2 class="text-white text-xl font-bold mb-4">Información de jugador</h2>
+        <!-- Información de jugador (Condicional) -->
+        <article class="info-card rounded-2xl p-6" th:if="${amigo.tienePerfilJugador}">
+            <h2 class="text-white text-xl font-bold mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#D4FF00]">sports_tennis</span>
+                Información de jugador
+            </h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Apodo</p><p class="text-white" th:text="${amigo.jugadorApodo != null && !amigo.jugadorApodo.isBlank()} ? ${amigo.jugadorApodo} : 'No especifica'">No especifica</p></div>
                 <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Años experiencia</p><p class="text-white" th:text="${amigo.jugadorAniosExperiencia != null} ? ${amigo.jugadorAniosExperiencia} : 'No especifica'">No especifica</p></div>
@@ -71,8 +122,12 @@
             </div>
         </article>
 
-        <article class="info-card rounded-2xl p-6">
-            <h2 class="text-white text-xl font-bold mb-4">Información de entrenador</h2>
+        <!-- Información de entrenador (Condicional) -->
+        <article class="info-card rounded-2xl p-6" th:if="${amigo.tienePerfilEntrenador}">
+            <h2 class="text-white text-xl font-bold mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-sky-400">school</span>
+                Información de entrenador
+            </h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Apodo</p><p class="text-white" th:text="${amigo.entrenadorApodo != null && !amigo.entrenadorApodo.isBlank()} ? ${amigo.entrenadorApodo} : 'No especifica'">No especifica</p></div>
                 <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Años experiencia</p><p class="text-white" th:text="${amigo.entrenadorAniosExperiencia != null} ? ${amigo.entrenadorAniosExperiencia} : 'No especifica'">No especifica</p></div>
@@ -85,8 +140,69 @@
                 <p class="text-slate-500 uppercase text-[11px]">Descripción</p>
                 <p class="text-white" th:text="${amigo.entrenadorDescripcion != null && !amigo.entrenadorDescripcion.isBlank()} ? ${amigo.entrenadorDescripcion} : 'No especifica'">No especifica</p>
             </div>
+
+            <!-- Horario Semanal visual -->
+            <div class="mt-8 pt-6 border-t border-slate-700">
+                <p class="text-[#D4FF00] font-bold text-sm mb-4">Disponibilidad Semanal</p>
+                
+                <input type="hidden" id="dispLunes" th:value="${amigo.entrenadorDispLunes}">
+                <input type="hidden" id="dispMartes" th:value="${amigo.entrenadorDispMartes}">
+                <input type="hidden" id="dispMiercoles" th:value="${amigo.entrenadorDispMiercoles}">
+                <input type="hidden" id="dispJueves" th:value="${amigo.entrenadorDispJueves}">
+                <input type="hidden" id="dispViernes" th:value="${amigo.entrenadorDispViernes}">
+                <input type="hidden" id="dispSabado" th:value="${amigo.entrenadorDispSabado}">
+                <input type="hidden" id="dispDomingo" th:value="${amigo.entrenadorDispDomingo}">
+                
+                <div id="amigoScheduleGrid" class="schedule-grid"></div>
+            </div>
         </article>
     </section>
+
+    <script th:if="${amigo.tienePerfilEntrenador}">
+        (function () {
+            const days = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'];
+            const displayDays = ['Lun', 'Mar', 'Mi\u00e9', 'Jue', 'Vie', 'S\u00e1b', 'Dom'];
+            const hours = [];
+            for (let i = 8; i <= 22; i++) {
+                hours.push(i.toString().padStart(2, '0') + ':00');
+            }
+
+            const grid = document.getElementById('amigoScheduleGrid');
+            if (!grid) return;
+
+            // Headers
+            let corner = document.createElement('div');
+            corner.className = 'schedule-header-cell';
+            grid.appendChild(corner);
+            displayDays.forEach(function (d) {
+                let h = document.createElement('div');
+                h.className = 'schedule-header-cell';
+                h.textContent = d;
+                grid.appendChild(h);
+            });
+
+            hours.forEach(function (hour) {
+                let timeLabel = document.createElement('div');
+                timeLabel.className = 'schedule-time-cell';
+                timeLabel.textContent = hour;
+                grid.appendChild(timeLabel);
+
+                days.forEach(function (day) {
+                    let cell = document.createElement('div');
+                    cell.className = 'schedule-cell';
+                    
+                    let hiddenInput = document.getElementById('disp' + day);
+                    if (hiddenInput && hiddenInput.value) {
+                        let slots = hiddenInput.value.split(',');
+                        if (slots.indexOf(hour) !== -1) {
+                            cell.classList.add('selected');
+                        }
+                    }
+                    grid.appendChild(cell);
+                });
+            });
+        })();
+    </script>
 </main>
 </body>
 

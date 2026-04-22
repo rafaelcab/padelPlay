@@ -68,7 +68,7 @@
             <a class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
                 th:href="@{/partidos/crear}" data-nav-path="/partidos/crear">Crear</a>
             <a class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
-                th:href="@{/amigos}" data-nav-prefix="/amigos">Amigos</a>
+                th:href="@{/comunidad}" data-nav-prefix="/comunidad">Comunidad</a>
             <a th:if="${esAdminClub}"
                 class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
                 th:href="@{/estadisticas}" data-nav-path="/estadisticas">Stats</a>
@@ -140,7 +140,7 @@
                     </div>
 
                     <div class="relative z-10">
-                        <a href="/perfil/dashboard"
+                        <a href="/perfil/mi-perfil"
                             class="flex items-center gap-3 px-4 py-3 text-sm text-slate-200 hover:bg-[#D4FF00]/10 hover:text-[#D4FF00] rounded-xl transition-colors">
                             <span class="material-symbols-outlined text-[20px]">person</span>
                             <span class="font-medium">Mi Perfil</span>

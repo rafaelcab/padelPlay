@@ -151,6 +151,13 @@ public class AmigosService {
             dto.setEntrenadorMetodologia(perfilEntrenador.getMetodologia());
             dto.setEntrenadorUbicacion(perfilEntrenador.getUbicacion());
             dto.setEntrenadorClubActual(perfilEntrenador.getClubActual());
+            dto.setEntrenadorDispLunes(perfilEntrenador.getDispLunes());
+            dto.setEntrenadorDispMartes(perfilEntrenador.getDispMartes());
+            dto.setEntrenadorDispMiercoles(perfilEntrenador.getDispMiercoles());
+            dto.setEntrenadorDispJueves(perfilEntrenador.getDispJueves());
+            dto.setEntrenadorDispViernes(perfilEntrenador.getDispViernes());
+            dto.setEntrenadorDispSabado(perfilEntrenador.getDispSabado());
+            dto.setEntrenadorDispDomingo(perfilEntrenador.getDispDomingo());
         }
 
         return dto;
