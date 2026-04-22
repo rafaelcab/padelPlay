@@ -5,6 +5,7 @@ import com.padelplay.server.entity.Partido;
 import com.padelplay.server.entity.PerfilJugador;
 import com.padelplay.server.entity.RecordatorioPartido;
 import com.padelplay.server.entity.Usuario;
+import com.padelplay.server.dto.RecordatorioNotificacionDto;
 import com.padelplay.server.repository.RecordatorioPartidoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,6 +107,25 @@ public class RecordatorioPartidoService {
         recordatorioPartidoRepository.deleteByPartidoId(partidoId);
     }
 
+    @Transactional(readOnly = true)
+    public List<RecordatorioNotificacionDto> obtenerNotificacionesRecientes(String destinatarioEmail) {
+        if (destinatarioEmail == null || destinatarioEmail.isBlank()) {
+            return List.of();
+        }
+
+        LocalDateTime ahora = LocalDateTime.now();
+        LocalDateTime inicio = ahora.minusDays(7);
+
+        return recordatorioPartidoRepository
+                .findTop20ByDestinatarioEmailAndProgramadoParaBetweenOrderByProgramadoParaDesc(
+                        destinatarioEmail.trim(),
+                        inicio,
+                        ahora)
+                .stream()
+                .map(this::convertirANotificacion)
+                .toList();
+    }
+
     private void eliminarRecordatoriosPendientes(Long partidoId) {
         List<RecordatorioPartido> recordatorios = recordatorioPartidoRepository.findByPartidoId(partidoId);
         List<RecordatorioPartido> paraEliminar = new ArrayList<>();
@@ -167,6 +187,26 @@ public class RecordatorioPartidoService {
                 partido.getUbicacion(),
                 partido.getTipoPartido(),
                 partido.getNivelRequerido()
+        );
+    }
+
+    private RecordatorioNotificacionDto convertirANotificacion(RecordatorioPartido recordatorio) {
+        Partido partido = recordatorio.getPartido();
+        String titulo = "Recordatorio de partido";
+        String mensaje = String.format("Tienes un partido de pádel en %s en %s.",
+                partido.getFechaHora().format(FORMATO_FECHA),
+                partido.getUbicacion());
+
+        return new RecordatorioNotificacionDto(
+                recordatorio.getId(),
+                partido.getId(),
+                titulo,
+                mensaje,
+                partido.getUbicacion(),
+                partido.getTipoPartido(),
+                partido.getFechaHora(),
+                recordatorio.getProgramadoPara(),
+                recordatorio.getEstado().name()
         );
     }
 }

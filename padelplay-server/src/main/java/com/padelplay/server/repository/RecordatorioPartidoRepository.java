@@ -20,5 +20,11 @@ public interface RecordatorioPartidoRepository extends JpaRepository<Recordatori
     void deleteByPartidoId(Long partidoId);
 
     @EntityGraph(attributePaths = {"partido"})
+    List<RecordatorioPartido> findTop20ByDestinatarioEmailAndProgramadoParaBetweenOrderByProgramadoParaDesc(
+            String destinatarioEmail,
+            LocalDateTime inicio,
+            LocalDateTime fin);
+
+    @EntityGraph(attributePaths = {"partido"})
     List<RecordatorioPartido> findByEstadoAndProgramadoParaLessThanEqual(EstadoRecordatorio estado, LocalDateTime programadoPara);
 }

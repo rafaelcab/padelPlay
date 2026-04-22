@@ -60,25 +60,50 @@
                 class="text-[#D4FF00] font-black italic text-2xl tracking-tighter uppercase font-headline">PadelPlay</span>
         </div>
 
-        <nav class="hidden md:flex items-center gap-10">
-            <a class="font-headline tracking-tight font-bold uppercase text-sm text-[#D4FF00] border-b-2 border-[#D4FF00] pb-1"
-                href="/perfil/dashboard">Home</a>
+        <nav class="hidden md:flex items-center gap-10" id="main-nav">
             <a class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
-                href="/partidos">Partidos</a>
+                th:href="@{/perfil/dashboard}" data-nav-path="/perfil/dashboard">Home</a>
             <a class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
-                href="/partidos/crear">Crear</a>
-            <a th:if="${esAdminClub}" class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
-                href="/estadisticas">Stats</a>
+                th:href="@{/partidos}" data-nav-prefix="/partidos" data-nav-exclude="/partidos/crear">Partidos</a>
             <a class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
-                href="#">Torneos</a>
+                th:href="@{/partidos/crear}" data-nav-path="/partidos/crear">Crear</a>
+            <a th:if="${esAdminClub}"
+                class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
+                th:href="@{/estadisticas}" data-nav-path="/estadisticas">Stats</a>
+            <a class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
+                href="#" data-nav-path="/torneos">Torneos</a>
         </nav>
 
         <div class="flex items-center gap-6">
 
-            <button
-                class="text-slate-400 hover:text-[#D4FF00] transition-colors p-2 rounded-full hover:bg-white/5 active:scale-90">
-                <span class="material-symbols-outlined">notifications</span>
-            </button>
+            <div class="relative">
+                <button id="notifications-button"
+                    class="relative text-slate-400 hover:text-[#D4FF00] transition-colors p-2 rounded-full hover:bg-white/5 active:scale-90"
+                    type="button" aria-haspopup="true" aria-expanded="false">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span id="notifications-badge"
+                        class="absolute -top-0.5 -right-0.5 hidden min-w-5 h-5 px-1.5 rounded-full bg-[#D4FF00] text-black text-[11px] font-black items-center justify-center">0</span>
+                </button>
+
+                <div id="notifications-panel"
+                    class="absolute right-0 mt-4 w-[22rem] origin-top-right rounded-2xl glass-dropdown shadow-2xl opacity-0 invisible translate-y-2 transition-all duration-200 z-50 overflow-hidden">
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
+                        <div>
+                            <p class="font-headline text-sm uppercase tracking-tight text-white font-bold">Notificaciones</p>
+                            <p class="text-xs text-slate-400">Recordatorios de partidos</p>
+                        </div>
+                        <button id="notifications-refresh" type="button"
+                            class="text-slate-400 hover:text-[#D4FF00] transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">refresh</span>
+                        </button>
+                    </div>
+                    <div id="notifications-list" class="max-h-96 overflow-y-auto p-2">
+                        <div id="notifications-empty" class="px-3 py-6 text-sm text-slate-400 text-center">
+                            No hay notificaciones nuevas.
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div th:if="${estado != null && (estado.tienePerfilJugador || estado.tienePerfilEntrenador)}">
                 <form th:action="@{/perfil/cambiar-rol}" method="post" style="display: contents;">
@@ -136,6 +161,254 @@
 
     <main class="pt-24" th:replace="${content}">
     </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
+            var navLinks = document.querySelectorAll('#main-nav a[data-nav-path], #main-nav a[data-nav-prefix]');
+            var serverApiUrl = 'http://localhost:8080';
+            var notificationsButton = document.getElementById('notifications-button');
+            var notificationsPanel = document.getElementById('notifications-panel');
+            var notificationsRefresh = document.getElementById('notifications-refresh');
+            var notificationsList = document.getElementById('notifications-list');
+            var notificationsEmpty = document.getElementById('notifications-empty');
+            var notificationsBadge = document.getElementById('notifications-badge');
+            var seenStorageKey = 'padelplay_seen_notifications';
+            var currentNotifications = [];
+            var notificationsOpen = false;
+
+            function getToken() {
+                return sessionStorage.getItem('padelplay_token');
+            }
+
+            function getSeenNotifications() {
+                try {
+                    var raw = localStorage.getItem(seenStorageKey);
+                    return raw ? JSON.parse(raw) : [];
+                } catch (error) {
+                    return [];
+                }
+            }
+
+            function saveSeenNotifications(ids) {
+                localStorage.setItem(seenStorageKey, JSON.stringify(ids));
+            }
+
+            function isSeen(id) {
+                return getSeenNotifications().includes(String(id));
+            }
+
+            function markAsSeen(notifications) {
+                if (!notifications.length) {
+                    return;
+                }
+
+                var seen = getSeenNotifications();
+                notifications.forEach(function (notification) {
+                    var id = String(notification.id);
+                    if (!seen.includes(id)) {
+                        seen.push(id);
+                    }
+                });
+                saveSeenNotifications(seen);
+            }
+
+            function setBadgeCount(count) {
+                if (!notificationsBadge) {
+                    return;
+                }
+
+                if (count > 0) {
+                    notificationsBadge.textContent = String(count);
+                    notificationsBadge.classList.remove('hidden');
+                    notificationsBadge.classList.add('flex');
+                } else {
+                    notificationsBadge.classList.add('hidden');
+                    notificationsBadge.classList.remove('flex');
+                }
+            }
+
+            function formatDate(value) {
+                return new Intl.DateTimeFormat('es-ES', {
+                    day: '2-digit',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }).format(new Date(value));
+            }
+
+            function renderNotifications(notifications) {
+                if (!notificationsList || !notificationsEmpty) {
+                    return;
+                }
+
+                notificationsList.innerHTML = '';
+
+                if (!notifications.length) {
+                    notificationsEmpty.classList.remove('hidden');
+                    notificationsList.appendChild(notificationsEmpty);
+                    return;
+                }
+
+                notificationsEmpty.classList.add('hidden');
+
+                notifications.forEach(function (notification) {
+                    var item = document.createElement('a');
+                    item.href = '/partidos';
+                    item.className = 'flex items-start gap-3 px-3 py-3 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10';
+
+                    var icon = document.createElement('div');
+                    icon.className = 'mt-0.5 w-9 h-9 rounded-full bg-[#D4FF00]/10 text-[#D4FF00] flex items-center justify-center flex-shrink-0';
+                    icon.innerHTML = '<span class="material-symbols-outlined text-[18px]">sports_tennis</span>';
+
+                    var content = document.createElement('div');
+                    content.className = 'min-w-0 flex-1';
+
+                    var title = document.createElement('p');
+                    title.className = 'text-sm font-bold text-white leading-tight';
+                    title.textContent = notification.titulo;
+
+                    var message = document.createElement('p');
+                    message.className = 'text-sm text-slate-300 mt-1 leading-snug';
+                    message.textContent = notification.mensaje;
+
+                    var meta = document.createElement('p');
+                    meta.className = 'text-xs text-slate-500 mt-2';
+                    meta.textContent = formatDate(notification.programadoPara) + ' · ' + notification.ubicacion;
+
+                    content.appendChild(title);
+                    content.appendChild(message);
+                    content.appendChild(meta);
+                    item.appendChild(icon);
+                    item.appendChild(content);
+                    notificationsList.appendChild(item);
+                });
+            }
+
+            function loadNotifications(options) {
+                options = options || {};
+                var renderPanel = !!options.renderPanel;
+                var token = getToken();
+
+                if (!token) {
+                    currentNotifications = [];
+                    setBadgeCount(0);
+                    if (renderPanel) {
+                        renderNotifications([]);
+                    }
+                    return Promise.resolve();
+                }
+
+                return fetch(serverApiUrl + '/api/notificaciones/recordatorios', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('No se pudieron cargar las notificaciones');
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        var notifications = Array.isArray(data) ? data : [];
+                        var unseen = notifications.filter(function (notification) {
+                            return !isSeen(notification.id);
+                        });
+
+                        currentNotifications = unseen;
+                        setBadgeCount(unseen.length);
+
+                        if (renderPanel) {
+                            renderNotifications(unseen);
+                            markAsSeen(unseen);
+                            currentNotifications = [];
+                            setBadgeCount(0);
+                        }
+                    })
+                    .catch(function () {
+                        if (renderPanel) {
+                            renderNotifications([]);
+                        }
+                        setBadgeCount(currentNotifications.length);
+                    });
+            }
+
+            function openNotificationsPanel() {
+                if (!notificationsPanel) {
+                    return;
+                }
+
+                notificationsPanel.classList.remove('invisible', 'opacity-0', 'translate-y-2');
+                notificationsPanel.classList.add('visible', 'opacity-100', 'translate-y-0');
+                notificationsOpen = true;
+                if (notificationsButton) {
+                    notificationsButton.setAttribute('aria-expanded', 'true');
+                }
+                loadNotifications({ renderPanel: true });
+            }
+
+            function closeNotificationsPanel() {
+                if (!notificationsPanel) {
+                    return;
+                }
+
+                notificationsPanel.classList.add('invisible', 'opacity-0', 'translate-y-2');
+                notificationsPanel.classList.remove('visible', 'opacity-100', 'translate-y-0');
+                notificationsOpen = false;
+                if (notificationsButton) {
+                    notificationsButton.setAttribute('aria-expanded', 'false');
+                }
+            }
+
+            if (notificationsButton) {
+                notificationsButton.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    if (notificationsOpen) {
+                        closeNotificationsPanel();
+                    } else {
+                        openNotificationsPanel();
+                    }
+                });
+            }
+
+            if (notificationsRefresh) {
+                notificationsRefresh.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    loadNotifications({ renderPanel: notificationsOpen });
+                });
+            }
+
+            document.addEventListener('click', function (event) {
+                if (notificationsPanel && !notificationsPanel.contains(event.target) && !notificationsButton.contains(event.target)) {
+                    closeNotificationsPanel();
+                }
+            });
+
+            loadNotifications({ renderPanel: false });
+            window.setInterval(function () {
+                loadNotifications({ renderPanel: notificationsOpen });
+            }, 60000);
+
+            navLinks.forEach(function (link) {
+                var path = link.getAttribute('data-nav-path');
+                var prefix = link.getAttribute('data-nav-prefix');
+                var exclude = link.getAttribute('data-nav-exclude');
+                var isActive = false;
+
+                if (path) {
+                    isActive = currentPath === path;
+                } else if (prefix) {
+                    isActive = (currentPath === prefix || currentPath.indexOf(prefix + '/') === 0) && currentPath !== exclude;
+                }
+
+                if (isActive) {
+                    link.classList.remove('text-slate-400', 'hover:text-slate-100');
+                    link.classList.add('text-[#D4FF00]', 'border-b-2', 'border-[#D4FF00]', 'pb-1');
+                }
+            });
+        });
+    </script>
 
 </body>
 
