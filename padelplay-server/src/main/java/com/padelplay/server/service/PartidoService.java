@@ -6,6 +6,7 @@ import com.padelplay.server.entity.PerfilJugador;
 import com.padelplay.server.entity.Partido;
 import com.padelplay.server.repository.PerfilJugadorRepository;
 import com.padelplay.server.repository.PartidoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,10 +20,19 @@ public class PartidoService {
 
     private final PartidoRepository partidoRepository;
     private final PerfilJugadorRepository perfilJugadorRepository;
+    private final RecordatorioPartidoService recordatorioPartidoService;
 
-    public PartidoService(PartidoRepository partidoRepository, PerfilJugadorRepository perfilJugadorRepository) {
+    @Autowired
+    public PartidoService(PartidoRepository partidoRepository,
+                         PerfilJugadorRepository perfilJugadorRepository,
+                         RecordatorioPartidoService recordatorioPartidoService) {
         this.partidoRepository = partidoRepository;
         this.perfilJugadorRepository = perfilJugadorRepository;
+        this.recordatorioPartidoService = recordatorioPartidoService;
+    }
+
+    public PartidoService(PartidoRepository partidoRepository, PerfilJugadorRepository perfilJugadorRepository) {
+        this(partidoRepository, perfilJugadorRepository, null);
     }
 
     /**
@@ -81,6 +91,9 @@ public class PartidoService {
         partido.getJugadoresApuntados().add(creador);
 
         Partido partidoGuardado = partidoRepository.save(partido);
+        if (recordatorioPartidoService != null) {
+            recordatorioPartidoService.registrarRecordatoriosIniciales(partidoGuardado);
+        }
         return convertirADto(partidoGuardado);
     }
 
@@ -132,6 +145,9 @@ public class PartidoService {
 
         // 7. Guardar y devolver DTO actualizado
         Partido partidoActualizado = partidoRepository.save(partido);
+        if (recordatorioPartidoService != null) {
+            recordatorioPartidoService.registrarRecordatoriosIniciales(partidoActualizado);
+        }
         return convertirADto(partidoActualizado);
     }
 
@@ -154,6 +170,9 @@ public class PartidoService {
 
         if (partido.getJugadoresApuntados().isEmpty()) {
             PartidoDto dto = convertirADto(partido);
+            if (recordatorioPartidoService != null) {
+                recordatorioPartidoService.eliminarRecordatoriosDePartido(partidoId);
+            }
             partidoRepository.delete(partido);
             return dto;
         }
@@ -166,6 +185,9 @@ public class PartidoService {
         }
 
         Partido partidoActualizado = partidoRepository.save(partido);
+        if (recordatorioPartidoService != null) {
+            recordatorioPartidoService.registrarRecordatoriosIniciales(partidoActualizado);
+        }
         return convertirADto(partidoActualizado);
     }
 
@@ -187,6 +209,9 @@ public class PartidoService {
             throw new IllegalStateException("Solo puedes eliminar el partido cuando estás solo en él.");
         }
 
+        if (recordatorioPartidoService != null) {
+            recordatorioPartidoService.eliminarRecordatoriosDePartido(partidoId);
+        }
         partidoRepository.delete(partido);
     }
 
