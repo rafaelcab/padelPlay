@@ -4,21 +4,22 @@ import java.time.LocalDateTime;
 
 public class PartidoPendienteReporteDto {
 
-    private Long id;
+    private Long partidoId;
     private LocalDateTime fechaHora;
     private String ubicacion;
     private String tipoPartido;
     private Integer participantesPendientes;
+    private boolean reporteCompletado;
 
     public PartidoPendienteReporteDto() {
     }
 
-    public Long getId() {
-        return id;
+    public Long getPartidoId() {
+        return partidoId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setPartidoId(Long partidoId) {
+        this.partidoId = partidoId;
     }
 
     public LocalDateTime getFechaHora() {
@@ -51,5 +52,13 @@ public class PartidoPendienteReporteDto {
 
     public void setParticipantesPendientes(Integer participantesPendientes) {
         this.participantesPendientes = participantesPendientes;
+    }
+
+    public boolean isReporteCompletado() {
+        return reporteCompletado;
+    }
+
+    public void setReporteCompletado(boolean reporteCompletado) {
+        this.reporteCompletado = reporteCompletado;
     }
 }

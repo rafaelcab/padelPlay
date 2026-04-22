@@ -28,6 +28,21 @@ public class ReporteExperienciaPendientesController {
         this.jwtService = jwtService;
     }
 
+    @GetMapping("/partidos-jugados")
+    public ResponseEntity<?> listarPartidosJugados(@RequestHeader("Authorization") String authHeader) {
+        try {
+            Long usuarioId = extraerUsuarioId(authHeader);
+            List<PartidoPendienteReporteDto> partidos =
+                    reporteExperienciaService.listarPartidosJugadosConEstado(usuarioId);
+            return ResponseEntity.ok(partidos);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/partidos-pendientes")
     public ResponseEntity<?> listarPartidosPendientes(@RequestHeader("Authorization") String authHeader) {
         try {
@@ -41,6 +56,11 @@ public class ReporteExperienciaPendientesController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", e.getMessage()));
         }
+    }
+
+    @GetMapping("/motivos")
+    public ResponseEntity<?> listarMotivos() {
+        return ResponseEntity.ok(reporteExperienciaService.listarMotivosDisponibles());
     }
 
     private Long extraerUsuarioId(String authHeader) {

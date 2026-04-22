@@ -2,9 +2,12 @@ package com.padelplay.cliente.controller;
 
 import com.padelplay.common.dto.EstadoPerfilDto;
 import com.padelplay.common.dto.PartidoDto;
-import com.padelplay.common.dto.PerfilJugadorDto;
 import com.padelplay.cliente.proxies.PerfilServiceProxy;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,6 +16,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -77,9 +81,17 @@ public class PartidoWebController {
                     .map(PartidoDto::getId)
                     .collect(Collectors.toSet());
 
+                Set<Long> partidosTerminablesIds = partidos.stream()
+                    .filter(p -> p.getCreador() != null && finalPerfilJugadorId.equals(p.getCreador().getId()))
+                    .filter(p -> !p.isCancelado() && !p.isTerminado())
+                    .filter(p -> p.getFechaHora() != null && p.getFechaHora().isBefore(LocalDateTime.now()))
+                    .map(PartidoDto::getId)
+                    .collect(Collectors.toSet());
+
                 model.addAttribute("partidosApuntadoIds", partidosApuntadoIds);
                 model.addAttribute("partidosCreadosIds", partidosCreadosIds);
                 model.addAttribute("partidosEliminablesIds", partidosEliminablesIds);
+                model.addAttribute("partidosTerminablesIds", partidosTerminablesIds);
                 }
         } catch (Exception e) {
             model.addAttribute("error", "No se pudieron cargar los partidos. Inténtalo más tarde.");
@@ -257,6 +269,42 @@ public class PartidoWebController {
                     : "No se ha podido eliminar el partido.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Ocurrió un error al contactar con el servidor.");
+        }
+
+        return "redirect:/partidos";
+    }
+
+    @PostMapping("/{id}/terminar")
+    public String terminarPartido(@PathVariable("id") Long partidoId,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        String token = (String) session.getAttribute("token");
+        if (token == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
+            if (estado == null || estado.getPerfilJugador() == null) {
+                redirectAttributes.addFlashAttribute("error", "Necesitas perfil de jugador para terminar el partido.");
+                return "redirect:/partidos";
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(token);
+
+            HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+            restTemplate.exchange(BACKEND_URL + "/" + partidoId + "/terminar", HttpMethod.POST, requestEntity,
+                    PartidoDto.class);
+
+            redirectAttributes.addFlashAttribute("exito", "Partido marcado como terminado correctamente.");
+        } catch (HttpClientErrorException e) {
+            String mensajeError = e.getResponseBodyAsString();
+            redirectAttributes.addFlashAttribute("error", mensajeError != null && !mensajeError.isEmpty() ? mensajeError
+                    : "No se ha podido terminar el partido.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "OcurriÃ³ un error al contactar con el servidor.");
         }
 
         return "redirect:/partidos";

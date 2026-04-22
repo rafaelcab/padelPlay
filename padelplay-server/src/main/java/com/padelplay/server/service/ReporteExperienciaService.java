@@ -14,7 +14,7 @@ import com.padelplay.server.repository.ReporteExperienciaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -94,11 +94,25 @@ public class ReporteExperienciaService {
 
     @Transactional(readOnly = true)
     public List<PartidoPendienteReporteDto> listarPartidosPendientesDeReportar(Long usuarioId) {
+        return listarPartidosJugadosConEstado(usuarioId).stream()
+                .filter(dto -> !dto.isReporteCompletado())
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<PartidoPendienteReporteDto> listarPartidosJugadosConEstado(Long usuarioId) {
         PerfilJugador reportante = obtenerPerfilJugador(usuarioId);
 
         return partidoRepository.findPartidosTerminadosNoCanceladosByJugadorId(reportante.getId()).stream()
+                .filter(partido -> tieneOtrosParticipantes(partido, reportante))
                 .map(partido -> convertirAPartidoPendienteDto(partido, reportante))
-                .filter(dto -> dto.getParticipantesPendientes() > 0)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> listarMotivosDisponibles() {
+        return Arrays.stream(MotivoReporteExperiencia.values())
+                .map(Enum::name)
                 .collect(Collectors.toList());
     }
 
@@ -178,15 +192,23 @@ public class ReporteExperienciaService {
         Set<Long> yaReportados = reporteExperienciaRepository
                 .findReportadoIdsByPartidoIdAndReportanteId(partido.getId(), reportante.getId());
 
-        int participantesPendientes = obtenerParticipantesReportables(partido, reportante, yaReportados).size();
+        Set<PerfilJugador> participantesReportables = obtenerParticipantesReportables(partido, reportante, yaReportados);
+        int participantesPendientes = participantesReportables.size();
 
         PartidoPendienteReporteDto dto = new PartidoPendienteReporteDto();
-        dto.setId(partido.getId());
+        dto.setPartidoId(partido.getId());
         dto.setFechaHora(partido.getFechaHora());
         dto.setUbicacion(partido.getUbicacion());
         dto.setTipoPartido(partido.getTipoPartido());
         dto.setParticipantesPendientes(participantesPendientes);
+        dto.setReporteCompletado(participantesPendientes == 0);
         return dto;
+    }
+
+    private boolean tieneOtrosParticipantes(Partido partido, PerfilJugador reportante) {
+        return partido.getJugadoresApuntados() != null
+                && partido.getJugadoresApuntados().stream()
+                .anyMatch(jugador -> !jugador.getId().equals(reportante.getId()));
     }
 
     private Set<MotivoReporteExperiencia> convertirMotivos(Set<String> motivos) {
