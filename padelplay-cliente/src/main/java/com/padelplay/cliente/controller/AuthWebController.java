@@ -49,4 +49,10 @@ public class AuthWebController {
         model.addAttribute("googleClientId", googleClientId);
         return "login";
     }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/login";
+    }
 }

@@ -13,6 +13,7 @@ allprojects {
 
 subprojects {
     apply plugin: 'java'
+    apply plugin: 'jacoco'
 
     java {
         toolchain {
@@ -20,7 +21,100 @@ subprojects {
         }
     }
 
+    sourceSets {
+        integrationTest {
+            java.srcDir file('src/integrationTest/java')
+            resources.srcDir file('src/integrationTest/resources')
+            compileClasspath += sourceSets.main.output + configurations.integrationTestRuntimeClasspath
+            runtimeClasspath += output + compileClasspath
+        }
+        performanceTest {
+            java.srcDir file('src/performanceTest/java')
+            resources.srcDir file('src/performanceTest/resources')
+            compileClasspath += sourceSets.main.output + configurations.performanceTestRuntimeClasspath
+            runtimeClasspath += output + compileClasspath
+        }
+    }
+
+    configurations.named('integrationTestImplementation') {
+        extendsFrom configurations.testImplementation
+    }
+    configurations.named('integrationTestRuntimeOnly') {
+        extendsFrom configurations.testRuntimeOnly
+    }
+    configurations.named('performanceTestImplementation') {
+        extendsFrom configurations.testImplementation
+    }
+    configurations.named('performanceTestRuntimeOnly') {
+        extendsFrom configurations.testRuntimeOnly
+    }
+
+    jacoco {
+        toolVersion = '0.8.12'
+    }
+
     tasks.withType(Test).configureEach {
         useJUnitPlatform()
+        testLogging {
+            events 'FAILED', 'SKIPPED'
+            exceptionFormat 'short'
+        }
+    }
+
+    tasks.named('test') {
+        description = 'Runs unit tests.'
+        group = 'verification'
+        finalizedBy 'jacocoTestReport'
+    }
+
+    tasks.register('integrationTest', Test) {
+        description = 'Runs integration tests.'
+        group = 'verification'
+        testClassesDirs = sourceSets.integrationTest.output.classesDirs
+        classpath = sourceSets.integrationTest.runtimeClasspath
+        shouldRunAfter tasks.named('test')
+        useJUnitPlatform()
+    }
+
+    tasks.register('performanceTest', Test) {
+        description = 'Runs performance tests.'
+        group = 'verification'
+        testClassesDirs = sourceSets.performanceTest.output.classesDirs
+        classpath = sourceSets.performanceTest.runtimeClasspath
+        shouldRunAfter tasks.named('integrationTest')
+        useJUnitPlatform()
+    }
+
+    tasks.named('check') {
+        dependsOn tasks.named('integrationTest')
+        dependsOn tasks.named('performanceTest')
+        dependsOn tasks.named('jacocoTestCoverageVerification')
+    }
+
+    tasks.named('jacocoTestReport') {
+        dependsOn tasks.named('test')
+        reports {
+            xml.required = true
+            html.required = true
+            csv.required = false
+        }
+    }
+
+    tasks.named('jacocoTestCoverageVerification') {
+        violationRules {
+            rule {
+                element = 'CLASS'
+                includes = [
+                    'com.padelplay.server.service.PartidoService',
+                    'com.padelplay.server.service.PistaService',
+                    'com.padelplay.server.service.EstadisticasService'
+                ]
+                limit {
+                    counter = 'LINE'
+                    value = 'COVEREDRATIO'
+                    minimum = 0.90
+                }
+            }
+        }
     }
 }

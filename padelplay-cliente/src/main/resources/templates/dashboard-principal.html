@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html class="dark" lang="es" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{base :: layout(~{::title}, ~{::th:block}, ~{::main})}">
+
+<head>
+    <title>Vantage Padel - The Kinetic Court</title>
+    <th:block>
+        <script id="tailwind-config">
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        "colors": {
+                            "on-secondary": "#505254",
+                            "surface-dim": "#0c0e10",
+                            "on-tertiary-container": "#555757",
+                            "tertiary-fixed-dim": "#f0f1f1",
+                            "on-error": "#450900",
+                            "on-surface-variant": "#aaabad",
+                            "on-secondary-fixed-variant": "#5a5c5e",
+                            "primary-fixed-dim": "#c4ec00",
+                            "on-secondary-fixed": "#3e3f42",
+                            "on-tertiary-fixed-variant": "#6c6d6e",
+                            "surface-tint": "#f4ffc6",
+                            "surface-container-highest": "#232629",
+                            "primary-fixed": "#d1fc00",
+                            "surface-container-high": "#1d2023",
+                            "secondary-container": "#454749",
+                            "on-tertiary": "#5e5f60",
+                            "primary-dim": "#c7ef00",
+                            "surface-container-lowest": "#000000",
+                            "on-surface": "#eeeef0",
+                            "primary-container": "#d1fc00",
+                            "inverse-surface": "#f9f9fc",
+                            "surface-variant": "#232629",
+                            "error-dim": "#d53d18",
+                            "primary": "#f4ffc6",
+                            "on-error-container": "#ffd2c8",
+                            "on-primary": "#546600",
+                            "surface-container": "#171a1c",
+                            "surface": "#0c0e10",
+                            "secondary-fixed": "#e2e2e5",
+                            "on-tertiary-fixed": "#4f5051",
+                            "on-background": "#eeeef0",
+                            "surface-container-low": "#111416",
+                            "on-primary-fixed": "#3c4a00",
+                            "background": "#0c0e10",
+                            "on-primary-container": "#4c5d00",
+                            "error": "#ff7351",
+                            "inverse-on-surface": "#545557",
+                            "secondary-dim": "#d4d4d7",
+                            "inverse-primary": "#546600",
+                            "secondary": "#e2e2e5",
+                            "outline-variant": "#46484a",
+                            "surface-bright": "#292c30",
+                            "on-secondary-container": "#d0d0d3",
+                            "outline": "#747578",
+                            "secondary-fixed-dim": "#d4d4d7",
+                            "tertiary-fixed": "#ffffff",
+                            "tertiary-dim": "#ebebeb",
+                            "tertiary-container": "#ebebeb",
+                            "on-primary-fixed-variant": "#556800",
+                            "tertiary": "#f9f9f9",
+                            "error-container": "#b92902"
+                        },
+                        "borderRadius": {
+                            "DEFAULT": "0.25rem",
+                            "lg": "0.5rem",
+                            "xl": "0.75rem",
+                            "full": "9999px"
+                        },
+                        "fontFamily": {
+                            "headline": ["Plus Jakarta Sans", "sans-serif"],
+                            "display": ["Plus Jakarta Sans", "sans-serif"],
+                            "body": ["Inter", "sans-serif"],
+                            "label": ["Inter", "sans-serif"]
+                        }
+                    },
+                },
+            }
+        </script>
+        <style>
+            .glass-panel {
+                background-color: rgba(12, 14, 16, 0.7);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+            }
+
+            .pulse-bar {
+                position: relative;
+                overflow: hidden;
+            }
+
+            .pulse-bar::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(209, 252, 0, 0.4), transparent);
+                animation: pulse-horizontal 2s infinite linear;
+            }
+
+            @keyframes pulse-horizontal {
+                0% {
+                    left: -100%;
+                }
+
+                100% {
+                    left: 100%;
+                }
+            }
+        </style>
+    </th:block>
+</head>
+
+<body>
+    <main class="flex-1 pt-24 px-6 md:px-12 max-w-7xl mx-auto w-full flex flex-col gap-12 md:gap-16 pb-24 md:pb-0">
+
+        <section
+            class="relative rounded-[2rem] overflow-hidden bg-surface-container-low min-h-[300px] flex items-center md:items-end p-6 md:p-10 shadow-[0px_20px_40px_rgba(0,0,0,0.4)] mt-6 transition-all duration-300">
+            <div class="absolute inset-0 z-0">
+                <img alt="Pista de pádel" class="w-full h-full object-cover opacity-30"
+                    src="https://cdn.shopify.com/s/files/1/0225/0031/1115/files/pista-de-padel-cesped-3_600x600.jpg?v=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_7" />
+                <div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/70 to-surface/20"></div>
+            </div>
+
+            <div class="relative z-10 max-w-2xl mt-8 md:mt-0">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-fixed/20 text-primary-fixed text-xs font-bold tracking-widest uppercase mb-4 md:mb-6 backdrop-blur-md transition-colors duration-300 group-hover:bg-primary-fixed/30">
+                    <span
+                        class="w-2 h-2 rounded-full bg-primary-fixed animate-pulse transition-transform duration-300 group-hover:scale-110"></span>
+                    Comunidad de Pádel Online
+                </div>
+                <h1
+                    class="font-display text-4xl md:text-6xl font-bold tracking-tight text-on-surface mb-3 md:mb-4 leading-[1.1]">
+                    <span class="text-primary italic pr-2">PADEL</span> PLAY
+                </h1>
+                <p class="font-body text-base md:text-lg text-on-surface-variant max-w-xl mb-6 md:mb-8">
+                    Entra en el ecosistema definitivo de pádel. Conecta con jugadores de élite,
+                    domina los rankings locales y eleva tu nivel a través de partidos competitivos.
+                </p>
+                <a href="/partidos"
+                    class="bg-gradient-to-r from-[#f4ffc6] to-[#d1fc00] text-on-primary-fixed font-headline font-bold px-6 py-3 md:px-8 md:py-4 rounded-full transition-all duration-300 ease-in-out hover:scale-105 active:scale-95 inline-flex items-center gap-2 shadow-[0px_10px_20px_rgba(209,252,0,0.2)] hover:shadow-[0px_15px_30px_rgba(209,252,0,0.3)]">
+                    <span>Comenzar a jugar</span>
+                    <span
+                        class="material-symbols-outlined transition-transform duration-300 group-hover:translate-x-1">arrow_forward</span>
+                </a>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 md:grid-cols-12 gap-6 pb-20">
+
+            <div onclick="window.location.href='/partidos'"
+                class="md:col-span-8 bg-surface-container-high rounded-[2rem] p-8 relative overflow-hidden group hover:bg-surface-bright transition-colors duration-500 cursor-pointer shadow-[0px_15px_30px_rgba(0,0,0,0.3)]">
+                <div
+                    class="absolute top-0 right-0 w-64 h-64 bg-primary-container/5 rounded-full blur-[80px] -mr-10 -mt-10 group-hover:bg-primary-container/10 transition-colors duration-500">
+                </div>
+                <div class="flex flex-col h-full justify-between relative z-10">
+                    <div class="flex justify-between items-start mb-12">
+                        <div
+                            class="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors">
+                            <span
+                                class="material-symbols-outlined text-3xl transition-transform duration-300 group-hover:scale-110">sports_tennis</span>
+                        </div>
+                        <div
+                            class="bg-surface/50 backdrop-blur-md px-3 py-1.5 rounded-lg border border-outline-variant/15 flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-primary-fixed animate-pulse"></span>
+                            <span
+                                class="text-xs font-bold text-on-surface uppercase tracking-wider font-body">Activo</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h2
+                            class="font-display text-3xl font-bold text-on-surface mb-2 group-hover:text-primary transition-colors">
+                            Explorar Partidos</h2>
+                        <p class="text-on-surface-variant font-body text-sm max-w-sm">Únete a partidos de alto nivel que
+                            están sucediendo ahora.
+                            Filtra por nivel, ubicación y tipo de pista para encontrar tu partido perfecto.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div onclick="window.location.href='/partidos/crear'"
+                class="md:col-span-4 bg-primary-fixed rounded-[2rem] p-8 relative overflow-hidden group cursor-pointer hover:bg-primary-dim transition-colors duration-300 shadow-[0px_20px_40px_rgba(209,252,0,0.15)] flex flex-col justify-between">
+                <div
+                    class="absolute bottom-0 right-0 opacity-10 group-hover:opacity-20 transition-opacity duration-500 transform group-hover:scale-110 group-hover:rotate-12">
+                    <span
+                        class="material-symbols-outlined text-[150px] leading-none transition-transform duration-300 group-hover:scale-110"
+                        data-weight="fill" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+                </div>
+                <div
+                    class="w-12 h-12 rounded-2xl bg-on-primary-fixed/10 flex items-center justify-center text-on-primary-fixed mb-12 relative z-10">
+                    <span class="material-symbols-outlined text-3xl" data-weight="fill"
+                        style="font-variation-settings: 'FILL' 1;">add</span>
+                </div>
+                <div class="relative z-10">
+                    <h2 class="font-display text-3xl font-extrabold text-on-primary-fixed mb-2 leading-tight">
+                        Crear<br />Partido</h2>
+                    <p class="text-on-primary-container font-body text-sm font-medium">Organiza tu propio partido y reta
+                        a la comunidad.</p>
+                </div>
+            </div>
+
+            <div onclick="window.location.href='/comunidad'"
+                class="md:col-span-4 bg-surface-container-high rounded-[2rem] p-8 relative overflow-hidden group hover:bg-surface-bright transition-colors duration-500 cursor-pointer shadow-[0px_15px_30px_rgba(0,0,0,0.3)]">
+                <div class="flex flex-col h-full justify-between">
+                    <div
+                        class="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-on-surface-variant mb-8 group-hover:text-primary transition-colors">
+                        <span
+                            class="material-symbols-outlined text-2xl transition-transform duration-300 group-hover:scale-110">groups</span>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-xl font-bold text-on-surface mb-2">Comunidad</h3>
+                        <p class="text-on-surface-variant font-body text-sm">Conecta con rivales y construye tu lista de
+                            contactos.
+                        </p>
+                        <div class="flex -space-x-3 mt-6">
+                            <div
+                                class="w-8 h-8 rounded-full bg-surface-container-low border-2 border-surface-container-high flex items-center justify-center text-[10px] text-on-surface font-bold z-[3]">
+                                J</div>
+                            <div
+                                class="w-8 h-8 rounded-full bg-surface-container-low border-2 border-surface-container-high flex items-center justify-center text-[10px] text-on-surface font-bold z-[2]">
+                                M</div>
+                            <div
+                                class="w-8 h-8 rounded-full bg-surface-container-low border-2 border-surface-container-high flex items-center justify-center text-[10px] text-on-surface font-bold z-[1]">
+                                A</div>
+                            <div
+                                class="w-8 h-8 rounded-full bg-surface-container-lowest border-2 border-surface-container-high flex items-center justify-center text-[10px] text-on-surface-variant font-bold z-[0]">
+                                +42</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="md:col-span-4 bg-surface-container-high rounded-[2rem] p-8 relative overflow-hidden group hover:bg-surface-bright transition-colors duration-500 cursor-pointer shadow-[0px_15px_30px_rgba(0,0,0,0.3)]">
+                <div
+                    class="absolute inset-0 bg-gradient-to-br from-primary-fixed/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                </div>
+                <div class="flex flex-col h-full justify-between relative z-10">
+                    <div class="flex justify-between items-start mb-8">
+                        <div
+                            class="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors">
+                            <span
+                                class="material-symbols-outlined text-2xl transition-transform duration-300 group-hover:scale-110">emoji_events</span>
+                        </div>
+                        <span
+                            class="bg-surface-container-lowest text-on-surface-variant text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md">Próximamente</span>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-xl font-bold text-on-surface mb-2">Torneos</h3>
+                        <p class="text-on-surface-variant font-body text-sm mb-4">Sube en los rankings de las
+                            competiciones oficiales del club.</p>
+                        <div
+                            class="h-2 w-full bg-surface-container-lowest rounded-full overflow-hidden transition-all duration-300 group-hover:scale-105">
+                            <div
+                                class="h-full bg-primary-fixed w-3/4 rounded-full transition-transform duration-300 group-hover:translate-x-1 animate-pulse">
+                            </div>
+                        </div>
+                        <div
+                            class="text-[10px] text-on-surface-variant mt-2 font-bold tracking-wider transition-colors group-hover:text-primary">
+                            INSCRIPCIÓN AL
+                            75%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div onclick="window.location.href='/perfil/mi-perfil'"
+                class="md:col-span-4 bg-surface-container-high rounded-[2rem] p-8 relative overflow-hidden group hover:bg-surface-bright transition-colors duration-500 cursor-pointer shadow-[0px_15px_30px_rgba(0,0,0,0.3)]">
+                <div class="flex items-center gap-4 mb-6">
+                    <div
+                        class="w-16 h-16 rounded-2xl bg-gradient-to-br from-surface-container-low to-surface-container-highest border border-outline-variant/15 flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:border-primary/30">
+                        <img th:if="${estado != null && estado.pictureUrl != null}" th:src="${estado.pictureUrl}"
+                            class="w-full h-full object-cover rounded-2xl transition-transform duration-300 group-hover:scale-110"
+                            alt="Perfil" />
+                        <span th:unless="${estado != null && estado.pictureUrl != null}"
+                            class="material-symbols-outlined text-3xl text-primary transition-transform duration-300 group-hover:scale-110">person</span>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-xl font-bold text-on-surface leading-tight transition-colors group-hover:text-primary"
+                            th:text="${estado != null ? estado.nombre : 'Mi Perfil'}">Mi Perfil</h3>
+                        <p
+                            class="text-primary font-body text-xs font-bold tracking-wider uppercase mt-1 transition-colors group-hover:text-primary-dim">
+                            Ver mi
+                            perfil
+                        </p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mt-6" th:if="${adminPartidosCreados != null}">
+                    <div
+                        class="bg-surface-container-low rounded-xl p-3 flex flex-col items-center justify-center border border-outline-variant/15 transition-all duration-300 group-hover:bg-primary/5 group-hover:border-primary/20">
+                        <span
+                            class="text-xl font-bold text-on-surface font-display mb-1 transition-colors group-hover:text-primary"
+                            th:text="${adminPartidosActivos != null ? adminPartidosActivos : '0'}">0</span>
+                        <span
+                            class="text-[10px] text-on-surface-variant uppercase tracking-wider font-bold text-center transition-colors group-hover:text-on-surface">Partidos
+                            Activos</span>
+                    </div>
+                    <div
+                        class="bg-surface-container-low rounded-xl p-3 flex flex-col items-center justify-center border border-outline-variant/15 transition-all duration-300 group-hover:bg-primary/5 group-hover:border-primary/20">
+                        <span
+                            class="text-xl font-bold text-on-surface font-display mb-1 transition-colors group-hover:text-primary"
+                            th:text="${adminPartidosCreados != null ? adminPartidosCreados : '0'}">0</span>
+                        <span
+                            class="text-[10px] text-on-surface-variant uppercase tracking-wider font-bold text-center transition-colors group-hover:text-on-surface">Creados</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+    </main>
+</body>
+
+</html>

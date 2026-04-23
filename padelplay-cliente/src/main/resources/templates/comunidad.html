@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html class="dark" lang="es" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{base :: layout(~{::title}, ~{::th:block}, ~{::main})}">
+
+<head>
+    <title>Comunidad - PadelPulse</title>
+    <th:block>
+        <script id="tailwind-config">
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        "colors": {
+                            "primary-fixed": "#d1fc00",
+                            "error": "#ff7351",
+                            "inverse-surface": "#f9f9fc",
+                            "inverse-primary": "#546600",
+                            "primary-container": "#d1fc00",
+                            "on-primary": "#546600",
+                            "background": "#0c0e10",
+                            "surface-container-lowest": "#000000",
+                            "tertiary-fixed-dim": "#f0f1f1",
+                            "surface": "#0c0e10",
+                            "secondary-fixed": "#e2e2e5",
+                            "surface-container-high": "#1d2023",
+                            "surface-container-low": "#111416",
+                            "on-secondary-container": "#d0d0d3",
+                            "surface-dim": "#0c0e10",
+                            "surface-bright": "#292c30",
+                            "on-primary-container": "#4c5d00",
+                            "tertiary-fixed": "#ffffff",
+                            "outline": "#747578",
+                            "on-primary-fixed": "#3c4a00",
+                            "surface-tint": "#f4ffc6",
+                            "primary-dim": "#c7ef00",
+                            "secondary-dim": "#d4d4d7",
+                            "secondary-container": "#454749",
+                            "outline-variant": "#46484a",
+                            "inverse-on-surface": "#545557",
+                            "error-dim": "#d53d18",
+                            "secondary": "#e2e2e5",
+                            "primary": "#f4ffc6",
+                            "on-tertiary-container": "#555757",
+                            "on-tertiary-fixed-variant": "#6c6d6e",
+                            "tertiary-dim": "#ebebeb",
+                            "error-container": "#b92902",
+                            "on-background": "#eeeef0",
+                            "on-secondary-fixed": "#3e3f42",
+                            "on-tertiary": "#5e5f60",
+                            "on-error-container": "#ffd2c8",
+                            "primary-fixed-dim": "#c4ec00",
+                            "on-error": "#450900",
+                            "tertiary": "#f9f9f9",
+                            "on-tertiary-fixed": "#4f5051",
+                            "on-surface": "#eeeef0",
+                            "on-primary-fixed-variant": "#556800",
+                            "on-surface-variant": "#aaabad",
+                            "surface-container": "#171a1c",
+                            "tertiary-container": "#ebebeb",
+                            "secondary-fixed-dim": "#d4d4d7",
+                            "on-secondary-fixed-variant": "#5a5c5e",
+                            "surface-container-highest": "#232629",
+                            "on-secondary": "#505254",
+                            "surface-variant": "#232629"
+                        },
+                        "borderRadius": {
+                            "DEFAULT": "0.25rem",
+                            "lg": "0.5rem",
+                            "xl": "0.75rem",
+                            "full": "9999px"
+                        },
+                        "fontFamily": {
+                            "headline": ["Plus Jakarta Sans"],
+                            "display": ["Plus Jakarta Sans"],
+                            "body": ["Inter"],
+                            "label": ["Inter"]
+                        }
+                    },
+                },
+            }
+        </script>
+        <style>
+            .kinetic-gradient {
+                background: linear-gradient(135deg, #f4ffc6 0%, #d1fc00 100%);
+            }
+        </style>
+    </th:block>
+</head>
+
+<body>
+    <main class="pt-28 px-6 max-w-7xl mx-auto pb-32 md:pb-0">
+        <!-- Hero Section / Context Header -->
+        <section class="mb-12">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                    <h1 class="font-headline font-extrabold text-5xl md:text-7xl tracking-tighter text-on-surface mb-2">
+                        Comunidad <span class="text-primary-fixed">PadelPlay</span></h1>
+                    <p class="text-on-surface-variant text-lg max-w-xl font-body">Conecta con los mejores jugadores y
+                        entrenadores de la red. Eleva tu juego al siguiente nivel.</p>
+                </div>
+                <div class="flex gap-2 bg-surface-container-low p-1.5 rounded-xl">
+                    <button
+                        class="px-6 py-2 rounded-lg bg-primary-fixed text-on-primary-fixed font-bold text-sm transition-all shadow-[0_0_15px_rgba(209,252,0,0.3)]">Siguiendo</button>
+                    <button
+                        class="px-6 py-2 rounded-lg text-on-surface-variant hover:text-on-surface font-bold text-sm transition-colors">Seguidores</button>
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- Main Feed / Lists -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-20">
+            <!-- Left: Tab Content (Players/Coaches) -->
+            <div class="lg:col-span-2">
+                <div class="flex gap-8 border-none mb-8">
+                    <button id="btn-jugadores" onclick="switchTab('jugadores')"
+                        class="text-2xl font-headline font-black text-on-surface border-b-4 border-primary-fixed pb-2 transition-all">Jugadores</button>
+                    <button id="btn-entrenadores" onclick="switchTab('entrenadores')"
+                        class="text-2xl font-headline font-black text-on-surface-variant hover:text-on-surface border-b-4 border-transparent pb-2 transition-all">Entrenadores</button>
+                </div>
+
+                <!-- Jugadores List -->
+                <div id="list-jugadores" class="space-y-4 block">
+                    <div th:each="amigo : ${amigos}" th:if="${amigo.tienePerfilJugador}"
+                        class="bg-surface-container-high hover:bg-surface-bright transition-all duration-300 rounded-3xl p-5 flex items-center gap-6 group">
+                        <div
+                            class="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 group-hover:scale-105 transition-transform">
+                            <img alt="Player" class="w-full h-full object-cover"
+                                th:src="${amigo.pictureUrl != null ? amigo.pictureUrl : 'https://lh3.googleusercontent.com/aida-public/AB6AXuCnoZNX12NJLATjw1LLNxe3nmhMuGUkfnnBRep2SPnmip00TUcU9y8ItbdFDrPwwErPuI_jSIQa6VJzWgcF2xv7nIkxTZp_s2_El6W8SZpk3TVSL2jMR8gHm9Gw5mc1-YqLZma5WBWpU1q5O5HnBz1a4d3hDqmaFvJZSLYVMHwjFsPAidYrG7i1JKMnR5V7BdAYCvDkREXKyldSl1DmDNPmKONTSlf5VnCMJTbAl76zux2frzzy9lBeN6u4S7aulOgf0XTmMVQ2v8Nw'}" />
+                        </div>
+                        <div class="flex-grow">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h4 class="text-lg font-headline font-bold text-on-surface" th:text="${amigo.nombre}">Nombre</h4>
+                                        <span th:if="${estado != null && estado.usuarioId == amigo.usuarioId}" class="bg-primary-fixed text-on-primary-fixed text-[10px] font-black px-2 py-0.5 rounded uppercase inline-block">TÚ</span>
+                                    </div>
+                                    <div class="flex items-center gap-3 mt-1">
+                                        <span class="bg-surface-container-low text-primary-fixed text-[10px] font-bold px-2 py-0.5 rounded-full" th:text="'NIVEL ' + ${amigo.jugadorNivel != null ? amigo.jugadorNivel : '-'}">NIVEL 4.5</span>
+                                        <span class="text-on-surface-variant text-[10px] font-bold" th:text="${amigo.totalSeguidores != null ? amigo.totalSeguidores : 0} + ' seguidores'">0 seguidores</span>
+                                    </div>
+                                </div>
+                                <a th:href="@{/comunidad/{id}(id=${amigo.usuarioId})}" class="bg-surface-container-highest text-on-surface px-5 py-2 rounded-full text-sm font-black uppercase tracking-tight hover:bg-primary-fixed hover:text-on-primary-fixed transition-all inline-block">Perfil</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${amigos == null || amigos.isEmpty()}" class="text-slate-400">No hay jugadores
+                        disponibles en la comunidad.</div>
+                </div>
+
+                <!-- Entrenadores List -->
+                <div id="list-entrenadores" class="space-y-4 hidden">
+                    <div th:each="amigo : ${amigos}" th:if="${amigo.tienePerfilEntrenador}"
+                        class="bg-surface-container-high hover:bg-surface-bright transition-all duration-300 rounded-3xl p-5 flex items-center gap-6 group">
+                        <div
+                            class="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 group-hover:scale-105 transition-transform">
+                            <img alt="Coach" class="w-full h-full object-cover"
+                                th:src="${amigo.pictureUrl != null ? amigo.pictureUrl : 'https://lh3.googleusercontent.com/aida-public/AB6AXuCnoZNX12NJLATjw1LLNxe3nmhMuGUkfnnBRep2SPnmip00TUcU9y8ItbdFDrPwwErPuI_jSIQa6VJzWgcF2xv7nIkxTZp_s2_El6W8SZpk3TVSL2jMR8gHm9Gw5mc1-YqLZma5WBWpU1q5O5HnBz1a4d3hDqmaFvJZSLYVMHwjFsPAidYrG7i1JKMnR5V7BdAYCvDkREXKyldSl1DmDNPmKONTSlf5VnCMJTbAl76zux2frzzy9lBeN6u4S7aulOgf0XTmMVQ2v8Nw'}" />
+                        </div>
+                        <div class="flex-grow">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h4 class="text-lg font-headline font-bold text-on-surface" th:text="${amigo.nombre}">Nombre</h4>
+                                        <span th:if="${estado != null && estado.usuarioId == amigo.usuarioId}" class="bg-primary-fixed text-on-primary-fixed text-[10px] font-black px-2 py-0.5 rounded uppercase inline-block">TÚ</span>
+                                    </div>
+                                    <div class="flex items-center gap-3 mt-1">
+                                        <span class="flex items-center gap-1 text-on-surface-variant text-xs" th:if="${amigo.entrenadorUbicacion != null && !amigo.entrenadorUbicacion.isEmpty()}">
+                                            <span class="material-symbols-outlined text-[14px]">location_on</span>
+                                            <span th:text="${amigo.entrenadorUbicacion}">Ubicación</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <a th:href="@{/comunidad/{id}(id=${amigo.usuarioId})}" class="bg-surface-container-highest text-on-surface px-5 py-2 rounded-full text-sm font-black uppercase tracking-tight hover:bg-primary-fixed hover:text-on-primary-fixed transition-all inline-block">Perfil</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${amigos == null || amigos.isEmpty()}" class="text-slate-400">No hay entrenadores
+                        disponibles en la comunidad.</div>
+                </div>
+
+                <script>
+                    function switchTab(tab) {
+                        const btnJugadores = document.getElementById('btn-jugadores');
+                        const btnEntrenadores = document.getElementById('btn-entrenadores');
+                        const listJugadores = document.getElementById('list-jugadores');
+                        const listEntrenadores = document.getElementById('list-entrenadores');
+
+                        if (tab === 'jugadores') {
+                            btnJugadores.classList.add('text-on-surface', 'border-primary-fixed');
+                            btnJugadores.classList.remove('text-on-surface-variant', 'border-transparent');
+
+                            btnEntrenadores.classList.remove('text-on-surface', 'border-primary-fixed');
+                            btnEntrenadores.classList.add('text-on-surface-variant', 'border-transparent');
+
+                            listJugadores.classList.remove('hidden');
+                            listJugadores.classList.add('block');
+                            listEntrenadores.classList.remove('block');
+                            listEntrenadores.classList.add('hidden');
+                        } else {
+                            btnEntrenadores.classList.add('text-on-surface', 'border-primary-fixed');
+                            btnEntrenadores.classList.remove('text-on-surface-variant', 'border-transparent');
+
+                            btnJugadores.classList.remove('text-on-surface', 'border-primary-fixed');
+                            btnJugadores.classList.add('text-on-surface-variant', 'border-transparent');
+
+                            listEntrenadores.classList.remove('hidden');
+                            listEntrenadores.classList.add('block');
+                            listJugadores.classList.remove('block');
+                            listJugadores.classList.add('hidden');
+                        }
+                    }
+                </script>
+            </div>
+
+            <!-- Right: Filter & Quick Action Panel -->
+            <div class="space-y-8">
+                <div class="bg-surface-container-high rounded-[2rem] p-8 border-none">
+                    <h3 class="text-xl font-headline font-black mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary-fixed">tune</span>
+                        Filtros de Búsqueda
+                    </h3>
+                    <div class="space-y-6">
+                        <div>
+                            <label
+                                class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3">Nivel
+                                de Juego</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button
+                                    class="px-3 py-2 bg-surface-container-highest rounded-lg text-sm font-bold border border-transparent hover:border-primary-fixed/30 transition-all">Iniciación</button>
+                                <button
+                                    class="px-3 py-2 bg-surface-container-highest rounded-lg text-sm font-bold border border-transparent hover:border-primary-fixed/30 transition-all">Intermedio</button>
+                                <button
+                                    class="px-3 py-2 bg-primary-fixed text-on-primary-fixed rounded-lg text-sm font-bold">Avanzado</button>
+                                <button
+                                    class="px-3 py-2 bg-surface-container-highest rounded-lg text-sm font-bold border border-transparent hover:border-primary-fixed/30 transition-all">Pro</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label
+                                class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3">Ubicación</label>
+                            <select
+                                class="w-full bg-surface-container-highest border-none rounded-xl py-3 text-sm focus:ring-1 focus:ring-primary-fixed text-on-surface">
+                                <option>Cualquier Ciudad</option>
+                                <option>Madrid</option>
+                                <option>Barcelona</option>
+                                <option>Valencia</option>
+                            </select>
+                        </div>
+                        <button
+                            class="w-full py-4 kinetic-gradient rounded-xl text-on-primary-fixed font-black uppercase tracking-tighter shadow-xl scale-95 active:scale-90 transition-all">Aplicar
+                            Filtros</button>
+                    </div>
+                </div>
+                <!-- Match Pulse Ad / Feature -->
+                <div class="relative rounded-[2rem] overflow-hidden p-8 min-h-[250px] flex flex-col justify-end">
+                    <img alt="Canvas Image" class="absolute inset-0 w-full h-full object-cover"
+                        data-alt="kinetic background pattern with abstract geometric lines in green and black"
+                        src="data:image/png;base64,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" />
+                    <div class="absolute inset-0 bg-background/60 backdrop-blur-[2px]"></div>
+                    <div class="relative z-10">
+                        <h4 class="text-2xl font-headline font-black text-on-surface italic mb-2 tracking-tighter">
+                            PRÓXIMOS TORNEOS</h4>
+                        <p class="text-sm text-secondary mb-4 font-body">Únete a la liga Vantage y compite por el top
+                            del ranking regional.</p>
+                        <button class="text-primary-fixed font-bold flex items-center gap-2 group">
+                            Inscribirme ahora
+                            <span
+                                class="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BottomNavBar (for mobile) -->
+        <nav
+            class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-[#0c0e10]/90 backdrop-blur-lg shadow-[0_-10px_30px_rgba(0,0,0,0.5)] rounded-t-[2rem]">
+            <a class="flex flex-col items-center justify-center bg-[#d1fc00] text-[#0c0e10] rounded-full px-5 py-2 scale-110 shadow-[0_0_15px_#d1fc00] tap-highlight-transparent"
+                href="#">
+                <span class="material-symbols-outlined">group</span>
+                <span
+                    class="font-['Plus_Jakarta_Sans'] text-[10px] font-bold uppercase tracking-widest">Comunidad</span>
+            </a>
+            <a class="flex flex-col items-center justify-center text-[#aaabad] py-2 hover:text-[#d1fc00] transition-colors tap-highlight-transparent"
+                href="/partidos">
+                <span class="material-symbols-outlined">sports_tennis</span>
+                <span class="font-['Plus_Jakarta_Sans'] text-[10px] font-bold uppercase tracking-widest">Partidos</span>
+            </a>
+            <a class="flex flex-col items-center justify-center text-[#aaabad] py-2 hover:text-[#d1fc00] transition-colors tap-highlight-transparent"
+                href="#">
+                <span class="material-symbols-outlined">stadium</span>
+                <span class="font-['Plus_Jakarta_Sans'] text-[10px] font-bold uppercase tracking-widest">Pistas</span>
+            </a>
+            <a class="flex flex-col items-center justify-center text-[#aaabad] py-2 hover:text-[#d1fc00] transition-colors tap-highlight-transparent"
+                href="/perfil/dashboard">
+                <span class="material-symbols-outlined">account_circle</span>
+                <span class="font-['Plus_Jakarta_Sans'] text-[10px] font-bold uppercase tracking-widest">Perfil</span>
+            </a>
+        </nav>
+    </main>
+</body>
+
+</html>

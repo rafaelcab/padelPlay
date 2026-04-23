@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.List;
 
 /**
  * Repositorio para gestión de perfiles de entrenador.
@@ -24,6 +25,9 @@ public interface PerfilEntrenadorRepository extends JpaRepository<PerfilEntrenad
      */
     @Query("SELECT pe FROM PerfilEntrenador pe LEFT JOIN FETCH pe.certificaciones WHERE pe.usuario.id = :usuarioId")
     Optional<PerfilEntrenador> findByUsuarioIdWithCertificaciones(@Param("usuarioId") Long usuarioId);
+
+    @Query("SELECT DISTINCT pe FROM PerfilEntrenador pe LEFT JOIN FETCH pe.certificaciones")
+    List<PerfilEntrenador> findAllWithCertificaciones();
 
     /**
      * Verifica si existe un perfil de entrenador para el usuario.

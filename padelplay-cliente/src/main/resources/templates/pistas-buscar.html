@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{base :: layout(~{::title}, ~{::style}, ~{::div#content-wrapper})}">
+<head>
+    <title>Buscar Pistas - PadelPlay</title>
+    <style>
+        .card {
+            background: #1d2023;
+            border: 1px solid #2c3136;
+        }
+    </style>
+</head>
+<body>
+<div id="content-wrapper" class="w-full pt-24 pb-16 px-6 max-w-6xl mx-auto">
+    <h1 class="font-headline text-5xl font-extrabold tracking-tighter text-[#D4FF00] italic mb-4">BUSCAR PISTAS</h1>
+    <p class="text-slate-400 mb-8">Consulta disponibilidad por fecha, franja y zona.</p>
+
+    <div th:if="${error}" class="bg-red-500/10 border border-red-500 text-red-400 p-3 rounded-xl mb-6" th:text="${error}"></div>
+
+    <form method="get" action="/pistas/buscar" class="card rounded-2xl p-6 grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div>
+            <label class="text-xs uppercase text-slate-400 font-bold">Fecha</label>
+            <input type="date" name="fecha" th:value="${fecha}" class="w-full mt-2 bg-[#111416] text-white rounded-xl p-3 border border-slate-700" required>
+        </div>
+        <div>
+            <label class="text-xs uppercase text-slate-400 font-bold">Hora inicio</label>
+            <input type="time" name="horaInicio" th:value="${horaInicio}" class="w-full mt-2 bg-[#111416] text-white rounded-xl p-3 border border-slate-700" required>
+        </div>
+        <div>
+            <label class="text-xs uppercase text-slate-400 font-bold">Hora fin</label>
+            <input type="time" name="horaFin" th:value="${horaFin}" class="w-full mt-2 bg-[#111416] text-white rounded-xl p-3 border border-slate-700" required>
+        </div>
+        <div>
+            <label class="text-xs uppercase text-slate-400 font-bold">Zona</label>
+            <input type="text" name="zona" th:value="${zona}" placeholder="Ej: Centro" class="w-full mt-2 bg-[#111416] text-white rounded-xl p-3 border border-slate-700" required>
+        </div>
+        <div class="md:col-span-4">
+            <button type="submit" class="w-full md:w-auto px-6 py-3 rounded-full bg-[#D4FF00] text-black font-bold uppercase tracking-wider">Buscar</button>
+        </div>
+    </form>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div th:if="${#lists.isEmpty(pistas)}" class="col-span-full text-slate-400">No hay pistas para los filtros seleccionados.</div>
+        <div th:each="pista : ${pistas}" class="card rounded-2xl p-5">
+            <p class="text-[#D4FF00] font-black text-lg" th:text="${pista.nombre}">Pista 1</p>
+            <p class="text-slate-300" th:text="${pista.club}">Club Uno</p>
+            <p class="text-slate-400 text-sm" th:text="${'Zona: ' + pista.zona}">Zona: Centro</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

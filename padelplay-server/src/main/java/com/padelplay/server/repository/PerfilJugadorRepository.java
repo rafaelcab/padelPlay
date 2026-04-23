@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface PerfilJugadorRepository extends JpaRepository<PerfilJugador, Long> {
@@ -20,4 +21,7 @@ public interface PerfilJugadorRepository extends JpaRepository<PerfilJugador, Lo
 
     @Query("SELECT p FROM PerfilJugador p LEFT JOIN FETCH p.detallesTecnicos WHERE p.usuario.id = :usuarioId")
     Optional<PerfilJugador> findByUsuarioIdWithDetalles(@Param("usuarioId") Long usuarioId);
+
+    @Query("SELECT DISTINCT p FROM PerfilJugador p LEFT JOIN FETCH p.detallesTecnicos")
+    List<PerfilJugador> findAllWithDetalles();
 }

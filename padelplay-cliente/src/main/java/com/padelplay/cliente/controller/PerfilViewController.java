@@ -8,18 +8,20 @@ import com.padelplay.common.dto.PerfilEntrenadorDto;
 import com.padelplay.common.dto.PerfilJugadorDto;
 import com.padelplay.cliente.proxies.PerfilServiceProxy;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Controller para las vistas de perfil de usuario.
@@ -30,8 +32,6 @@ public class PerfilViewController {
 
     private final PerfilServiceProxy perfilServiceProxy;
     private final RestTemplate restTemplate;
-
-    private final String BACKEND_URL = "http://localhost:8080/api";
 
     public PerfilViewController(PerfilServiceProxy perfilServiceProxy, RestTemplate restTemplate) {
         this.perfilServiceProxy = perfilServiceProxy;
@@ -110,25 +110,44 @@ public class PerfilViewController {
             }
             model.addAttribute("estado", estado);
 
-            // Obtener partidos recientes si el usuario tiene perfil de jugador
             if (estado.getPerfilJugador() != null) {
-                try {
-                    String url = BACKEND_URL + "/partidos/jugador/" + estado.getPerfilJugador().getId() + "/recientes";
-                    ResponseEntity<PartidoDto[]> response = restTemplate.getForEntity(url, PartidoDto[].class);
-                    List<PartidoDto> partidosRecientes = Arrays.asList(response.getBody() != null ? response.getBody() : new PartidoDto[0]);
-                    model.addAttribute("partidosRecientes", partidosRecientes);
-                } catch (Exception e) {
-                    model.addAttribute("partidosRecientes", List.of());
-                }
-            } else {
-                model.addAttribute("partidosRecientes", List.of());
+                cargarResumenAdmin(model, estado.getPerfilJugador().getId());
             }
-
-            return "perfil-dashboard";
+            return "dashboard-principal";
         } catch (Exception e) {
             if (esSesionInvalida(e))
                 return redirigirALogin(session);
             model.addAttribute("error", "Error al cargar el dashboard: " + e.getMessage());
+            return "dashboard-principal";
+        }
+    }
+
+    @GetMapping("/mi-perfil")
+    public String miPerfil(@RequestParam(required = false) String token, HttpSession session, Model model) {
+        if (token != null && !token.isBlank()) {
+            session.setAttribute("token", token);
+        } else {
+            token = (String) session.getAttribute("token");
+        }
+
+        if (token == null)
+            return "redirect:/login";
+
+        try {
+            EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
+            if (estado.isRequiereSeleccionPerfil()) {
+                return "redirect:/perfil/seleccionar-rol";
+            }
+            model.addAttribute("estado", estado);
+
+            if (estado.getPerfilJugador() != null) {
+                cargarResumenAdmin(model, estado.getPerfilJugador().getId());
+            }
+            return "perfil-dashboard";
+        } catch (Exception e) {
+            if (esSesionInvalida(e))
+                return redirigirALogin(session);
+            model.addAttribute("error", "Error al cargar el perfil: " + e.getMessage());
             return "perfil-dashboard";
         }
     }
@@ -350,113 +369,45 @@ public class PerfilViewController {
         }
     }
 
+    @PostMapping("/entrenador/guardar-disponibilidad")
+    public String guardarDisponibilidadEntrenador(
+            @RequestParam(required = false) String dispLunes,
+            @RequestParam(required = false) String dispMartes,
+            @RequestParam(required = false) String dispMiercoles,
+            @RequestParam(required = false) String dispJueves,
+            @RequestParam(required = false) String dispViernes,
+            @RequestParam(required = false) String dispSabado,
+            @RequestParam(required = false) String dispDomingo,
+            HttpSession session) {
+        String token = (String) session.getAttribute("token");
+        if (token == null)
+            return "redirect:/login";
+
+        try {
+            // Recuperar el perfil existente para no sobreescribir otros campos
+            PerfilEntrenadorDto perfil = perfilServiceProxy.obtenerPerfilEntrenador(token);
+            if (perfil == null) perfil = new PerfilEntrenadorDto();
+
+            perfil.setDispLunes(dispLunes != null ? dispLunes : "");
+            perfil.setDispMartes(dispMartes != null ? dispMartes : "");
+            perfil.setDispMiercoles(dispMiercoles != null ? dispMiercoles : "");
+            perfil.setDispJueves(dispJueves != null ? dispJueves : "");
+            perfil.setDispViernes(dispViernes != null ? dispViernes : "");
+            perfil.setDispSabado(dispSabado != null ? dispSabado : "");
+            perfil.setDispDomingo(dispDomingo != null ? dispDomingo : "");
+
+            perfilServiceProxy.actualizarPerfilEntrenador(token, perfil);
+            return "redirect:/perfil/mi-perfil?exito=disponibilidad";
+        } catch (Exception e) {
+            if (esSesionInvalida(e))
+                return redirigirALogin(session);
+            return "redirect:/perfil/mi-perfil?error=" + e.getMessage();
+        }
+    }
+
     @PostMapping("/entrenador/finalizar")
     public String finalizarConfiguracionEntrenador(HttpSession session) {
         return "redirect:/perfil/dashboard";
-    }
-
-    /**
-     * ENTRENADOR: Historial de partidos para dar feedback.
-     */
-    @GetMapping("/entrenador/historial-partidos")
-    public String historialPartidosEntrenador(HttpSession session, Model model) {
-        String token = (String) session.getAttribute("token");
-        if (token == null)
-            return "redirect:/login";
-
-        try {
-            // Obtener estado del perfil
-            EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
-            model.addAttribute("estado", estado);
-
-            // Obtener el historial de partidos
-            try {
-                ResponseEntity<PartidoDto[]> response = restTemplate.getForEntity(
-                        BACKEND_URL + "/entrenador/feedback/historial-partidos",
-                        PartidoDto[].class);
-                List<PartidoDto> partidos = Arrays.asList(response.getBody() != null ? response.getBody() : new PartidoDto[0]);
-                model.addAttribute("partidos", partidos);
-            } catch (Exception e) {
-                model.addAttribute("partidos", new ArrayList<>());
-                model.addAttribute("error", "Error al cargar el historial de partidos");
-            }
-
-            return "entrenador-historial-partidos";
-        } catch (Exception e) {
-            if (esSesionInvalida(e))
-                return redirigirALogin(session);
-            model.addAttribute("error", "Error: " + e.getMessage());
-            return "entrenador-historial-partidos";
-        }
-    }
-
-    /**
-     * ENTRENADOR: Formulario para valorar un partido.
-     */
-    @GetMapping("/entrenador/valorar-partido/{partidoId}")
-    public String valorarPartido(@PathVariable Long partidoId, HttpSession session, Model model) {
-        String token = (String) session.getAttribute("token");
-        if (token == null)
-            return "redirect:/login";
-
-        try {
-            // Obtener el partido
-            try {
-                ResponseEntity<PartidoDto> response = restTemplate.getForEntity(
-                        BACKEND_URL + "/partidos/" + partidoId,
-                        PartidoDto.class);
-                PartidoDto partido = response.getBody();
-                model.addAttribute("partido", partido);
-            } catch (Exception e) {
-                return "redirect:/perfil/entrenador/historial-partidos?error=Partido%20no%20encontrado";
-            }
-
-            // Verificar si ya existe feedback
-            try {
-                ResponseEntity<Map> existeResponse = restTemplate.getForEntity(
-                        BACKEND_URL + "/entrenador/feedback/existe/" + partidoId,
-                        Map.class);
-                Map<String, Boolean> resultado = existeResponse.getBody();
-                if (resultado != null && (Boolean) resultado.getOrDefault("existe", false)) {
-                    model.addAttribute("yaExisteFeedback", true);
-                }
-            } catch (Exception e) {
-                // No existe feedback, continuar normalmente
-            }
-
-            return "entrenador-valorar-partido";
-        } catch (Exception e) {
-            if (esSesionInvalida(e))
-                return redirigirALogin(session);
-            return "redirect:/perfil/entrenador/historial-partidos";
-        }
-    }
-
-    /**
-     * Página para ver la lista de entrenadores disponibles.
-     */
-    @GetMapping("/entrenador")
-    public String listarEntrenadores(HttpSession session, Model model) {
-        String token = (String) session.getAttribute("token");
-        if (token == null)
-            return "redirect:/login";
-
-        try {
-            // Obtener estado del perfil para verificar si tiene perfil de jugador
-            EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
-            model.addAttribute("estado", estado);
-            model.addAttribute("tienePerfilJugador", estado.isTienePerfilJugador());
-
-            // Obtener la lista de entrenadores disponibles
-        
-
-            return "entrenadores";
-        } catch (Exception e) {
-            if (esSesionInvalida(e))
-                return redirigirALogin(session);
-            model.addAttribute("error", "Error: " + e.getMessage());
-            return "entrenadores";
-        }
     }
 
     // === MÉTODOS PRIVADOS DE UTILIDAD (Unificados) ===
@@ -469,5 +420,33 @@ public class PerfilViewController {
     private String redirigirALogin(HttpSession session) {
         session.invalidate();
         return "redirect:/login";
+    }
+
+    private void cargarResumenAdmin(Model model, Long perfilJugadorId) {
+        try {
+            ResponseEntity<PartidoDto[]> response = restTemplate.getForEntity("http://localhost:8080/api/partidos", PartidoDto[].class);
+            List<PartidoDto> partidos = java.util.Arrays.asList(response.getBody() != null ? response.getBody() : new PartidoDto[0]);
+
+            long creados = partidos.stream()
+                    .filter(partido -> partido.getCreador() != null && perfilJugadorId.equals(partido.getCreador().getId()))
+                    .count();
+            long activos = partidos.stream()
+                    .filter(partido -> partido.getCreador() != null && perfilJugadorId.equals(partido.getCreador().getId()))
+                    .filter(partido -> !partido.isCancelado())
+                    .filter(partido -> partido.getFechaHora() != null && partido.getFechaHora().isAfter(LocalDateTime.now().minusMinutes(5)))
+                    .count();
+            long cancelados = partidos.stream()
+                    .filter(partido -> partido.getCreador() != null && perfilJugadorId.equals(partido.getCreador().getId()))
+                    .filter(PartidoDto::isCancelado)
+                    .count();
+
+            model.addAttribute("adminPartidosCreados", creados);
+            model.addAttribute("adminPartidosActivos", activos);
+            model.addAttribute("adminPartidosCancelados", cancelados);
+        } catch (Exception ignored) {
+            model.addAttribute("adminPartidosCreados", 0L);
+            model.addAttribute("adminPartidosActivos", 0L);
+            model.addAttribute("adminPartidosCancelados", 0L);
+        }
     }
 }
