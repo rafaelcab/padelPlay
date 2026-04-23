@@ -33,10 +33,10 @@ public class PerfilService {
     private final CertificacionRepository certificacionRepository;
 
     public PerfilService(UsuarioRepository usuarioRepository,
-                         PerfilJugadorRepository perfilJugadorRepository,
-                         DetallesTecnicosRepository detallesTecnicosRepository,
-                         PerfilEntrenadorRepository perfilEntrenadorRepository,
-                         CertificacionRepository certificacionRepository) {
+            PerfilJugadorRepository perfilJugadorRepository,
+            DetallesTecnicosRepository detallesTecnicosRepository,
+            PerfilEntrenadorRepository perfilEntrenadorRepository,
+            CertificacionRepository certificacionRepository) {
         this.usuarioRepository = usuarioRepository;
         this.perfilJugadorRepository = perfilJugadorRepository;
         this.detallesTecnicosRepository = detallesTecnicosRepository;
@@ -230,6 +230,15 @@ public class PerfilService {
         perfil.setPrecioHoraParticular(dto.getPrecioHoraParticular());
         perfil.setPrecioHoraGrupo(dto.getPrecioHoraGrupo());
 
+        // Actualizar disponibilidad
+        perfil.setDispLunes(dto.getDispLunes());
+        perfil.setDispMartes(dto.getDispMartes());
+        perfil.setDispMiercoles(dto.getDispMiercoles());
+        perfil.setDispJueves(dto.getDispJueves());
+        perfil.setDispViernes(dto.getDispViernes());
+        perfil.setDispSabado(dto.getDispSabado());
+        perfil.setDispDomingo(dto.getDispDomingo());
+
         // Actualizar especialidades
         if (dto.getEspecialidades() != null) {
             Set<EspecialidadEntrenador> especialidades = dto.getEspecialidades().stream()
@@ -318,11 +327,11 @@ public class PerfilService {
         dto.setAniosExperiencia(perfil.getAniosExperiencia());
         dto.setNivelJuego(perfil.getNivelJuego());
         dto.setTelefono(perfil.getTelefono());
-        
+
         if (perfil.getDetallesTecnicos() != null) {
             dto.setDetallesTecnicos(convertirADto(perfil.getDetallesTecnicos()));
         }
-        
+
         return dto;
     }
 
@@ -333,14 +342,14 @@ public class PerfilService {
         dto.setEstiloJuego(detalles.getEstiloJuego() != null ? detalles.getEstiloJuego().name() : null);
         dto.setManoHabil(detalles.getManoHabil() != null ? detalles.getManoHabil().name() : null);
         dto.setObservaciones(detalles.getObservaciones());
-        
+
         if (detalles.getGolpesFuertes() != null) {
             Set<String> golpes = detalles.getGolpesFuertes().stream()
                     .map(TipoGolpe::name)
                     .collect(Collectors.toSet());
             dto.setGolpesFuertes(golpes);
         }
-        
+
         return dto;
     }
 
@@ -358,6 +367,13 @@ public class PerfilService {
         dto.setDisponibleClasesGrupo(perfil.getDisponibleClasesGrupo());
         dto.setPrecioHoraParticular(perfil.getPrecioHoraParticular());
         dto.setPrecioHoraGrupo(perfil.getPrecioHoraGrupo());
+        dto.setDispLunes(perfil.getDispLunes());
+        dto.setDispMartes(perfil.getDispMartes());
+        dto.setDispMiercoles(perfil.getDispMiercoles());
+        dto.setDispJueves(perfil.getDispJueves());
+        dto.setDispViernes(perfil.getDispViernes());
+        dto.setDispSabado(perfil.getDispSabado());
+        dto.setDispDomingo(perfil.getDispDomingo());
 
         if (perfil.getEspecialidades() != null) {
             Set<String> especialidades = perfil.getEspecialidades().stream()

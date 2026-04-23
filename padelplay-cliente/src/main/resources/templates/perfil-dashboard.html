@@ -273,6 +273,81 @@
                 text-align: left;
             }
         }
+
+        /* Schedule grid editable */
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: 50px repeat(7, 1fr);
+            gap: 4px;
+            margin-top: 1rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+        .schedule-cell {
+            background-color: #232629;
+            border-radius: 6px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.68rem;
+            color: #aaabad;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            border: 1px solid transparent;
+        }
+        .schedule-cell:hover {
+            background-color: #292c30;
+            border-color: rgba(212, 255, 0, 0.3);
+        }
+        .schedule-cell.selected {
+            background-color: #D4FF00;
+            color: #3c4a00;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(212, 255, 0, 0.3);
+            border-color: #D4FF00;
+        }
+        .schedule-header-cell {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #eeeef0;
+            text-align: center;
+            padding-bottom: 8px;
+            letter-spacing: 0.05em;
+        }
+        .schedule-time-cell {
+            font-size: 0.68rem;
+            color: #aaabad;
+            text-align: right;
+            padding-right: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            font-weight: 600;
+        }
+        .btn-save-schedule {
+            margin-top: 1.25rem;
+            background: #D4FF00;
+            color: #000;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-save-schedule:hover {
+            background: #bade00;
+            box-shadow: 0 0 10px rgba(212, 255, 0, 0.3);
+        }
+        @media (max-width: 640px) {
+            .schedule-grid {
+                grid-template-columns: 40px repeat(7, minmax(36px, 1fr));
+            }
+        }
     </style>
 </head>
 
@@ -289,15 +364,18 @@
             <div class="profile-grid">
                 <div class="profile-item">
                     <div class="profile-label">Partidos creados</div>
-                    <div class="profile-value" th:text="${adminPartidosCreados != null ? adminPartidosCreados : 0}">0</div>
+                    <div class="profile-value" th:text="${adminPartidosCreados != null ? adminPartidosCreados : 0}">0
+                    </div>
                 </div>
                 <div class="profile-item">
                     <div class="profile-label">Partidos activos</div>
-                    <div class="profile-value" th:text="${adminPartidosActivos != null ? adminPartidosActivos : 0}">0</div>
+                    <div class="profile-value" th:text="${adminPartidosActivos != null ? adminPartidosActivos : 0}">0
+                    </div>
                 </div>
                 <div class="profile-item">
                     <div class="profile-label">Partidos cancelados</div>
-                    <div class="profile-value" th:text="${adminPartidosCancelados != null ? adminPartidosCancelados : 0}">0</div>
+                    <div class="profile-value"
+                        th:text="${adminPartidosCancelados != null ? adminPartidosCancelados : 0}">0</div>
                 </div>
             </div>
         </div>
@@ -453,21 +531,25 @@
                         <div class="profile-label">Experiencia</div>
                         <div class="profile-value"
                             th:classappend="${estado.perfilEntrenador.aniosExperiencia == null} ? 'empty'"
-                            th:text="${estado.perfilEntrenador.aniosExperiencia != null} ? ${estado.perfilEntrenador.aniosExperiencia} + ' años' : 'Sin especificar'">-</div>
+                            th:text="${estado.perfilEntrenador.aniosExperiencia != null} ? ${estado.perfilEntrenador.aniosExperiencia} + ' años' : 'Sin especificar'">
+                            -</div>
                     </div>
                     <div class="profile-item">
-                        <div class="profile-label">Telefono</div>
-                        <div class="profile-value" th:classappend="${estado.perfilEntrenador.telefono == null} ? 'empty'"
+                        <div class="profile-label">Teléfono</div>
+                        <div class="profile-value"
+                            th:classappend="${estado.perfilEntrenador.telefono == null} ? 'empty'"
                             th:text="${estado.perfilEntrenador.telefono} ?: 'Sin especificar'">-</div>
                     </div>
                     <div class="profile-item">
                         <div class="profile-label">Club actual</div>
-                        <div class="profile-value" th:classappend="${estado.perfilEntrenador.clubActual == null} ? 'empty'"
+                        <div class="profile-value"
+                            th:classappend="${estado.perfilEntrenador.clubActual == null} ? 'empty'"
                             th:text="${estado.perfilEntrenador.clubActual} ?: 'Sin especificar'">-</div>
                     </div>
                     <div class="profile-item">
-                        <div class="profile-label">Ubicacion</div>
-                        <div class="profile-value" th:classappend="${estado.perfilEntrenador.ubicacion == null} ? 'empty'"
+                        <div class="profile-label">Ubicación</div>
+                        <div class="profile-value"
+                            th:classappend="${estado.perfilEntrenador.ubicacion == null} ? 'empty'"
                             th:text="${estado.perfilEntrenador.ubicacion} ?: 'Sin especificar'">-</div>
                     </div>
                 </div>
@@ -490,38 +572,62 @@
 
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title"><span class="material-symbols-outlined">payments</span> Tarifas y Disponibilidad</div>
-                    <a href="/perfil/entrenador/configurar" class="btn-edit">Editar</a>
+                    <div class="card-title"><span class="material-symbols-outlined">payments</span> Tarifas y
+                        Disponibilidad</div>
                 </div>
                 <div class="profile-grid" th:if="${estado.perfilEntrenador}">
                     <div class="profile-item">
                         <div class="profile-label">Clases particulares</div>
                         <div class="profile-value"
-                            th:text="${estado.perfilEntrenador.disponibleClasesParticulares != false} ? 'Disponible' : 'No disponible'">-</div>
+                            th:text="${estado.perfilEntrenador.disponibleClasesParticulares != false} ? '✓ Disponible' : '✗ No disponible'">
+                            -</div>
                     </div>
                     <div class="profile-item">
                         <div class="profile-label">Precio/hora particular</div>
-                        <div class="profile-value" th:classappend="${estado.perfilEntrenador.precioHoraParticular == null} ? 'empty'"
-                            th:text="${estado.perfilEntrenador.precioHoraParticular != null} ? ${estado.perfilEntrenador.precioHoraParticular} + ' €/h' : 'Sin especificar'">-</div>
+                        <div class="profile-value"
+                            th:classappend="${estado.perfilEntrenador.precioHoraParticular == null} ? 'empty'"
+                            th:text="${estado.perfilEntrenador.precioHoraParticular != null} ? ${estado.perfilEntrenador.precioHoraParticular} + ' €/h' : 'Sin especificar'">
+                            -</div>
                     </div>
                     <div class="profile-item">
                         <div class="profile-label">Clases en grupo</div>
-                        <div class="profile-value"
-                            th:text="${estado.perfilEntrenador.disponibleClasesGrupo != false} ? 'Disponible' : 'No disponible'">-</div>
+                        <div class="profile-value" th:text="${estado.perfilEntrenador.disponibleClasesGrupo != false} ? '✓ Disponible' : '✗ No disponible'"> - </div>
+
                     </div>
                     <div class="profile-item">
                         <div class="profile-label">Precio/hora grupo</div>
-                        <div class="profile-value" th:classappend="${estado.perfilEntrenador.precioHoraGrupo == null} ? 'empty'"
-                            th:text="${estado.perfilEntrenador.precioHoraGrupo != null} ? ${estado.perfilEntrenador.precioHoraGrupo} + ' €/h/persona' : 'Sin especificar'">-</div>
+                        <div class="profile-value"
+                            th:classappend="${estado.perfilEntrenador.precioHoraGrupo == null} ? 'empty'"
+                            th:text="${estado.perfilEntrenador.precioHoraGrupo != null} ? ${estado.perfilEntrenador.precioHoraGrupo} + ' €/h/persona' : 'Sin especificar'">
+                            - </div>
                     </div>
+                </div>
+
+                <!-- Horario Semanal editable -->
+                <div th:if="${estado.perfilEntrenador}" style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #334155;">
+                    <div class="profile-label" style="margin-bottom: 4px; color: #D4FF00; font-size: 14px;">Horario Disponible</div>
+                    <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.75rem;">Haz clic o arrastra para seleccionar tus franjas horarias.</p>
+                    <form method="post" action="/perfil/entrenador/guardar-disponibilidad" id="scheduleFormDashboard">
+                        <input type="hidden" id="dashDispLunes" name="dispLunes" th:value="${estado.perfilEntrenador.dispLunes}">
+                        <input type="hidden" id="dashDispMartes" name="dispMartes" th:value="${estado.perfilEntrenador.dispMartes}">
+                        <input type="hidden" id="dashDispMiercoles" name="dispMiercoles" th:value="${estado.perfilEntrenador.dispMiercoles}">
+                        <input type="hidden" id="dashDispJueves" name="dispJueves" th:value="${estado.perfilEntrenador.dispJueves}">
+                        <input type="hidden" id="dashDispViernes" name="dispViernes" th:value="${estado.perfilEntrenador.dispViernes}">
+                        <input type="hidden" id="dashDispSabado" name="dispSabado" th:value="${estado.perfilEntrenador.dispSabado}">
+                        <input type="hidden" id="dashDispDomingo" name="dispDomingo" th:value="${estado.perfilEntrenador.dispDomingo}">
+                        <div id="dashScheduleGrid" class="schedule-grid"></div>
+                        <button type="submit" class="btn-save-schedule">Guardar disponibilidad</button>
+                    </form>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title"><span class="material-symbols-outlined">workspace_premium</span> Certificaciones</div>
+                    <div class="card-title"><span class="material-symbols-outlined">workspace_premium</span>
+                        Certificaciones</div>
                     <a href="/perfil/entrenador/certificaciones" class="btn-edit">Gestionar</a>
                 </div>
+
                 <div th:if="${estado.perfilEntrenador?.certificaciones != null && !estado.perfilEntrenador.certificaciones.empty}">
                     <div th:each="cert : ${estado.perfilEntrenador.certificaciones}" class="profile-item"
                         style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
@@ -538,14 +644,94 @@
                             style="background: rgba(234, 179, 8, 0.1); color: #eab308; border-color: rgba(234, 179, 8, 0.2);">Pendiente</span>
                     </div>
                 </div>
-                <div class="empty-state" th:if="${estado.perfilEntrenador?.certificaciones == null || estado.perfilEntrenador.certificaciones.empty}">
-                    <div class="empty-state-icon"><span class="material-symbols-outlined" style="font-size: 48px;">badge</span></div>
-                    <p>No has añadido certificaciones aun.</p>
+
+                <div class="empty-state"
+                    th:if="${estado.perfilEntrenador?.certificaciones == null || estado.perfilEntrenador.certificaciones.empty}">
+                    <div class="empty-state-icon"><span class="material-symbols-outlined"
+                            style="font-size: 48px;">badge</span></div>
+                    <p>No has añadido certificaciones aún.</p>
                     <a href="/perfil/entrenador/certificaciones" class="btn-edit"
                         style="margin-top: 15px; display: inline-block;">Añadir certificaciones</a>
                 </div>
             </div>
         </div>
+
+        <script>
+        (function () {
+            const days = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'];
+            const displayDays = ['Lun', 'Mar', 'Mi\u00e9', 'Jue', 'Vie', 'S\u00e1b', 'Dom'];
+            const hours = [];
+            for (let i = 8; i <= 22; i++) {
+                hours.push(i.toString().padStart(2, '0') + ':00');
+            }
+
+            const grid = document.getElementById('dashScheduleGrid');
+            if (!grid) return;
+
+            // Cabeceras
+            let corner = document.createElement('div');
+            corner.className = 'schedule-header-cell';
+            grid.appendChild(corner);
+            displayDays.forEach(function (d) {
+                let h = document.createElement('div');
+                h.className = 'schedule-header-cell';
+                h.textContent = d;
+                grid.appendChild(h);
+            });
+
+            let isDragging = false;
+            let dragValue = true;
+
+            hours.forEach(function (hour) {
+                let timeLabel = document.createElement('div');
+                timeLabel.className = 'schedule-time-cell';
+                timeLabel.textContent = hour;
+                grid.appendChild(timeLabel);
+
+                days.forEach(function (day) {
+                    let cell = document.createElement('div');
+                    cell.className = 'schedule-cell';
+                    cell.dataset.day = day;
+                    cell.dataset.time = hour;
+
+                    let hiddenInput = document.getElementById('dashDisp' + day);
+                    if (hiddenInput && hiddenInput.value) {
+                        let slots = hiddenInput.value.split(',');
+                        if (slots.indexOf(hour) !== -1) {
+                            cell.classList.add('selected');
+                        }
+                    }
+
+                    cell.addEventListener('mousedown', function (e) {
+                        isDragging = true;
+                        dragValue = !this.classList.contains('selected');
+                        toggleCell(this, dragValue);
+                        e.preventDefault();
+                    });
+                    cell.addEventListener('mouseenter', function () {
+                        if (isDragging) toggleCell(this, dragValue);
+                    });
+
+                    grid.appendChild(cell);
+                });
+            });
+
+            document.addEventListener('mouseup', function () { isDragging = false; });
+
+            function toggleCell(cell, val) {
+                if (val) cell.classList.add('selected');
+                else cell.classList.remove('selected');
+                updateHidden(cell.dataset.day);
+            }
+
+            function updateHidden(day) {
+                let selected = grid.querySelectorAll('.schedule-cell.selected[data-day="' + day + '"]');
+                let times = Array.from(selected).map(function (c) { return c.dataset.time; });
+                let input = document.getElementById('dashDisp' + day);
+                if (input) input.value = times.join(',');
+            }
+        })();
+        </script>
     </main>
 </body>
 

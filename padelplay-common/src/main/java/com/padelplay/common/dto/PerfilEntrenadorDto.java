@@ -22,6 +22,13 @@ public class PerfilEntrenadorDto {
     private Boolean disponibleClasesGrupo;
     private Double precioHoraParticular;
     private Double precioHoraGrupo;
+    private String dispLunes;
+    private String dispMartes;
+    private String dispMiercoles;
+    private String dispJueves;
+    private String dispViernes;
+    private String dispSabado;
+    private String dispDomingo;
     private Set<String> especialidades = new HashSet<>();
     private List<CertificacionDto> certificaciones = new ArrayList<>();
 
@@ -132,6 +139,62 @@ public class PerfilEntrenadorDto {
 
     public void setEspecialidades(Set<String> especialidades) {
         this.especialidades = especialidades;
+    }
+
+    public String getDispLunes() {
+        return dispLunes;
+    }
+
+    public void setDispLunes(String dispLunes) {
+        this.dispLunes = dispLunes;
+    }
+
+    public String getDispMartes() {
+        return dispMartes;
+    }
+
+    public void setDispMartes(String dispMartes) {
+        this.dispMartes = dispMartes;
+    }
+
+    public String getDispMiercoles() {
+        return dispMiercoles;
+    }
+
+    public void setDispMiercoles(String dispMiercoles) {
+        this.dispMiercoles = dispMiercoles;
+    }
+
+    public String getDispJueves() {
+        return dispJueves;
+    }
+
+    public void setDispJueves(String dispJueves) {
+        this.dispJueves = dispJueves;
+    }
+
+    public String getDispViernes() {
+        return dispViernes;
+    }
+
+    public void setDispViernes(String dispViernes) {
+        this.dispViernes = dispViernes;
+    }
+
+    public String getDispSabado() {
+        return dispSabado;
+    }
+
+    public void setDispSabado(String dispSabado) {
+        this.dispSabado = dispSabado;
+    }
+
+    public String getDispDomingo() {
+        return dispDomingo;
+    }
+
+    public void setDispDomingo(String dispDomingo) {
+        this.dispDomingo = dispDomingo;
     }
 
     public List<CertificacionDto> getCertificaciones() {

@@ -59,6 +59,27 @@ public class PerfilEntrenador {
     @Column(name = "especialidad")
     private Set<EspecialidadEntrenador> especialidades = new HashSet<>();
 
+    @Column(name = "disp_lunes", length = 500)
+    private String dispLunes;
+
+    @Column(name = "disp_martes", length = 500)
+    private String dispMartes;
+
+    @Column(name = "disp_miercoles", length = 500)
+    private String dispMiercoles;
+
+    @Column(name = "disp_jueves", length = 500)
+    private String dispJueves;
+
+    @Column(name = "disp_viernes", length = 500)
+    private String dispViernes;
+
+    @Column(name = "disp_sabado", length = 500)
+    private String dispSabado;
+
+    @Column(name = "disp_domingo", length = 500)
+    private String dispDomingo;
+
     @OneToMany(mappedBy = "perfilEntrenador", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Certificacion> certificaciones = new ArrayList<>();
 
@@ -213,6 +234,62 @@ public class PerfilEntrenador {
 
     public void setEspecialidades(Set<EspecialidadEntrenador> especialidades) {
         this.especialidades = especialidades;
+    }
+
+    public String getDispLunes() {
+        return dispLunes;
+    }
+
+    public void setDispLunes(String dispLunes) {
+        this.dispLunes = dispLunes;
+    }
+
+    public String getDispMartes() {
+        return dispMartes;
+    }
+
+    public void setDispMartes(String dispMartes) {
+        this.dispMartes = dispMartes;
+    }
+
+    public String getDispMiercoles() {
+        return dispMiercoles;
+    }
+
+    public void setDispMiercoles(String dispMiercoles) {
+        this.dispMiercoles = dispMiercoles;
+    }
+
+    public String getDispJueves() {
+        return dispJueves;
+    }
+
+    public void setDispJueves(String dispJueves) {
+        this.dispJueves = dispJueves;
+    }
+
+    public String getDispViernes() {
+        return dispViernes;
+    }
+
+    public void setDispViernes(String dispViernes) {
+        this.dispViernes = dispViernes;
+    }
+
+    public String getDispSabado() {
+        return dispSabado;
+    }
+
+    public void setDispSabado(String dispSabado) {
+        this.dispSabado = dispSabado;
+    }
+
+    public String getDispDomingo() {
+        return dispDomingo;
+    }
+
+    public void setDispDomingo(String dispDomingo) {
+        this.dispDomingo = dispDomingo;
     }
 
     public List<Certificacion> getCertificaciones() {
