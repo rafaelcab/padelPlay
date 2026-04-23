@@ -355,6 +355,110 @@ public class PerfilViewController {
         return "redirect:/perfil/dashboard";
     }
 
+    /**
+     * ENTRENADOR: Historial de partidos para dar feedback.
+     */
+    @GetMapping("/entrenador/historial-partidos")
+    public String historialPartidosEntrenador(HttpSession session, Model model) {
+        String token = (String) session.getAttribute("token");
+        if (token == null)
+            return "redirect:/login";
+
+        try {
+            // Obtener estado del perfil
+            EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
+            model.addAttribute("estado", estado);
+
+            // Obtener el historial de partidos
+            try {
+                ResponseEntity<PartidoDto[]> response = restTemplate.getForEntity(
+                        BACKEND_URL + "/entrenador/feedback/historial-partidos",
+                        PartidoDto[].class);
+                List<PartidoDto> partidos = Arrays.asList(response.getBody() != null ? response.getBody() : new PartidoDto[0]);
+                model.addAttribute("partidos", partidos);
+            } catch (Exception e) {
+                model.addAttribute("partidos", new ArrayList<>());
+                model.addAttribute("error", "Error al cargar el historial de partidos");
+            }
+
+            return "entrenador-historial-partidos";
+        } catch (Exception e) {
+            if (esSesionInvalida(e))
+                return redirigirALogin(session);
+            model.addAttribute("error", "Error: " + e.getMessage());
+            return "entrenador-historial-partidos";
+        }
+    }
+
+    /**
+     * ENTRENADOR: Formulario para valorar un partido.
+     */
+    @GetMapping("/entrenador/valorar-partido/{partidoId}")
+    public String valorarPartido(@PathVariable Long partidoId, HttpSession session, Model model) {
+        String token = (String) session.getAttribute("token");
+        if (token == null)
+            return "redirect:/login";
+
+        try {
+            // Obtener el partido
+            try {
+                ResponseEntity<PartidoDto> response = restTemplate.getForEntity(
+                        BACKEND_URL + "/partidos/" + partidoId,
+                        PartidoDto.class);
+                PartidoDto partido = response.getBody();
+                model.addAttribute("partido", partido);
+            } catch (Exception e) {
+                return "redirect:/perfil/entrenador/historial-partidos?error=Partido%20no%20encontrado";
+            }
+
+            // Verificar si ya existe feedback
+            try {
+                ResponseEntity<Map> existeResponse = restTemplate.getForEntity(
+                        BACKEND_URL + "/entrenador/feedback/existe/" + partidoId,
+                        Map.class);
+                Map<String, Boolean> resultado = existeResponse.getBody();
+                if (resultado != null && (Boolean) resultado.getOrDefault("existe", false)) {
+                    model.addAttribute("yaExisteFeedback", true);
+                }
+            } catch (Exception e) {
+                // No existe feedback, continuar normalmente
+            }
+
+            return "entrenador-valorar-partido";
+        } catch (Exception e) {
+            if (esSesionInvalida(e))
+                return redirigirALogin(session);
+            return "redirect:/perfil/entrenador/historial-partidos";
+        }
+    }
+
+    /**
+     * Página para ver la lista de entrenadores disponibles.
+     */
+    @GetMapping("/entrenador")
+    public String listarEntrenadores(HttpSession session, Model model) {
+        String token = (String) session.getAttribute("token");
+        if (token == null)
+            return "redirect:/login";
+
+        try {
+            // Obtener estado del perfil para verificar si tiene perfil de jugador
+            EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
+            model.addAttribute("estado", estado);
+            model.addAttribute("tienePerfilJugador", estado.isTienePerfilJugador());
+
+            // Obtener la lista de entrenadores disponibles
+        
+
+            return "entrenadores";
+        } catch (Exception e) {
+            if (esSesionInvalida(e))
+                return redirigirALogin(session);
+            model.addAttribute("error", "Error: " + e.getMessage());
+            return "entrenadores";
+        }
+    }
+
     // === MÉTODOS PRIVADOS DE UTILIDAD (Unificados) ===
 
     private boolean esSesionInvalida(Exception e) {
