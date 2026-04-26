@@ -6,7 +6,9 @@ import com.padelplay.common.dto.EstadoPerfilDto;
 import com.padelplay.common.dto.PerfilEntrenadorDto;
 import com.padelplay.common.dto.PerfilJugadorDto;
 import com.padelplay.common.dto.SeleccionRolDto;
+import com.padelplay.common.dto.SolicitudEntrenamientoDto;
 import com.padelplay.server.entity.EspecialidadEntrenador;
+import com.padelplay.server.entity.SolicitudEntrenamiento;
 import com.padelplay.server.entity.TipoCertificacion;
 import com.padelplay.server.entity.TipoRol;
 import com.padelplay.server.service.JwtService;
@@ -207,6 +209,51 @@ public class PerfilController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Obtiene la lista pública de entrenadores.
+     */
+    @GetMapping("/entrenadores")
+    public ResponseEntity<?> obtenerEntrenadoresPublicos() {
+        try {
+            return ResponseEntity.ok(perfilService.obtenerEntrenadoresPublicos());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Crea una solicitud de entrenamiento para un entrenador.
+     */
+    @PostMapping("/entrenador/{id}/solicitar")
+    public ResponseEntity<?> solicitarEntrenamiento(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Long id,
+            @RequestBody(required = false) SolicitudEntrenamientoDto request) {
+        try {
+            Long usuarioId = extraerUsuarioId(authHeader);
+            String mensaje = (request != null) ? request.getMensaje() : null;
+            
+            SolicitudEntrenamiento solicitud = perfilService.crearSolicitudEntrenamiento(usuarioId, id, mensaje);
+            
+            SolicitudEntrenamientoDto response = new SolicitudEntrenamientoDto();
+            response.setId(solicitud.getId());
+            response.setJugadorId(solicitud.getJugador().getId());
+            response.setEntrenadorId(solicitud.getEntrenador().getId());
+            response.setMensaje(solicitud.getMensaje());
+            response.setEstado(solicitud.getEstado());
+            response.setFechaSolicitud(solicitud.getFechaSolicitud());
+            
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(new SolicitudEntrenamientoDto(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new SolicitudEntrenamientoDto("Error interno del servidor."));
         }
     }
 

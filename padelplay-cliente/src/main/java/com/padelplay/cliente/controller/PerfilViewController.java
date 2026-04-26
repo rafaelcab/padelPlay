@@ -411,6 +411,31 @@ public class PerfilViewController {
     }
 
     // =========================================================================
+    // DASHBOARD O SECCIÓN PRINCIPAL PARA ENTRENADOR
+    // GET /perfil/entrenador
+    // =========================================================================
+    @GetMapping("/entrenador")
+    public String seccionEntrenador(HttpSession session) {
+        String token = (String) session.getAttribute("token");
+
+        if (token == null)
+            return "redirect:/login";
+
+        try {
+            EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
+            if (estado != null && "ENTRENADOR".equals(estado.getRolActivo())) {
+                // Si es entrenador, redirigir al historial de partidos
+                return "redirect:/perfil/entrenador/historial-partidos";
+            } else {
+                // Si no es entrenador, redirigir al dashboard general
+                return "redirect:/perfil/entrenador/historial-partidos";
+            }
+        } catch (Exception e) {
+            return "redirect:/perfil/dashboard";
+        }
+    }
+
+    // =========================================================================
     // HISTORIAL DE PARTIDOS PARA ENTRENADOR
     // GET /perfil/entrenador/historial-partidos
     // =========================================================================
@@ -425,9 +450,9 @@ public class PerfilViewController {
             EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
             model.addAttribute("estado", estado);
 
-            // TODO: Obtener partidos relacionados con el entrenador
-            // Por ahora, lista vacía
-            model.addAttribute("partidosEntrenador", List.of());
+            // Obtener los partidos creados por los alumnos del entrenador
+            List<PartidoDto> partidosAlumnos = perfilServiceProxy.obtenerPartidosDeAlumnos(token);
+            model.addAttribute("partidosEntrenador", partidosAlumnos);
 
         } catch (Exception e) {
             model.addAttribute("error", "Error al cargar el historial del entrenador: " + e.getMessage());
