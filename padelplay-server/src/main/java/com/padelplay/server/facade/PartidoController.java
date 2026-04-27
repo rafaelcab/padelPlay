@@ -35,12 +35,6 @@ public class PartidoController {
         this.jwtService = jwtService;
     }
 
-    private Long extraerUsuarioId(String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new RuntimeException("Token inválido");
-        }
-        return jwtService.extraerUsuarioId(authHeader.substring(7));
-    }
 
     // =========================================================================
     // 1. OBTENER TODOS LOS PARTIDOS (DASHBOARD)
@@ -178,5 +172,33 @@ public class PartidoController {
         } catch (IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PostMapping("/{id}/terminar")
+    public ResponseEntity<?> terminarPartido(
+            @PathVariable("id") Long partidoId,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            Long usuarioId = extraerUsuarioId(authHeader);
+            PartidoDto partidoActualizado = partidoService.terminarPartido(partidoId, usuarioId);
+            return ResponseEntity.ok(partidoActualizado);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+    }
+
+    private Long extraerUsuarioId(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Token no proporcionado");
+        }
+
+        String token = authHeader.substring(7);
+        if (!jwtService.validarToken(token)) {
+            throw new RuntimeException("Token invalido o expirado");
+        }
+
+        return jwtService.extraerUsuarioId(token);
     }
 }

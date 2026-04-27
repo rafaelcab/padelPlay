@@ -25,12 +25,23 @@ public interface PartidoRepository extends JpaRepository<Partido, Long> {
                         LocalDateTime fechaInicio,
                         LocalDateTime fechaFin);
 
-        @Query("select distinct p.ubicacion from Partido p where p.cancelado = false and p.fechaHora < :fin and p.fechaHora >= :inicio")
-        List<String> findDistinctUbicacionesOcupadasEnFranja(LocalDateTime inicio, LocalDateTime fin);
-
         @Query("SELECT DISTINCT p FROM Partido p WHERE p.creador.usuario IN " +
                         "(SELECT DISTINCT s.jugador FROM SolicitudEntrenamiento s WHERE s.entrenador.usuario.id = :entrenadorId) "
                         +
                         "ORDER BY p.fechaHora DESC")
         List<Partido> findPartidosDeAlumnos(@Param("entrenadorId") Long entrenadorId);
+
+	@Query("select distinct p.ubicacion from Partido p where p.cancelado = false and p.fechaHora < :fin and p.fechaHora >= :inicio")
+	List<String> findDistinctUbicacionesOcupadasEnFranja(LocalDateTime inicio, LocalDateTime fin);
+
+	@Query("""
+			select distinct p
+			from Partido p
+			join p.jugadoresApuntados j
+			where j.id = :perfilJugadorId
+			and p.cancelado = false
+			and p.terminado = true
+			order by p.fechaHora desc
+			""")
+	List<Partido> findPartidosTerminadosNoCanceladosByJugadorId(Long perfilJugadorId);
 }

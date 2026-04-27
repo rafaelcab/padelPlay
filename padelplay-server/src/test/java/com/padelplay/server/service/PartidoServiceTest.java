@@ -37,6 +37,9 @@ class PartidoServiceTest {
     @Mock
     private PerfilJugadorRepository perfilJugadorRepository;
 
+    @Mock
+    private RecordatorioPartidoService recordatorioPartidoService;
+
     @InjectMocks
     private PartidoService partidoService;
 
@@ -396,6 +399,99 @@ class PartidoServiceTest {
                 () -> partidoService.eliminarPartidoSiSolo(82L, 1L));
 
         assertTrue(ex.getMessage().contains("estás solo"));
+    }
+
+    @Test
+    void terminarPartido_debeMarcarTerminadoSiSolicitanteEsCreadorYFechaYaPaso() {
+        Partido partido = partidoAbiertoConCreador(1L);
+        partido.setFechaHora(LocalDateTime.now().minusHours(2));
+        PerfilJugador creador = perfil(1L, "creador", 3.0);
+
+        when(partidoRepository.findById(90L)).thenReturn(Optional.of(partido));
+        when(perfilJugadorRepository.findByUsuarioId(100L)).thenReturn(Optional.of(creador));
+        when(partidoRepository.save(any(Partido.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        PartidoDto resultado = partidoService.terminarPartido(90L, 100L);
+
+        assertTrue(resultado.isTerminado());
+        verify(partidoRepository).save(partido);
+    }
+
+    @Test
+    void terminarPartido_debeFallarSiPartidoNoExiste() {
+        when(partidoRepository.findById(91L)).thenReturn(Optional.empty());
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> partidoService.terminarPartido(91L, 100L));
+
+        assertTrue(ex.getMessage().contains("no existe"));
+    }
+
+    @Test
+    void terminarPartido_debeFallarSiUsuarioNoTienePerfilJugador() {
+        Partido partido = partidoAbiertoConCreador(1L);
+
+        when(partidoRepository.findById(92L)).thenReturn(Optional.of(partido));
+        when(perfilJugadorRepository.findByUsuarioId(100L)).thenReturn(Optional.empty());
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> partidoService.terminarPartido(92L, 100L));
+
+        assertTrue(ex.getMessage().contains("perfil de jugador"));
+    }
+
+    @Test
+    void terminarPartido_debeFallarSiSolicitanteNoEsCreador() {
+        Partido partido = partidoAbiertoConCreador(1L);
+
+        when(partidoRepository.findById(93L)).thenReturn(Optional.of(partido));
+        when(perfilJugadorRepository.findByUsuarioId(100L)).thenReturn(Optional.of(perfil(2L, "pepe", 3.0)));
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> partidoService.terminarPartido(93L, 100L));
+
+        assertTrue(ex.getMessage().contains("Solo el creador"));
+    }
+
+    @Test
+    void terminarPartido_debeFallarSiEstaCancelado() {
+        Partido partido = partidoAbiertoConCreador(1L);
+        partido.setCancelado(true);
+
+        when(partidoRepository.findById(94L)).thenReturn(Optional.of(partido));
+        when(perfilJugadorRepository.findByUsuarioId(100L)).thenReturn(Optional.of(perfil(1L, "creador", 3.0)));
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> partidoService.terminarPartido(94L, 100L));
+
+        assertTrue(ex.getMessage().contains("cancelado"));
+    }
+
+    @Test
+    void terminarPartido_debeFallarSiYaEstaTerminado() {
+        Partido partido = partidoAbiertoConCreador(1L);
+        partido.setTerminado(true);
+
+        when(partidoRepository.findById(95L)).thenReturn(Optional.of(partido));
+        when(perfilJugadorRepository.findByUsuarioId(100L)).thenReturn(Optional.of(perfil(1L, "creador", 3.0)));
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> partidoService.terminarPartido(95L, 100L));
+
+        assertTrue(ex.getMessage().contains("terminado"));
+    }
+
+    @Test
+    void terminarPartido_debeFallarSiFechaTodaviaNoHaLlegado() {
+        Partido partido = partidoAbiertoConCreador(1L);
+
+        when(partidoRepository.findById(96L)).thenReturn(Optional.of(partido));
+        when(perfilJugadorRepository.findByUsuarioId(100L)).thenReturn(Optional.of(perfil(1L, "creador", 3.0)));
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> partidoService.terminarPartido(96L, 100L));
+
+        assertTrue(ex.getMessage().contains("hora de inicio"));
     }
 
     private PartidoDto baseDto() {

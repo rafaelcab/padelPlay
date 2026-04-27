@@ -4,12 +4,12 @@ import com.padelplay.common.dto.CertificacionDto;
 import com.padelplay.common.dto.DetallesTecnicosDto;
 import com.padelplay.common.dto.EstadoPerfilDto;
 import com.padelplay.common.dto.PartidoDto;
+import com.padelplay.common.dto.PartidoPendienteReporteDto;
 import com.padelplay.common.dto.PerfilEntrenadorDto;
 import com.padelplay.common.dto.PerfilJugadorDto;
 import com.padelplay.cliente.proxies.PerfilServiceProxy;
+import com.padelplay.cliente.proxies.ReporteExperienciaProxy;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -31,10 +31,14 @@ import org.springframework.web.client.RestTemplate;
 public class PerfilViewController {
 
     private final PerfilServiceProxy perfilServiceProxy;
+    private final ReporteExperienciaProxy reporteExperienciaProxy;
     private final RestTemplate restTemplate;
 
-    public PerfilViewController(PerfilServiceProxy perfilServiceProxy, RestTemplate restTemplate) {
+    public PerfilViewController(PerfilServiceProxy perfilServiceProxy,
+                                ReporteExperienciaProxy reporteExperienciaProxy,
+                                RestTemplate restTemplate) {
         this.perfilServiceProxy = perfilServiceProxy;
+        this.reporteExperienciaProxy = reporteExperienciaProxy;
         this.restTemplate = restTemplate;
     }
 
@@ -139,24 +143,14 @@ public class PerfilViewController {
                 return "redirect:/perfil/seleccionar-rol";
             }
             model.addAttribute("estado", estado);
+            model.addAttribute("partidosReportables", cargarPartidosReportables(token, estado));
 
             if (estado.getPerfilJugador() != null) {
                 cargarResumenAdmin(model, estado.getPerfilJugador().getId());
             }
 
             // Cargar partidos recientes según el rol activo
-            if ("JUGADOR".equals(estado.getRolActivo()) && estado.getPerfilJugador() != null) {
-                try {
-                    String url = "http://localhost:8080/api/partidos/jugador/" + estado.getPerfilJugador().getId()
-                            + "/recientes";
-                    ResponseEntity<PartidoDto[]> response = restTemplate.getForEntity(url, PartidoDto[].class);
-                    List<PartidoDto> recientes = java.util.Arrays
-                            .asList(response.getBody() != null ? response.getBody() : new PartidoDto[0]);
-                    model.addAttribute("partidosRecientes", recientes);
-                } catch (Exception e) {
-                    model.addAttribute("partidosRecientes", java.util.List.of());
-                }
-            } else if ("ENTRENADOR".equals(estado.getRolActivo())) {
+            if ("ENTRENADOR".equals(estado.getRolActivo())) {
                 try {
                     List<PartidoDto> recientesEntrenador = perfilServiceProxy.obtenerPartidosDeAlumnosPorId(estado.getUsuarioId());
                     // Tomar solo los 3 más recientes para el dashboard
@@ -174,6 +168,7 @@ public class PerfilViewController {
             if (esSesionInvalida(e))
                 return redirigirALogin(session);
             model.addAttribute("error", "Error al cargar el perfil: " + e.getMessage());
+            model.addAttribute("partidosReportables", List.of());
             return "perfil-dashboard";
         }
     }
@@ -545,6 +540,19 @@ public class PerfilViewController {
             model.addAttribute("adminPartidosCreados", 0L);
             model.addAttribute("adminPartidosActivos", 0L);
             model.addAttribute("adminPartidosCancelados", 0L);
+        }
+    }
+
+    private List<PartidoPendienteReporteDto> cargarPartidosReportables(String token, EstadoPerfilDto estado) {
+        if (estado == null || estado.getPerfilJugador() == null) {
+            return List.of();
+        }
+
+        try {
+            List<PartidoPendienteReporteDto> partidos = reporteExperienciaProxy.obtenerPartidosJugados(token);
+            return partidos != null ? partidos : List.of();
+        } catch (Exception ignored) {
+            return List.of();
         }
     }
 }

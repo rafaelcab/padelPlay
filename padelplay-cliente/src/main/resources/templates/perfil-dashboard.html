@@ -4,7 +4,6 @@
 <head>
     <title>Mi Perfil - PadelPlay</title>
     <style>
-        /* Contenido principal */
         .main-content {
             max-width: 900px;
             margin: 40px auto;
@@ -35,6 +34,7 @@
             margin-bottom: 25px;
             padding-bottom: 15px;
             border-bottom: 1px solid #334155;
+            gap: 16px;
         }
 
         .card-title {
@@ -57,6 +57,9 @@
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn-edit:hover {
@@ -96,7 +99,6 @@
             font-style: italic;
         }
 
-        /* Tags para golpes */
         .tags-container {
             display: flex;
             flex-wrap: wrap;
@@ -113,7 +115,6 @@
             font-weight: 500;
         }
 
-        /* Banner para añadir perfil */
         .add-profile-banner {
             background: #0f1113;
             border: 2px dashed #334155;
@@ -183,9 +184,93 @@
             color: #D4FF00;
         }
 
+        .report-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .report-item {
+            background: #0f1113;
+            border: 1px solid #1e293b;
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .report-meta {
+            display: grid;
+            gap: 6px;
+        }
+
+        .report-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #eeeef0;
+        }
+
+        .report-subtitle {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .report-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+
+        .report-status.pending {
+            background: rgba(212, 255, 0, 0.1);
+            color: #D4FF00;
+            border: 1px solid rgba(212, 255, 0, 0.2);
+        }
+
+        .report-status.done {
+            background: rgba(34, 197, 94, 0.1);
+            color: #86efac;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .report-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            min-width: 180px;
+        }
+
+        .report-help {
+            font-size: 12px;
+            color: #94a3b8;
+            text-align: right;
+        }
+
         @media (max-width: 768px) {
             .profile-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .report-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .report-actions {
+                align-items: flex-start;
+                min-width: auto;
+            }
+
+            .report-help {
+                text-align: left;
             }
         }
 
@@ -340,9 +425,6 @@
 </head>
 
 <body>
-    <!-- El Header ha sido movido íntegramente a base.html y lo heredamos -->
-
-    <!-- Contenido Principal -->
     <main class="main-content">
         <h1 class="page-title">Mi Perfil</h1>
 
@@ -371,10 +453,9 @@
             </div>
         </div>
 
-        <!-- Banner para añadir perfil adicional -->
         <div class="add-profile-banner" th:if="${!estado.tienePerfilJugador || !estado.tienePerfilEntrenador}">
-            <h3 th:if="${!estado.tienePerfilJugador}">¿También eres jugador?</h3>
-            <h3 th:if="${!estado.tienePerfilEntrenador}">¿También eres entrenador?</h3>
+            <h3 th:if="${!estado.tienePerfilJugador}">¿Tambien eres jugador?</h3>
+            <h3 th:if="${!estado.tienePerfilEntrenador}">¿Tambien eres entrenador?</h3>
             <p th:if="${!estado.tienePerfilJugador}">Añade tu perfil de jugador para buscar partidos y compañeros.</p>
             <p th:if="${!estado.tienePerfilEntrenador}">Añade tu perfil de entrenador para gestionar tus alumnos.</p>
             <form th:action="@{/perfil/crear-perfil}" method="post">
@@ -385,13 +466,10 @@
             </form>
         </div>
 
-        <!-- Perfil de Jugador -->
         <div th:if="${estado.tienePerfilJugador && estado.rolActivo == 'JUGADOR'}">
-            <!-- Información Básica -->
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title"><span class="material-symbols-outlined">edit_document</span> Información
-                        Básica</div>
+                    <div class="card-title"><span class="material-symbols-outlined">edit_document</span> Informacion Basica</div>
                     <a href="/perfil/jugador/configurar" class="btn-edit">Editar</a>
                 </div>
                 <div class="profile-grid" th:if="${estado.perfilJugador}">
@@ -409,45 +487,40 @@
                         <div class="profile-label">Experiencia</div>
                         <div class="profile-value"
                             th:classappend="${estado.perfilJugador.aniosExperiencia == null} ? 'empty'"
-                            th:text="${estado.perfilJugador.aniosExperiencia != null} ? ${estado.perfilJugador.aniosExperiencia} + ' años' : 'Sin especificar'">
-                            -</div>
+                            th:text="${estado.perfilJugador.aniosExperiencia != null} ? ${estado.perfilJugador.aniosExperiencia} + ' años' : 'Sin especificar'">-</div>
                     </div>
                     <div class="profile-item">
-                        <div class="profile-label">Teléfono</div>
+                        <div class="profile-label">Telefono</div>
                         <div class="profile-value" th:classappend="${estado.perfilJugador.telefono == null} ? 'empty'"
                             th:text="${estado.perfilJugador.telefono} ?: 'Sin especificar'">-</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Detalles Técnicos -->
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title"><span class="material-symbols-outlined">sports_tennis</span> Detalles
-                        Técnicos</div>
+                    <div class="card-title"><span class="material-symbols-outlined">sports_tennis</span> Detalles Tecnicos</div>
                     <a href="/perfil/jugador/detalles-tecnicos" class="btn-edit">Editar</a>
                 </div>
                 <div th:if="${estado.perfilJugador?.detallesTecnicos}">
                     <div class="profile-grid">
                         <div class="profile-item">
-                            <div class="profile-label">Posición</div>
+                            <div class="profile-label">Posicion</div>
                             <div class="profile-value"
                                 th:classappend="${estado.perfilJugador.detallesTecnicos.posicion == null} ? 'empty'"
                                 th:text="${estado.perfilJugador.detallesTecnicos.posicion} ?: 'Sin especificar'">-</div>
                         </div>
                         <div class="profile-item">
-                            <div class="profile-label">Mano Hábil</div>
+                            <div class="profile-label">Mano Habil</div>
                             <div class="profile-value"
                                 th:classappend="${estado.perfilJugador.detallesTecnicos.manoHabil == null} ? 'empty'"
-                                th:text="${estado.perfilJugador.detallesTecnicos.manoHabil} ?: 'Sin especificar'">-
-                            </div>
+                                th:text="${estado.perfilJugador.detallesTecnicos.manoHabil} ?: 'Sin especificar'">-</div>
                         </div>
                         <div class="profile-item">
                             <div class="profile-label">Estilo de Juego</div>
                             <div class="profile-value"
                                 th:classappend="${estado.perfilJugador.detallesTecnicos.estiloJuego == null} ? 'empty'"
-                                th:text="${estado.perfilJugador.detallesTecnicos.estiloJuego} ?: 'Sin especificar'">-
-                            </div>
+                                th:text="${estado.perfilJugador.detallesTecnicos.estiloJuego} ?: 'Sin especificar'">-</div>
                         </div>
                     </div>
 
@@ -463,59 +536,91 @@
                     <div class="profile-item" style="margin-top: 20px;"
                         th:if="${estado.perfilJugador.detallesTecnicos.observaciones != null}">
                         <div class="profile-label">Observaciones</div>
-                        <div class="profile-value" th:text="${estado.perfilJugador.detallesTecnicos.observaciones}">-
-                        </div>
+                        <div class="profile-value" th:text="${estado.perfilJugador.detallesTecnicos.observaciones}">-</div>
                     </div>
                 </div>
                 <div class="empty-state" th:if="${estado.perfilJugador?.detallesTecnicos == null}">
-                    <div class="empty-state-icon"><span class="material-symbols-outlined"
-                            style="font-size: 48px;">assignment</span></div>
-                    <p>No has configurado tus detalles técnicos aún.</p>
+                    <div class="empty-state-icon"><span class="material-symbols-outlined" style="font-size: 48px;">assignment</span></div>
+                    <p>No has configurado tus detalles tecnicos aun.</p>
                     <a href="/perfil/jugador/detalles-tecnicos" class="btn-edit"
                         style="margin-top: 15px; display: inline-block;">Configurar ahora</a>
                 </div>
             </div>
-  <div th:if="${estado.tienePerfilJugador}">
-    
-    <div class="card">
-        </div>
 
-    <div class="card">
-        <div class="card-header">
-            <div class="card-title">
-                <span class="material-symbols-outlined">history</span> 
-                Partidos Recientes
-            </div>
-            <a href="/partidos/historial" class="btn-edit">Ver todos</a>
-        </div>
+            <div th:if="${estado.tienePerfilJugador}">
 
-        <div class="match-list" th:if="${partidosRecientes != null && !partidosRecientes.empty}">
-            <div th:each="partido : ${partidosRecientes}" class="match-item">
-                <div class="match-info">
-                    <span class="match-date" th:text="${#temporals.format(partido.fechaHora, 'dd MMM, yyyy')}"></span>
-                    <div class="match-location">
-                        <span class="material-symbols-outlined" style="color: #D4FF00; font-size: 18px;">location_on</span>
-                        <span th:text="${partido.ubicacion}">Ubicación</span>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="material-symbols-outlined">history</span> 
+                            Partidos Recientes
+                        </div>
+                        <a href="/partidos/historial" class="btn-edit">Ver todos</a>
+                    </div>
+
+                    <div class="match-list" th:if="${partidosRecientes != null && !partidosRecientes.empty}">
+                        <div th:each="partido : ${partidosRecientes}" class="match-item">
+                            <div class="match-info">
+                                <span class="match-date" th:text="${#temporals.format(partido.fechaHora, 'dd MMM, yyyy')}"></span>
+                                <div class="match-location">
+                                    <span class="material-symbols-outlined" style="color: #D4FF00; font-size: 18px;">location_on</span>
+                                    <span th:text="${partido.ubicacion}">Ubicación</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="empty-state" th:if="${partidosRecientes == null || partidosRecientes.empty}">
+                        <p>No tienes partidos registrados aún.</p>
                     </div>
                 </div>
-                </div>
-        </div>
-
-        <div class="empty-state" th:if="${partidosRecientes == null || partidosRecientes.empty}">
-            <p>No tienes partidos registrados aún.</p>
-        </div>
-    </div>
-
-</div>
-        </div>
-
-        <!-- Perfil de Entrenador -->
-        <div th:if="${estado.tienePerfilEntrenador && estado.rolActivo == 'ENTRENADOR'}">
-            <!-- Información Básica del Entrenador -->
+            </div>
+        
             <div class="card">
                 <div class="card-header">
-                    <div class="card-title"><span class="material-symbols-outlined">school</span> Información
-                        Profesional</div>
+                    <div class="card-title"><span class="material-symbols-outlined">flag</span> Reportes pendientes</div>
+                </div>
+
+                <div class="report-list" th:if="${partidosReportables != null && !partidosReportables.empty}">
+                    <div class="report-item" th:each="partido : ${partidosReportables}">
+                        <div class="report-meta">
+                            <div class="report-title" th:text="${partido.ubicacion}">Club Norte</div>
+                            <div class="report-subtitle"
+                                th:text="${#temporals.format(partido.fechaHora, 'dd MMM yyyy - HH:mm')} + ' · ' + ${partido.tipoPartido}">
+                                14 may 2026 - 18:00 · ABIERTO
+                            </div>
+                            <span class="report-status"
+                                th:classappend="${partido.reporteCompletado} ? 'done' : 'pending'"
+                                th:text="${partido.reporteCompletado} ? 'Reporte realizado' : 'Pendiente de reporte'">
+                                Pendiente de reporte
+                            </span>
+                        </div>
+
+                        <div class="report-actions">
+                            <div class="report-help"
+                                th:text="${partido.reporteCompletado} ? 'Ya has reportado a todos los participantes de este partido.' : ${partido.participantesPendientes} + ' participante(s) pendientes de reportar.'">
+                                2 participantes pendientes de reportar.
+                            </div>
+                            <a th:if="${!partido.reporteCompletado}"
+                                th:href="@{'/perfil/reportes/' + ${partido.partidoId}}"
+                                class="btn-edit">Hacer reporte</a>
+                            <span th:if="${partido.reporteCompletado}" class="btn-edit"
+                                style="background:#1f2937;color:#9ca3af;cursor:default;">Reporte realizado</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="empty-state" th:if="${partidosReportables == null || partidosReportables.empty}">
+                    <div class="empty-state-icon"><span class="material-symbols-outlined" style="font-size: 48px;">verified</span></div>
+                    <p>No tienes partidos terminados pendientes de revisar todavia.</p>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${estado.tienePerfilEntrenador && estado.rolActivo == 'ENTRENADOR'}">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><span class="material-symbols-outlined">school</span> Informacion Profesional</div>
                     <a href="/perfil/entrenador/configurar" class="btn-edit">Editar</a>
                 </div>
                 <div class="profile-grid" th:if="${estado.perfilEntrenador}">
@@ -551,7 +656,6 @@
                     </div>
                 </div>
 
-                <!-- Especialidades -->
                 <div class="profile-item" style="margin-top: 20px;"
                     th:if="${estado.perfilEntrenador?.especialidades != null && !estado.perfilEntrenador.especialidades.empty}">
                     <div class="profile-label">Especialidades</div>
@@ -561,15 +665,13 @@
                     </div>
                 </div>
 
-                <!-- Descripción -->
                 <div class="profile-item" style="margin-top: 20px;"
                     th:if="${estado.perfilEntrenador?.descripcion != null}">
-                    <div class="profile-label">Sobre mí</div>
+                    <div class="profile-label">Sobre mi</div>
                     <div class="profile-value" th:text="${estado.perfilEntrenador.descripcion}">-</div>
                 </div>
             </div>
 
-            <!-- Tarifas y Disponibilidad -->
             <div class="card">
                 <div class="card-header">
                     <div class="card-title"><span class="material-symbols-outlined">payments</span> Tarifas y
@@ -591,16 +693,15 @@
                     </div>
                     <div class="profile-item">
                         <div class="profile-label">Clases en grupo</div>
-                        <div class="profile-value"
-                            th:text="${estado.perfilEntrenador.disponibleClasesGrupo != false} ? '✓ Disponible' : '✗ No disponible'">
-                            -</div>
+                        <div class="profile-value" th:text="${estado.perfilEntrenador.disponibleClasesGrupo != false} ? '✓ Disponible' : '✗ No disponible'"> - </div>
+
                     </div>
                     <div class="profile-item">
                         <div class="profile-label">Precio/hora grupo</div>
                         <div class="profile-value"
                             th:classappend="${estado.perfilEntrenador.precioHoraGrupo == null} ? 'empty'"
                             th:text="${estado.perfilEntrenador.precioHoraGrupo != null} ? ${estado.perfilEntrenador.precioHoraGrupo} + ' €/h/persona' : 'Sin especificar'">
-                            -</div>
+                            - </div>
                     </div>
                 </div>
 
@@ -622,15 +723,14 @@
                 </div>
             </div>
 
-            <!-- Certificaciones -->
             <div class="card">
                 <div class="card-header">
                     <div class="card-title"><span class="material-symbols-outlined">workspace_premium</span>
                         Certificaciones</div>
                     <a href="/perfil/entrenador/certificaciones" class="btn-edit">Gestionar</a>
                 </div>
-                <div
-                    th:if="${estado.perfilEntrenador?.certificaciones != null && !estado.perfilEntrenador.certificaciones.empty}">
+
+                <div th:if="${estado.perfilEntrenador?.certificaciones != null && !estado.perfilEntrenador.certificaciones.empty}">
                     <div th:each="cert : ${estado.perfilEntrenador.certificaciones}" class="profile-item"
                         style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
@@ -641,12 +741,12 @@
                             </div>
                         </div>
                         <span th:if="${cert.verificada}" class="tag"
-                            style="background: rgba(34, 197, 94, 0.1); color: #22c55e; border-color: rgba(34, 197, 94, 0.2);">✓
-                            Verificada</span>
+                            style="background: rgba(34, 197, 94, 0.1); color: #22c55e; border-color: rgba(34, 197, 94, 0.2);">Verificada</span>
                         <span th:unless="${cert.verificada}" class="tag"
                             style="background: rgba(234, 179, 8, 0.1); color: #eab308; border-color: rgba(234, 179, 8, 0.2);">Pendiente</span>
                     </div>
                 </div>
+
                 <div class="empty-state"
                     th:if="${estado.perfilEntrenador?.certificaciones == null || estado.perfilEntrenador.certificaciones.empty}">
                     <div class="empty-state-icon"><span class="material-symbols-outlined"
@@ -656,9 +756,7 @@
                         style="margin-top: 15px; display: inline-block;">Añadir certificaciones</a>
                 </div>
             </div>
-        </div>
-            <!-- Historial de Partidos (modo Entrenador) -->
-        <div th:if="${estado.tienePerfilEntrenador && estado.rolActivo == 'ENTRENADOR'}">
+
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">
