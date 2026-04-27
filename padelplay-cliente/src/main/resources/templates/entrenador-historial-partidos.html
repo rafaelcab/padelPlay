@@ -170,7 +170,7 @@
             margin-top: 1rem;
         }
 
-        .btn-primary, .btn-secondary {
+        .btn-primary, .btn-secondary, .btn-feedback {
             padding: 0.75rem 1.25rem;
             border: none;
             border-radius: 0.5rem;
@@ -181,6 +181,9 @@
             transition: all 0.2s;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
         }
 
         .btn-primary {
@@ -200,6 +203,18 @@
 
         .btn-secondary:hover {
             background: var(--color-surface-bright);
+        }
+
+        .btn-feedback {
+            background: linear-gradient(135deg, #d1fc00 0%, #a8cc00 100%);
+            color: #1a2200;
+            box-shadow: 0 4px 15px rgba(209, 252, 0, 0.25);
+        }
+
+        .btn-feedback:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(209, 252, 0, 0.4);
+            background: linear-gradient(135deg, #e0ff33 0%, #b8dc00 100%);
         }
 
         .empty-state {
@@ -238,40 +253,46 @@
 
             <div class="error-message" th:if="${error}" th:text="${error}"></div>
 
-            <div class="partidos-grid" th:if="${!partidos.isEmpty()}">
+            <div class="partidos-grid" th:if="${partidos != null and not #lists.isEmpty(partidos)}">
                 <div th:each="partido : ${partidos}" class="partido-card">
                     <div class="partido-header">
                         <div class="partido-info">
-                            <div class="partido-fecha" th:text="${#temporals.format(partido.fechaHora, 'dd/MMM/yyyy HH:mm')}"></div>
+                            <div class="partido-fecha"
+                                 th:text="${partido.fechaHora != null ? #temporals.format(partido.fechaHora, 'dd/MMM/yyyy HH:mm') : 'Fecha no disponible'}"></div>
                             <div class="partido-ubicacion" th:text="${partido.ubicacion}"></div>
                             <div>
-                                <span class="partido-nivel" th:text="'Nivel: ' + ${#numbers.formatDecimal(partido.nivelRequerido, 1, 1)}"></span>
-                                <span class="partido-nivel" th:text="${partido.tipoPartido == 'PRIVADO' ? 'Privado' : 'Abierto'}"></span>
-                                <span class="feedback-badge" th:if="${partido.tieneFeedback}">✓ Valorado</span>
+                                <span class="partido-nivel"
+                                      th:text="'Nivel: ' + ${#numbers.formatDecimal(partido.nivelRequerido != null ? partido.nivelRequerido : 0, 1, 1)}"></span>
+                                <span class="partido-nivel"
+                                      th:text="${partido.tipoPartido == 'PRIVADO' ? 'Privado' : 'Abierto'}"></span>
                             </div>
                         </div>
                     </div>
 
                     <div class="partido-jugadores">
-                        <div class="jugador-badge">
+                        <div class="jugador-badge" th:if="${partido.creador != null}">
                             <span class="material-symbols-outlined" style="font-size: 1rem;">person</span>
-                            <span>Creador: <strong th:text="${partido.creador.apodo}"></strong></span>
+                            <span>Creador: <strong th:text="${partido.creador.apodo != null ? partido.creador.apodo : 'Desconocido'}"></strong></span>
                         </div>
-                        <div th:each="jugador : ${partido.jugadoresApuntados}" class="jugador-badge">
-                            <div class="jugador-avatar" th:text="${#strings.substring(jugador.apodo,0,1).toUpperCase()}"></div>
+                        <div th:each="jugador : ${partido.jugadoresApuntados}" class="jugador-badge" th:if="${jugador.apodo != null}">
+                            <div class="jugador-avatar" th:text="${#strings.toUpperCase(#strings.substring(jugador.apodo, 0, 1))}"></div>
                             <span th:text="${jugador.apodo}"></span>
                         </div>
                     </div>
 
                     <div class="partido-actions">
-                        <a th:href="@{/perfil/entrenador/valorar-partido/{id}(id=${partido.id})}" class="btn-primary">
-                            Valorar Partido
+                        <a th:href="@{/perfil/entrenador/valorar-partido/{id}(id=${partido.id})}" class="btn-feedback">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem; vertical-align: middle; margin-right: 0.35rem;">psychology</span>
+                            Dar Feedback
+                        </a>
+                        <a th:href="@{/partidos/{id}(id=${partido.id})}" class="btn-secondary">
+                            Ver Detalles
                         </a>
                     </div>
                 </div>
             </div>
 
-            <div class="empty-state" th:if="${partidos.isEmpty()}">
+            <div class="empty-state" th:if="${partidos == null or #lists.isEmpty(partidos)}">
                 <div class="empty-state-icon">📋</div>
                 <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">No hay partidos disponibles</h2>
                 <p>Los partidos de tus alumnos aparecerán aquí una vez que se completen.</p>

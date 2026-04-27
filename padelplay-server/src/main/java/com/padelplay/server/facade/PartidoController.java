@@ -8,11 +8,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.padelplay.common.dto.PartidoDto;
+import com.padelplay.server.service.JwtService;
 import com.padelplay.server.service.PartidoService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,9 +28,18 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class PartidoController {
 
     private final PartidoService partidoService;
+    private final JwtService jwtService;
 
-    public PartidoController(PartidoService partidoService) {
+    public PartidoController(PartidoService partidoService, JwtService jwtService) {
         this.partidoService = partidoService;
+        this.jwtService = jwtService;
+    }
+
+    private Long extraerUsuarioId(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Token inválido");
+        }
+        return jwtService.extraerUsuarioId(authHeader.substring(7));
     }
 
     // =========================================================================
@@ -54,7 +65,8 @@ public class PartidoController {
             @ApiResponse(responseCode = "200", description = "Lista de partidos recuperada con éxito")
     })
     @GetMapping("/jugador/{jugadorId}/recientes")
-    public ResponseEntity<List<PartidoDto>> obtenerPartidosRecientesPorJugador(@PathVariable("jugadorId") Long jugadorId) {
+    public ResponseEntity<List<PartidoDto>> obtenerPartidosRecientesPorJugador(
+            @PathVariable("jugadorId") Long jugadorId) {
         List<PartidoDto> partidos = partidoService.obtenerPartidosRecientesPorJugador(jugadorId);
         return new ResponseEntity<>(partidos, HttpStatus.OK);
     }
@@ -68,9 +80,35 @@ public class PartidoController {
             @ApiResponse(responseCode = "200", description = "Lista de partidos recuperada con éxito")
     })
     @GetMapping("/jugador/{jugadorId}/todos")
-    public ResponseEntity<List<PartidoDto>> obtenerTodosLosPartidosPorJugador(@PathVariable("jugadorId") Long jugadorId) {
+    public ResponseEntity<List<PartidoDto>> obtenerTodosLosPartidosPorJugador(
+            @PathVariable("jugadorId") Long jugadorId) {
         List<PartidoDto> partidos = partidoService.obtenerTodosLosPartidosPorJugador(jugadorId);
         return new ResponseEntity<>(partidos, HttpStatus.OK);
+    }
+
+    @GetMapping("/mis-partidos/todos")
+    public ResponseEntity<List<PartidoDto>> obtenerTodosMisPartidos(@RequestHeader("Authorization") String authHeader) {
+        Long usuarioId = extraerUsuarioId(authHeader);
+        return ResponseEntity.ok(partidoService.obtenerTodosLosPartidosPorJugador(usuarioId));
+    }
+
+    /**
+     * Obtiene los partidos creados por los alumnos del entrenador autenticado.
+     */
+    @GetMapping("/alumnos")
+    public ResponseEntity<List<PartidoDto>> obtenerPartidosDeAlumnos(
+            @RequestHeader("Authorization") String authHeader) {
+        Long usuarioId = extraerUsuarioId(authHeader);
+        return ResponseEntity.ok(partidoService.obtenerPartidosDeAlumnos(usuarioId));
+    }
+
+    /**
+     * Obtiene los partidos creados por los alumnos de un entrenador dado su usuarioId.
+     */
+    @GetMapping("/entrenador/{entrenadorId}/alumnos")
+    public ResponseEntity<List<PartidoDto>> obtenerPartidosDeAlumnosPorId(
+            @PathVariable("entrenadorId") Long entrenadorId) {
+        return ResponseEntity.ok(partidoService.obtenerPartidosDeAlumnos(entrenadorId));
     }
 
     // =========================================================================

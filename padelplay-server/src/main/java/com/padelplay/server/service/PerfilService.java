@@ -10,6 +10,7 @@ import com.padelplay.server.repository.CertificacionRepository;
 import com.padelplay.server.repository.DetallesTecnicosRepository;
 import com.padelplay.server.repository.PerfilEntrenadorRepository;
 import com.padelplay.server.repository.PerfilJugadorRepository;
+import com.padelplay.server.repository.SolicitudEntrenamientoRepository;
 import com.padelplay.server.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,17 +32,20 @@ public class PerfilService {
     private final DetallesTecnicosRepository detallesTecnicosRepository;
     private final PerfilEntrenadorRepository perfilEntrenadorRepository;
     private final CertificacionRepository certificacionRepository;
+    private final SolicitudEntrenamientoRepository solicitudEntrenamientoRepository;
 
     public PerfilService(UsuarioRepository usuarioRepository,
             PerfilJugadorRepository perfilJugadorRepository,
             DetallesTecnicosRepository detallesTecnicosRepository,
             PerfilEntrenadorRepository perfilEntrenadorRepository,
-            CertificacionRepository certificacionRepository) {
+            CertificacionRepository certificacionRepository,
+            SolicitudEntrenamientoRepository solicitudEntrenamientoRepository) {
         this.usuarioRepository = usuarioRepository;
         this.perfilJugadorRepository = perfilJugadorRepository;
         this.detallesTecnicosRepository = detallesTecnicosRepository;
         this.perfilEntrenadorRepository = perfilEntrenadorRepository;
         this.certificacionRepository = certificacionRepository;
+        this.solicitudEntrenamientoRepository = solicitudEntrenamientoRepository;
     }
 
     /**
@@ -212,6 +216,17 @@ public class PerfilService {
     }
 
     /**
+     * Obtiene la lista de entrenadores visibles para todos los usuarios.
+     */
+    @Transactional(readOnly = true)
+    public List<PerfilEntrenadorDto> obtenerEntrenadoresPublicos() {
+        return perfilEntrenadorRepository.findAllWithCertificaciones().stream()
+                .filter(perfil -> perfil.getUsuario() != null)
+                .map(this::convertirADto)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Actualiza el perfil de entrenador.
      */
     public PerfilEntrenadorDto actualizarPerfilEntrenador(Long usuarioId, PerfilEntrenadorDto dto) {
@@ -318,6 +333,37 @@ public class PerfilService {
         return convertirADto(perfil);
     }
 
+    /**
+     * Crea una solicitud de entrenamiento para un entrenador específico.
+     */
+    public SolicitudEntrenamiento crearSolicitudEntrenamiento(Long jugadorId, Long entrenadorId, String mensaje) {
+        Usuario jugador = usuarioRepository.findById(jugadorId)
+                .orElseThrow(() -> new RuntimeException("Jugador no encontrado"));
+
+        PerfilEntrenador entrenador = perfilEntrenadorRepository.findById(entrenadorId)
+                .orElseThrow(() -> new RuntimeException("Entrenador no encontrado"));
+
+        // Validar que el entrenador no sea el mismo jugador
+        if (entrenador.getUsuario() != null && entrenador.getUsuario().getId().equals(jugadorId)) {
+            throw new RuntimeException("No puedes solicitar entrenamiento a ti mismo.");
+        }
+
+        // Verificar si ya existe una solicitud pendiente
+        boolean existePendiente = solicitudEntrenamientoRepository
+                .existsByJugadorIdAndEntrenadorIdAndEstado(jugadorId, entrenadorId, "PENDIENTE");
+
+        if (existePendiente) {
+            throw new RuntimeException("Ya tienes una solicitud pendiente para este entrenador.");
+        }
+
+        SolicitudEntrenamiento solicitud = new SolicitudEntrenamiento();
+        solicitud.setJugador(jugador);
+        solicitud.setEntrenador(entrenador);
+        solicitud.setMensaje(mensaje);
+        
+        return solicitudEntrenamientoRepository.save(solicitud);
+    }
+
     // === Métodos de conversión ===
 
     private PerfilJugadorDto convertirADto(PerfilJugador perfil) {
@@ -387,6 +433,21 @@ public class PerfilService {
                     .map(this::convertirADto)
                     .collect(Collectors.toList());
             dto.setCertificaciones(certificaciones);
+        }
+
+        if (perfil.getUsuario() != null) {
+            dto.setNombre(perfil.getUsuario().getNombre());
+            dto.setFotoUrl(perfil.getUsuario().getPictureUrl());
+        }
+
+        dto.setExperiencia(perfil.getAniosExperiencia());
+        dto.setRating(4.9); // TODO: Implementar sistema de ratings
+        dto.setNivel("Nivel Pro");
+
+        if (perfil.getEspecialidades() != null && !perfil.getEspecialidades().isEmpty()) {
+            dto.setEspecialidad(perfil.getEspecialidades().iterator().next().name());
+        } else {
+            dto.setEspecialidad("Especialista en pádel");
         }
 
         return dto;
