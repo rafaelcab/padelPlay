@@ -152,7 +152,7 @@ public class PerfilViewController {
             // Cargar partidos recientes según el rol activo
             if ("ENTRENADOR".equals(estado.getRolActivo())) {
                 try {
-                    List<PartidoDto> recientesEntrenador = perfilServiceProxy.obtenerPartidosDeAlumnosPorId(estado.getUsuarioId());
+                    List<PartidoDto> recientesEntrenador = perfilServiceProxy.obtenerPartidosDeAlumnos(token);
                     // Tomar solo los 3 más recientes para el dashboard
                     if (recientesEntrenador.size() > 3) {
                         recientesEntrenador = recientesEntrenador.subList(0, 3);
@@ -472,18 +472,11 @@ public class PerfilViewController {
             EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
             model.addAttribute("estado", estado);
 
-            Long entrenadorUsuarioId = estado.getUsuarioId();
-            if (entrenadorUsuarioId == null) {
-                model.addAttribute("error", "No se pudo identificar el usuario entrenador (ID nulo).");
-                model.addAttribute("partidos", java.util.List.of());
-                return "entrenador-historial-partidos";
-            }
-
             try {
-                List<PartidoDto> partidosAlumnos = perfilServiceProxy.obtenerPartidosDeAlumnosPorId(entrenadorUsuarioId);
+                List<PartidoDto> partidosAlumnos = perfilServiceProxy.obtenerPartidosDeAlumnos(token);
                 model.addAttribute("partidos", partidosAlumnos);
             } catch (Exception ex) {
-                model.addAttribute("error", "Error al obtener partidos (entrenadorId=" + entrenadorUsuarioId + "): " + ex.getMessage());
+                model.addAttribute("error", "Error al obtener partidos: " + ex.getMessage());
                 model.addAttribute("partidos", java.util.List.of());
             }
 

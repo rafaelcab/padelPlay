@@ -19,6 +19,7 @@ public class PartidoDto {
     private String codigoAcceso;
     private boolean cancelado;
     private boolean terminado;
+    private String resultado;
 
     // Cambiamos la lista de IDs por la lista de perfiles para los iconos/avatares
     private List<PerfilJugadorDto> jugadoresApuntados;
@@ -108,6 +109,14 @@ public class PartidoDto {
 
     public void setTerminado(boolean terminado) {
         this.terminado = terminado;
+    }
+
+    public String getResultado() {
+        return resultado;
+    }
+
+    public void setResultado(String resultado) {
+        this.resultado = resultado;
     }
 
     public List<PerfilJugadorDto> getJugadoresApuntados() {

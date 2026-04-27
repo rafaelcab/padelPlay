@@ -40,21 +40,23 @@ public class PartidoService {
      */
     @Transactional
     public List<PartidoDto> listarPartidos() {
-        List<Partido> partidos = partidoRepository.findAll();
+        List<Partido> todos = partidoRepository.findAll();
 
-        List<Partido> sinJugadores = partidos.stream()
+        // Separamos los que están vacíos para borrarlos de fondo
+        List<Partido> vacios = todos.stream()
                 .filter(p -> p.getJugadoresApuntados() == null || p.getJugadoresApuntados().isEmpty())
-                .toList();
-
-        if (!sinJugadores.isEmpty()) {
-            partidoRepository.deleteAll(sinJugadores);
+                .collect(Collectors.toList());
+        
+        if (!vacios.isEmpty()) {
+            partidoRepository.deleteAllInBatch(vacios); // Más rápido que deleteAll
         }
 
-        return partidos.stream()
+        // Devolvemos solo los que SI tienen jugadores (los que no vamos a borrar)
+        return todos.stream()
                 .filter(p -> p.getJugadoresApuntados() != null && !p.getJugadoresApuntados().isEmpty())
                 .map(this::convertirADto)
                 .collect(Collectors.toList());
-    }
+}
 
     /**
      * Obtiene los partidos recientes de un jugador (creados o a los que se unió).
@@ -263,7 +265,7 @@ public class PartidoService {
     }
 
     @Transactional
-    public PartidoDto terminarPartido(Long partidoId, Long usuarioId) {
+    public PartidoDto terminarPartido(Long partidoId, Long usuarioId, String resultado) {
         Partido partido = partidoRepository.findById(partidoId)
                 .orElseThrow(() -> new IllegalArgumentException("El partido no existe."));
 
@@ -287,6 +289,7 @@ public class PartidoService {
         }
 
         partido.setTerminado(true);
+        partido.setResultado(resultado);
 
         Partido partidoActualizado = partidoRepository.save(partido);
         return convertirADto(partidoActualizado);
@@ -314,6 +317,7 @@ public class PartidoService {
         dto.setCodigoAcceso(p.getCodigoAcceso());
         dto.setCancelado(p.isCancelado());
         dto.setTerminado(p.isTerminado());
+        dto.setResultado(p.getResultado());
 
         PerfilJugadorDto creadorDto = new PerfilJugadorDto();
         creadorDto.setId(p.getCreador().getId());

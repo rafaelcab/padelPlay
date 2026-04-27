@@ -25,9 +25,10 @@ public interface PartidoRepository extends JpaRepository<Partido, Long> {
                         LocalDateTime fechaInicio,
                         LocalDateTime fechaFin);
 
-        @Query("SELECT DISTINCT p FROM Partido p WHERE p.creador.usuario IN " +
-                        "(SELECT DISTINCT s.jugador FROM SolicitudEntrenamiento s WHERE s.entrenador.usuario.id = :entrenadorId) "
-                        +
+        @Query("SELECT DISTINCT p FROM Partido p " +
+                        "WHERE p.creador.usuario.id = :entrenadorId " +
+                        "OR p.creador.usuario.id IN " +
+                        "(SELECT DISTINCT s.jugador.id FROM SolicitudEntrenamiento s WHERE s.entrenador.usuario.id = :entrenadorId) " +
                         "ORDER BY p.fechaHora DESC")
         List<Partido> findPartidosDeAlumnos(@Param("entrenadorId") Long entrenadorId);
 

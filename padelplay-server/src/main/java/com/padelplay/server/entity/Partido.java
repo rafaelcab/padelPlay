@@ -36,6 +36,9 @@ public class Partido {
     @Column(nullable = false)
     private boolean terminado = false;
 
+    @Column
+    private String resultado;
+
     @ManyToOne
     @JoinColumn(name = "creador_id", nullable = false)
     private PerfilJugador creador;
@@ -117,6 +120,14 @@ public class Partido {
 
     public void setTerminado(boolean terminado) {
         this.terminado = terminado;
+    }
+
+    public String getResultado() {
+        return resultado;
+    }
+
+    public void setResultado(String resultado) {
+        this.resultado = resultado;
     }
 
     public PerfilJugador getCreador() {

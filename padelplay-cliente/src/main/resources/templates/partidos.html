@@ -134,6 +134,10 @@
                                 Org: <span class="text-slate-200 font-bold"
                                     th:text="${partido.creador != null && partido.creador.apodo != '' ? partido.creador.apodo : 'Organizador'}">Creador</span>
                             </p>
+                            <p th:if="${partido.terminado and partido.resultado != null and !partido.resultado.isEmpty()}" 
+                               class="text-[#D4FF00] text-sm font-black mt-2 bg-black/40 px-3 py-1 rounded-lg inline-block">
+                                RESULTADO: <span th:text="${partido.resultado}">6-4, 6-2</span>
+                            </p>
                         </div>
                     </div>
 
@@ -198,12 +202,11 @@
 
                         <div class="mt-3"
                             th:if="${partidosTerminablesIds != null && partidosTerminablesIds.contains(partido.id)}">
-                            <form th:action="@{'/partidos/' + ${partido.id} + '/terminar'}" method="post">
-                                <button type="submit"
+                            <button type="button" th:data-id="${partido.id}" th:data-ubicacion="${partido.ubicacion}"
+                                    onclick="openFinishModal(this)"
                                     class="w-full px-4 py-2 rounded-full border border-emerald-400/40 text-emerald-300 hover:bg-emerald-400/10 transition-colors font-bold text-xs uppercase tracking-widest">
-                                    Dar partido por terminado
+                                    Dar por terminado
                                 </button>
-                            </form>
                         </div>
 
                         <div class="mt-3"
@@ -320,6 +323,49 @@
                                     CONFIRMAR Y UNIRSE
                                 </button>
                                 <button type="button" onclick="closeJoinModal()"
+                                    class="w-full py-4 rounded-full bg-transparent text-slate-400 font-semibold text-sm hover:text-white transition-colors">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL PARA DAR POR TERMINADO EL PARTIDO -->
+            <div id="finish-modal"
+                class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+
+                <div
+                    class="bg-[#1d2023] w-full max-w-md rounded-[2rem] p-8 shadow-[0px_40px_80px_rgba(0,0,0,0.6)] border border-white/5 relative overflow-hidden">
+
+                    <div
+                        class="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none">
+                    </div>
+
+                    <div class="relative z-10 space-y-8">
+                        <div class="text-center space-y-2">
+                            <h2 class="text-2xl font-headline font-extrabold tracking-tight text-white">¿Finalizar Partido?</h2>
+                            <p id="finish-modal-subtitle" class="text-slate-400 text-sm italic">Pista Central</p>
+                        </div>
+
+                        <form id="finish-form" method="POST" action="">
+                            <div class="space-y-4 mb-6">
+                                <label class="text-[10px] uppercase font-bold text-slate-400 px-1 tracking-widest">Introducir Resultado</label>
+                                <div class="relative group">
+                                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-400 transition-colors">scoreboard</span>
+                                    <input name="resultado" required
+                                        class="w-full bg-[#111416] border border-transparent rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all font-medium outline-none uppercase"
+                                        placeholder="Ej: 6-4, 6-2" type="text" autocomplete="off" />
+                                </div>
+                            </div>
+
+                            <div class="space-y-3 pt-2">
+                                <button type="submit"
+                                    class="w-full py-4 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-headline font-extrabold tracking-tight text-base hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] uppercase">
+                                    CONFIRMAR Y FINALIZAR
+                                </button>
+                                <button type="button" onclick="closeFinishModal()"
                                     class="w-full py-4 rounded-full bg-transparent text-slate-400 font-semibold text-sm hover:text-white transition-colors">
                                     Cancelar
                                 </button>
@@ -458,6 +504,20 @@
                 document.getElementById('join-modal').classList.add('hidden');
                 // Limpia el contenido escrito en el input de código, por si el usuario escribe algo, cancela y abre otro partido
                 document.querySelector('input[name="codigoAcceso"]').value = '';
+            }
+
+            function openFinishModal(btn) {
+                const partidoId = btn.getAttribute('data-id');
+                const ubicacion = btn.getAttribute('data-ubicacion');
+
+                document.getElementById('finish-modal-subtitle').textContent = ubicacion;
+                document.getElementById('finish-form').action = '/partidos/' + partidoId + '/terminar';
+                document.getElementById('finish-modal').classList.remove('hidden');
+            }
+
+            function closeFinishModal() {
+                document.getElementById('finish-modal').classList.add('hidden');
+                document.querySelector('#finish-form input[name="resultado"]').value = '';
             }
         </script>
     </div>

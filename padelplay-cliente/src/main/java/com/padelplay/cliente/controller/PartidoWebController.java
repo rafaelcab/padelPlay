@@ -315,6 +315,7 @@ public class PartidoWebController {
 
     @PostMapping("/{id}/terminar")
     public String terminarPartido(@PathVariable("id") Long partidoId,
+            @RequestParam("resultado") String resultado,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         String token = (String) session.getAttribute("token");
@@ -334,8 +335,8 @@ public class PartidoWebController {
             headers.setBearerAuth(token);
 
             HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
-            restTemplate.exchange(BACKEND_URL + "/" + partidoId + "/terminar", HttpMethod.POST, requestEntity,
-                    PartidoDto.class);
+            String url = BACKEND_URL + "/" + partidoId + "/terminar?resultado=" + resultado;
+            restTemplate.exchange(url, HttpMethod.POST, requestEntity, PartidoDto.class);
 
             redirectAttributes.addFlashAttribute("exito", "Partido marcado como terminado correctamente.");
         } catch (HttpClientErrorException e) {
@@ -343,7 +344,7 @@ public class PartidoWebController {
             redirectAttributes.addFlashAttribute("error", mensajeError != null && !mensajeError.isEmpty() ? mensajeError
                     : "No se ha podido terminar el partido.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "OcurriÃ³ un error al contactar con el servidor.");
+            redirectAttributes.addFlashAttribute("error", "Ocurrió un error al contactar con el servidor.");
         }
 
         return "redirect:/partidos";
