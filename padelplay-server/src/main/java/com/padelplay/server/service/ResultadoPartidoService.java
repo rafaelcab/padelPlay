@@ -2,6 +2,8 @@ package com.padelplay.server.service;
 
 import com.padelplay.common.dto.PerfilJugadorDto;
 import com.padelplay.common.dto.RegistrarResultadoPartidoRequestDto;
+import com.padelplay.common.dto.ResultadoPartidoGestionCreadorDto;
+import com.padelplay.common.dto.ResultadoPartidoPendienteValidacionDto;
 import com.padelplay.common.dto.ResultadoPartidoDto;
 import com.padelplay.common.dto.ValidacionResultadoPartidoDto;
 import com.padelplay.common.dto.ValidarResultadoPartidoRequestDto;
@@ -144,6 +146,31 @@ public class ResultadoPartidoService {
         return convertirADto(obtenerResultadoExistente(partidoId));
     }
 
+    @Transactional(readOnly = true)
+    public List<ResultadoPartidoPendienteValidacionDto> listarPendientesValidacion(Long usuarioId) {
+        PerfilJugador perfilJugador = obtenerPerfilJugadorDelUsuario(usuarioId);
+
+        return resultadoPartidoRepository.findPendientesValidacionByPerfilJugadorId(
+                        perfilJugador.getId(),
+                        EstadoValidacionResultadoPartido.PENDIENTE_VALIDACION
+                ).stream()
+                .map(this::convertirAPendienteValidacionDto)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ResultadoPartidoGestionCreadorDto> listarResultadosGestionCreador(Long usuarioId) {
+        PerfilJugador creador = obtenerPerfilJugadorDelUsuario(usuarioId);
+        List<Partido> partidosCreados = partidoRepository.findByCreadorIdWithJugadores(creador.getId());
+        Map<Long, ResultadoPartido> resultadoPorPartidoId = resultadoPartidoRepository.findByCreadorIdWithDetalles(creador.getId()).stream()
+                .collect(Collectors.toMap(resultado -> resultado.getPartido().getId(), resultado -> resultado));
+
+        return partidosCreados.stream()
+                .sorted(Comparator.comparing(Partido::getFechaHora, Comparator.nullsLast(Comparator.reverseOrder())))
+                .map(partido -> convertirAGestionCreadorDto(partido, resultadoPorPartidoId.get(partido.getId())))
+                .toList();
+    }
+
     private Partido obtenerPartido(Long partidoId) {
         return partidoRepository.findById(partidoId)
                 .orElseThrow(() -> new IllegalArgumentException("El partido no existe."));
@@ -274,6 +301,9 @@ public class ResultadoPartidoService {
     private ResultadoPartidoDto convertirADto(ResultadoPartido resultado) {
         ResultadoPartidoDto dto = new ResultadoPartidoDto();
         dto.setPartidoId(resultado.getPartido().getId());
+        dto.setFechaHora(resultado.getPartido().getFechaHora());
+        dto.setUbicacion(resultado.getPartido().getUbicacion());
+        dto.setTipoPartido(resultado.getPartido().getTipoPartido());
         dto.setTipoFinalizacion(resultado.getTipoFinalizacion().name());
         dto.setJuegosEquipoA(resultado.getJuegosEquipoA());
         dto.setJuegosEquipoB(resultado.getJuegosEquipoB());
@@ -310,6 +340,53 @@ public class ResultadoPartidoService {
         dto.setValidacionesRechazadas(rechazadas);
         dto.setValidacionesPendientes(pendientes);
         return dto;
+    }
+
+    private ResultadoPartidoPendienteValidacionDto convertirAPendienteValidacionDto(ResultadoPartido resultado) {
+        ResultadoPartidoPendienteValidacionDto dto = new ResultadoPartidoPendienteValidacionDto();
+        dto.setPartidoId(resultado.getPartido().getId());
+        dto.setFechaHora(resultado.getPartido().getFechaHora());
+        dto.setUbicacion(resultado.getPartido().getUbicacion());
+        dto.setTipoPartido(resultado.getPartido().getTipoPartido());
+        dto.setTipoFinalizacion(resultado.getTipoFinalizacion().name());
+        dto.setJuegosEquipoA(resultado.getJuegosEquipoA());
+        dto.setJuegosEquipoB(resultado.getJuegosEquipoB());
+        dto.setRegistradoPorApodo(resultado.getRegistradoPor().getApodo());
+        dto.setEstadoValidacion(resultado.getEstadoValidacion().name());
+        dto.setEquipoA(List.of(
+                convertirAPerfilJugadorDto(resultado.getEquipoAJugador1()),
+                convertirAPerfilJugadorDto(resultado.getEquipoAJugador2())
+        ));
+        dto.setEquipoB(List.of(
+                convertirAPerfilJugadorDto(resultado.getEquipoBJugador1()),
+                convertirAPerfilJugadorDto(resultado.getEquipoBJugador2())
+        ));
+        return dto;
+    }
+
+    private ResultadoPartidoGestionCreadorDto convertirAGestionCreadorDto(Partido partido, ResultadoPartido resultado) {
+        ResultadoPartidoGestionCreadorDto dto = new ResultadoPartidoGestionCreadorDto();
+        dto.setPartidoId(partido.getId());
+        dto.setFechaHora(partido.getFechaHora());
+        dto.setUbicacion(partido.getUbicacion());
+        dto.setTipoPartido(partido.getTipoPartido());
+        dto.setPuedeRegistrarResultado(puedeRegistrarResultado(partido, resultado));
+        dto.setResultadoPendienteValidacion(resultado != null
+                && resultado.getEstadoValidacion() == EstadoValidacionResultadoPartido.PENDIENTE_VALIDACION);
+        dto.setResultadoRechazado(resultado != null
+                && resultado.getEstadoValidacion() == EstadoValidacionResultadoPartido.RECHAZADO);
+        dto.setResultadoValidado(resultado != null
+                && resultado.getEstadoValidacion() == EstadoValidacionResultadoPartido.VALIDADO);
+        return dto;
+    }
+
+    private boolean puedeRegistrarResultado(Partido partido, ResultadoPartido resultado) {
+        return resultado == null
+                && !partido.isCancelado()
+                && partido.getFechaHora() != null
+                && partido.getFechaHora().isBefore(LocalDateTime.now())
+                && partido.getJugadoresApuntados() != null
+                && partido.getJugadoresApuntados().size() == JUGADORES_REQUERIDOS;
     }
 
     private PerfilJugadorDto convertirAPerfilJugadorDto(PerfilJugador perfilJugador) {

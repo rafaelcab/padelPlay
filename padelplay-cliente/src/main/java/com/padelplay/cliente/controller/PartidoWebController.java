@@ -3,6 +3,8 @@ package com.padelplay.cliente.controller;
 import com.padelplay.common.dto.EstadoPerfilDto;
 import com.padelplay.common.dto.PartidoDto;
 import com.padelplay.cliente.proxies.PerfilServiceProxy;
+import com.padelplay.cliente.proxies.ResultadoPartidoProxy;
+import com.padelplay.common.dto.ResultadoPartidoGestionCreadorDto;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -28,12 +30,16 @@ public class PartidoWebController {
 
     private final RestTemplate restTemplate;
     private final PerfilServiceProxy perfilServiceProxy;
+    private final ResultadoPartidoProxy resultadoPartidoProxy;
 
     private final String BACKEND_URL = "http://localhost:8080/api/partidos";
 
-    public PartidoWebController(RestTemplate restTemplate, PerfilServiceProxy perfilServiceProxy) {
+    public PartidoWebController(RestTemplate restTemplate,
+                                PerfilServiceProxy perfilServiceProxy,
+                                ResultadoPartidoProxy resultadoPartidoProxy) {
         this.restTemplate = restTemplate;
         this.perfilServiceProxy = perfilServiceProxy;
+        this.resultadoPartidoProxy = resultadoPartidoProxy;
     }
 
     // =========================================================================
@@ -43,6 +49,7 @@ public class PartidoWebController {
     public String mostrarDashboard(Model model, HttpSession session) {
         String token = (String) session.getAttribute("token");
         Long perfilJugadorId = null;
+        cargarEstadosResultadoVacios(model);
 
         if (token != null) {
             try {
@@ -92,10 +99,12 @@ public class PartidoWebController {
                 model.addAttribute("partidosCreadosIds", partidosCreadosIds);
                 model.addAttribute("partidosEliminablesIds", partidosEliminablesIds);
                 model.addAttribute("partidosTerminablesIds", partidosTerminablesIds);
+                cargarEstadosResultadoCreador(model, token);
                 }
         } catch (Exception e) {
             model.addAttribute("error", "No se pudieron cargar los partidos. Inténtalo más tarde.");
             model.addAttribute("partidos", List.of());
+            cargarEstadosResultadoVacios(model);
         }
 
         return "partidos";
@@ -308,5 +317,54 @@ public class PartidoWebController {
         }
 
         return "redirect:/partidos";
+    }
+
+    private void cargarEstadosResultadoCreador(Model model, String token) {
+        if (token == null) {
+            cargarEstadosResultadoVacios(model);
+            return;
+        }
+
+        try {
+            List<ResultadoPartidoGestionCreadorDto> resultados = resultadoPartidoProxy.obtenerResultadosGestionCreador(token);
+            if (resultados == null) {
+                cargarEstadosResultadoVacios(model);
+                return;
+            }
+
+            Set<Long> partidosResultadoRegistrableIds = resultados.stream()
+                    .filter(ResultadoPartidoGestionCreadorDto::isPuedeRegistrarResultado)
+                    .map(ResultadoPartidoGestionCreadorDto::getPartidoId)
+                    .collect(Collectors.toSet());
+
+            Set<Long> partidosResultadoPendienteIds = resultados.stream()
+                    .filter(ResultadoPartidoGestionCreadorDto::isResultadoPendienteValidacion)
+                    .map(ResultadoPartidoGestionCreadorDto::getPartidoId)
+                    .collect(Collectors.toSet());
+
+            Set<Long> partidosResultadoRechazadoIds = resultados.stream()
+                    .filter(ResultadoPartidoGestionCreadorDto::isResultadoRechazado)
+                    .map(ResultadoPartidoGestionCreadorDto::getPartidoId)
+                    .collect(Collectors.toSet());
+
+            Set<Long> partidosResultadoValidadoIds = resultados.stream()
+                    .filter(ResultadoPartidoGestionCreadorDto::isResultadoValidado)
+                    .map(ResultadoPartidoGestionCreadorDto::getPartidoId)
+                    .collect(Collectors.toSet());
+
+            model.addAttribute("partidosResultadoRegistrableIds", partidosResultadoRegistrableIds);
+            model.addAttribute("partidosResultadoPendienteIds", partidosResultadoPendienteIds);
+            model.addAttribute("partidosResultadoRechazadoIds", partidosResultadoRechazadoIds);
+            model.addAttribute("partidosResultadoValidadoIds", partidosResultadoValidadoIds);
+        } catch (Exception e) {
+            cargarEstadosResultadoVacios(model);
+        }
+    }
+
+    private void cargarEstadosResultadoVacios(Model model) {
+        model.addAttribute("partidosResultadoRegistrableIds", Set.of());
+        model.addAttribute("partidosResultadoPendienteIds", Set.of());
+        model.addAttribute("partidosResultadoRechazadoIds", Set.of());
+        model.addAttribute("partidosResultadoValidadoIds", Set.of());
     }
 }

@@ -254,6 +254,27 @@
             text-align: right;
         }
 
+        .validation-summary {
+            display: grid;
+            gap: 8px;
+        }
+
+        .validation-score {
+            color: #D4FF00;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .team-line {
+            font-size: 13px;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+
+        .team-line strong {
+            color: #eeeef0;
+        }
+
         @media (max-width: 768px) {
             .profile-grid {
                 grid-template-columns: 1fr;
@@ -471,6 +492,49 @@
                     <p>No has configurado tus detalles tecnicos aun.</p>
                     <a href="/perfil/jugador/detalles-tecnicos" class="btn-edit"
                         style="margin-top: 15px; display: inline-block;">Configurar ahora</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><span class="material-symbols-outlined">task_alt</span> Validaciones pendientes</div>
+                </div>
+
+                <div class="report-list" th:if="${resultadosPendientesValidacion != null && !resultadosPendientesValidacion.empty}">
+                    <div class="report-item" th:each="resultado : ${resultadosPendientesValidacion}">
+                        <div class="validation-summary">
+                            <div class="report-title" th:text="${resultado.ubicacion}">Club Norte</div>
+                            <div class="report-subtitle"
+                                th:text="${#temporals.format(resultado.fechaHora, 'dd MMM yyyy - HH:mm') + ' · ' + resultado.tipoPartido}">
+                                14 may 2026 - 18:00 · ABIERTO
+                            </div>
+                            <div class="validation-score"
+                                th:text="${resultado.juegosEquipoA != null && resultado.juegosEquipoB != null ? resultado.juegosEquipoA + ' - ' + resultado.juegosEquipoB : resultado.tipoFinalizacion}">
+                                6 - 4
+                            </div>
+                            <div class="team-line">
+                                <strong>Equipo A:</strong>
+                                <span th:text="${resultado.equipoA[0].apodo + ' / ' + resultado.equipoA[1].apodo}">Jugador 1 / Jugador 2</span>
+                            </div>
+                            <div class="team-line">
+                                <strong>Equipo B:</strong>
+                                <span th:text="${resultado.equipoB[0].apodo + ' / ' + resultado.equipoB[1].apodo}">Jugador 3 / Jugador 4</span>
+                            </div>
+                        </div>
+
+                        <div class="report-actions">
+                            <div class="report-help"
+                                th:text="${'Registrado por ' + (resultado.registradoPorApodo != null ? resultado.registradoPorApodo : 'el creador') + '.'}">
+                                Registrado por el creador.
+                            </div>
+                            <a th:href="@{'/perfil/resultados/' + ${resultado.partidoId}}" class="btn-edit">Revisar resultado</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="empty-state" th:if="${resultadosPendientesValidacion == null || resultadosPendientesValidacion.empty}">
+                    <div class="empty-state-icon"><span class="material-symbols-outlined" style="font-size: 48px;">checklist</span></div>
+                    <p>No tienes resultados pendientes de validar ahora mismo.</p>
                 </div>
             </div>
 

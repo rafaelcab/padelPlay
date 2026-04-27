@@ -3,6 +3,7 @@ package com.padelplay.server.repository;
 import com.padelplay.server.entity.Partido;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -37,4 +38,13 @@ public interface PartidoRepository extends JpaRepository<Partido, Long> {
 			order by p.fechaHora desc
 			""")
 	List<Partido> findPartidosTerminadosNoCanceladosByJugadorId(Long perfilJugadorId);
+
+	@Query("""
+			select distinct p
+			from Partido p
+			left join fetch p.jugadoresApuntados
+			where p.creador.id = :creadorId
+			order by p.fechaHora desc
+			""")
+	List<Partido> findByCreadorIdWithJugadores(@Param("creadorId") Long creadorId);
 }

@@ -1,6 +1,8 @@
 package com.padelplay.server.service;
 
 import com.padelplay.common.dto.RegistrarResultadoPartidoRequestDto;
+import com.padelplay.common.dto.ResultadoPartidoGestionCreadorDto;
+import com.padelplay.common.dto.ResultadoPartidoPendienteValidacionDto;
 import com.padelplay.common.dto.ResultadoPartidoDto;
 import com.padelplay.common.dto.ValidarResultadoPartidoRequestDto;
 import com.padelplay.server.entity.EstadoValidacionResultadoPartido;
@@ -241,6 +243,94 @@ class ResultadoPartidoServiceTest {
 
         assertTrue(ex.getMessage().contains("participantes"));
         verify(resultadoPartidoRepository, never()).findByPartidoIdWithDetalles(50L);
+    }
+
+    @Test
+    void listarPendientesValidacion_devuelveResultadosPendientesDelJugador() {
+        PerfilJugador creador = perfil(1L, "creador", 101L);
+        PerfilJugador jugador2 = perfil(2L, "jugador2", 102L);
+        PerfilJugador jugador3 = perfil(3L, "jugador3", 103L);
+        PerfilJugador jugador4 = perfil(4L, "jugador4", 104L);
+        Partido partido = partidoConCuatroJugadores(creador, jugador2, jugador3, jugador4);
+        partido.setUbicacion("Club Norte");
+        partido.setTipoPartido("ABIERTO");
+
+        ResultadoPartido resultado = resultadoExistente(partido, creador, EstadoValidacionResultadoPartido.PENDIENTE_VALIDACION);
+        resultado.getValidaciones().add(validacion(resultado, jugador3, true));
+
+        when(perfilJugadorRepository.findByUsuarioId(102L)).thenReturn(Optional.of(jugador2));
+        when(resultadoPartidoRepository.findPendientesValidacionByPerfilJugadorId(
+                2L,
+                EstadoValidacionResultadoPartido.PENDIENTE_VALIDACION
+        )).thenReturn(List.of(resultado));
+
+        List<ResultadoPartidoPendienteValidacionDto> pendientes =
+                resultadoPartidoService.listarPendientesValidacion(102L);
+
+        assertEquals(1, pendientes.size());
+        assertEquals(50L, pendientes.get(0).getPartidoId());
+        assertEquals("creador", pendientes.get(0).getRegistradoPorApodo());
+        assertEquals("Club Norte", pendientes.get(0).getUbicacion());
+        assertEquals(2, pendientes.get(0).getEquipoA().size());
+        assertEquals(2, pendientes.get(0).getEquipoB().size());
+    }
+
+    @Test
+    void listarResultadosGestionCreador_informaEstadosDeRegistroPendienteRechazadoYValidado() {
+        PerfilJugador creador = perfil(1L, "creador", 101L);
+        PerfilJugador jugador2 = perfil(2L, "jugador2", 102L);
+        PerfilJugador jugador3 = perfil(3L, "jugador3", 103L);
+        PerfilJugador jugador4 = perfil(4L, "jugador4", 104L);
+
+        Partido registrable = partidoConCuatroJugadores(creador, jugador2, jugador3, jugador4);
+        registrable.setId(10L);
+        registrable.setFechaHora(LocalDateTime.now().minusHours(1));
+
+        Partido pendiente = partidoConCuatroJugadores(creador, jugador2, jugador3, jugador4);
+        pendiente.setId(20L);
+        pendiente.setFechaHora(LocalDateTime.now().minusHours(2));
+
+        Partido rechazado = partidoConCuatroJugadores(creador, jugador2, jugador3, jugador4);
+        rechazado.setId(30L);
+        rechazado.setFechaHora(LocalDateTime.now().minusHours(3));
+
+        Partido validado = partidoConCuatroJugadores(creador, jugador2, jugador3, jugador4);
+        validado.setId(40L);
+        validado.setFechaHora(LocalDateTime.now().minusHours(4));
+
+        ResultadoPartido resultadoPendiente = resultadoExistente(
+                pendiente,
+                creador,
+                EstadoValidacionResultadoPartido.PENDIENTE_VALIDACION
+        );
+        ResultadoPartido resultadoRechazado = resultadoExistente(
+                rechazado,
+                creador,
+                EstadoValidacionResultadoPartido.RECHAZADO
+        );
+        ResultadoPartido resultadoValidado = resultadoExistente(
+                validado,
+                creador,
+                EstadoValidacionResultadoPartido.VALIDADO
+        );
+
+        when(perfilJugadorRepository.findByUsuarioId(101L)).thenReturn(Optional.of(creador));
+        when(partidoRepository.findByCreadorIdWithJugadores(1L))
+                .thenReturn(List.of(validado, registrable, rechazado, pendiente));
+        when(resultadoPartidoRepository.findByCreadorIdWithDetalles(1L))
+                .thenReturn(List.of(resultadoPendiente, resultadoRechazado, resultadoValidado));
+
+        List<ResultadoPartidoGestionCreadorDto> resultados =
+                resultadoPartidoService.listarResultadosGestionCreador(101L);
+
+        assertTrue(resultados.stream()
+                .anyMatch(dto -> dto.getPartidoId().equals(10L) && dto.isPuedeRegistrarResultado()));
+        assertTrue(resultados.stream()
+                .anyMatch(dto -> dto.getPartidoId().equals(20L) && dto.isResultadoPendienteValidacion()));
+        assertTrue(resultados.stream()
+                .anyMatch(dto -> dto.getPartidoId().equals(30L) && dto.isResultadoRechazado()));
+        assertTrue(resultados.stream()
+                .anyMatch(dto -> dto.getPartidoId().equals(40L) && dto.isResultadoValidado()));
     }
 
     private RegistrarResultadoPartidoRequestDto requestValido() {

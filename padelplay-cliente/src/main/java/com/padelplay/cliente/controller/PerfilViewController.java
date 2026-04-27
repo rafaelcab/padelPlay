@@ -7,7 +7,9 @@ import com.padelplay.common.dto.PartidoDto;
 import com.padelplay.common.dto.PartidoPendienteReporteDto;
 import com.padelplay.common.dto.PerfilEntrenadorDto;
 import com.padelplay.common.dto.PerfilJugadorDto;
+import com.padelplay.common.dto.ResultadoPartidoPendienteValidacionDto;
 import com.padelplay.cliente.proxies.PerfilServiceProxy;
+import com.padelplay.cliente.proxies.ResultadoPartidoProxy;
 import com.padelplay.cliente.proxies.ReporteExperienciaProxy;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
@@ -32,13 +34,16 @@ public class PerfilViewController {
 
     private final PerfilServiceProxy perfilServiceProxy;
     private final ReporteExperienciaProxy reporteExperienciaProxy;
+    private final ResultadoPartidoProxy resultadoPartidoProxy;
     private final RestTemplate restTemplate;
 
     public PerfilViewController(PerfilServiceProxy perfilServiceProxy,
                                 ReporteExperienciaProxy reporteExperienciaProxy,
+                                ResultadoPartidoProxy resultadoPartidoProxy,
                                 RestTemplate restTemplate) {
         this.perfilServiceProxy = perfilServiceProxy;
         this.reporteExperienciaProxy = reporteExperienciaProxy;
+        this.resultadoPartidoProxy = resultadoPartidoProxy;
         this.restTemplate = restTemplate;
     }
 
@@ -144,6 +149,7 @@ public class PerfilViewController {
             }
             model.addAttribute("estado", estado);
             model.addAttribute("partidosReportables", cargarPartidosReportables(token, estado));
+            model.addAttribute("resultadosPendientesValidacion", cargarResultadosPendientesValidacion(token, estado));
 
             if (estado.getPerfilJugador() != null) {
                 cargarResumenAdmin(model, estado.getPerfilJugador().getId());
@@ -154,6 +160,7 @@ public class PerfilViewController {
                 return redirigirALogin(session);
             model.addAttribute("error", "Error al cargar el perfil: " + e.getMessage());
             model.addAttribute("partidosReportables", List.of());
+            model.addAttribute("resultadosPendientesValidacion", List.of());
             return "perfil-dashboard";
         }
     }
@@ -464,6 +471,21 @@ public class PerfilViewController {
         try {
             List<PartidoPendienteReporteDto> partidos = reporteExperienciaProxy.obtenerPartidosJugados(token);
             return partidos != null ? partidos : List.of();
+        } catch (Exception ignored) {
+            return List.of();
+        }
+    }
+
+    private List<ResultadoPartidoPendienteValidacionDto> cargarResultadosPendientesValidacion(String token,
+                                                                                               EstadoPerfilDto estado) {
+        if (estado == null || estado.getPerfilJugador() == null) {
+            return List.of();
+        }
+
+        try {
+            List<ResultadoPartidoPendienteValidacionDto> resultados =
+                    resultadoPartidoProxy.obtenerPendientesValidacion(token);
+            return resultados != null ? resultados : List.of();
         } catch (Exception ignored) {
             return List.of();
         }
