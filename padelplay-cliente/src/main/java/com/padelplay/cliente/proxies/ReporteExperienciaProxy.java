@@ -80,6 +80,26 @@ public class ReporteExperienciaProxy {
         return response.getBody();
     }
 
+    public void confirmarResultado(String token, Long partidoId) {
+        HttpEntity<Void> entity = new HttpEntity<>(crearHeaders(token));
+        restTemplate.exchange(
+                serverUrl + "/api/partidos/" + partidoId + "/confirmar-resultado",
+                HttpMethod.POST,
+                entity,
+                Void.class
+        );
+    }
+
+    public void rechazarResultado(String token, Long partidoId) {
+        HttpEntity<Void> entity = new HttpEntity<>(crearHeaders(token));
+        restTemplate.exchange(
+                serverUrl + "/api/partidos/" + partidoId + "/rechazar-resultado",
+                HttpMethod.POST,
+                entity,
+                Void.class
+        );
+    }
+
     private HttpHeaders crearHeaders(String token) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

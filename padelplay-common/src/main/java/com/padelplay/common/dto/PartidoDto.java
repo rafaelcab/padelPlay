@@ -2,6 +2,7 @@ package com.padelplay.common.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 public class PartidoDto {
 
@@ -20,6 +21,8 @@ public class PartidoDto {
     private boolean cancelado;
     private boolean terminado;
     private String resultado;
+    private Set<Long> confirmacionesResultadoIds;
+    private Set<Long> rechazosResultadoIds;
 
     // Cambiamos la lista de IDs por la lista de perfiles para los iconos/avatares
     private List<PerfilJugadorDto> jugadoresApuntados;
@@ -117,6 +120,22 @@ public class PartidoDto {
 
     public void setResultado(String resultado) {
         this.resultado = resultado;
+    }
+
+    public Set<Long> getConfirmacionesResultadoIds() {
+        return confirmacionesResultadoIds;
+    }
+
+    public void setConfirmacionesResultadoIds(Set<Long> confirmacionesResultadoIds) {
+        this.confirmacionesResultadoIds = confirmacionesResultadoIds;
+    }
+
+    public Set<Long> getRechazosResultadoIds() {
+        return rechazosResultadoIds;
+    }
+
+    public void setRechazosResultadoIds(Set<Long> rechazosResultadoIds) {
+        this.rechazosResultadoIds = rechazosResultadoIds;
     }
 
     public List<PerfilJugadorDto> getJugadoresApuntados() {

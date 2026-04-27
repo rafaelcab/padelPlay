@@ -10,6 +10,9 @@ public class PartidoPendienteReporteDto {
     private String tipoPartido;
     private Integer participantesPendientes;
     private boolean reporteCompletado;
+    private String resultado;
+    private boolean resultadoConfirmado;
+    private boolean resultadoRechazado;
 
     public PartidoPendienteReporteDto() {
     }
@@ -60,5 +63,29 @@ public class PartidoPendienteReporteDto {
 
     public void setReporteCompletado(boolean reporteCompletado) {
         this.reporteCompletado = reporteCompletado;
+    }
+
+    public String getResultado() {
+        return resultado;
+    }
+
+    public void setResultado(String resultado) {
+        this.resultado = resultado;
+    }
+
+    public boolean isResultadoConfirmado() {
+        return resultadoConfirmado;
+    }
+
+    public void setResultadoConfirmado(boolean resultadoConfirmado) {
+        this.resultadoConfirmado = resultadoConfirmado;
+    }
+
+    public boolean isResultadoRechazado() {
+        return resultadoRechazado;
+    }
+
+    public void setResultadoRechazado(boolean resultadoRechazado) {
+        this.resultadoRechazado = resultadoRechazado;
     }
 }
