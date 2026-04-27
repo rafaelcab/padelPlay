@@ -29,6 +29,7 @@ public interface PartidoRepository extends JpaRepository<Partido, Long> {
 	@Query("""
 			select distinct p
 			from Partido p
+			join fetch p.creador c
 			join p.jugadoresApuntados j
 			where j.id = :perfilJugadorId
 			and p.cancelado = false

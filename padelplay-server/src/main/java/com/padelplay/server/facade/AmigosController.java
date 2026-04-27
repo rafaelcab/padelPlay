@@ -1,6 +1,7 @@
 package com.padelplay.server.facade;
 
 import com.padelplay.common.dto.AmigoPerfilDto;
+import com.padelplay.common.dto.PartidoJugadoPublicoDto;
 import com.padelplay.server.service.AmigosService;
 import com.padelplay.server.service.JwtService;
 import org.springframework.http.HttpStatus;
@@ -42,6 +43,22 @@ public class AmigosController {
             Long usuarioId = extraerUsuarioId(authHeader);
             AmigoPerfilDto amigo = amigosService.obtenerAmigo(usuarioId, usuarioObjetivoId);
             return ResponseEntity.ok(amigo);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{usuarioObjetivoId}/partidos-jugados")
+    public ResponseEntity<?> listarPartidosJugadosPublicos(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                                           @PathVariable Long usuarioObjetivoId) {
+        try {
+            extraerUsuarioId(authHeader);
+            List<PartidoJugadoPublicoDto> partidos = amigosService.listarPartidosJugadosPublicos(usuarioObjetivoId);
+            return ResponseEntity.ok(partidos);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", e.getMessage()));

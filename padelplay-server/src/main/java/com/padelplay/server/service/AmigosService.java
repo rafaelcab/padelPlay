@@ -1,13 +1,16 @@
 package com.padelplay.server.service;
 
 import com.padelplay.common.dto.AmigoPerfilDto;
+import com.padelplay.common.dto.PartidoJugadoPublicoDto;
 import com.padelplay.server.entity.DetallesTecnicos;
+import com.padelplay.server.entity.Partido;
 import com.padelplay.server.entity.PerfilEntrenador;
 import com.padelplay.server.entity.PerfilJugador;
 import com.padelplay.server.entity.SeguimientoAmigo;
 import com.padelplay.server.entity.Usuario;
 import com.padelplay.server.repository.PerfilEntrenadorRepository;
 import com.padelplay.server.repository.PerfilJugadorRepository;
+import com.padelplay.server.repository.PartidoRepository;
 import com.padelplay.server.repository.SeguimientoAmigoRepository;
 import com.padelplay.server.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
@@ -29,15 +32,18 @@ public class AmigosService {
     private final PerfilJugadorRepository perfilJugadorRepository;
     private final PerfilEntrenadorRepository perfilEntrenadorRepository;
     private final SeguimientoAmigoRepository seguimientoAmigoRepository;
+    private final PartidoRepository partidoRepository;
 
     public AmigosService(UsuarioRepository usuarioRepository,
                         PerfilJugadorRepository perfilJugadorRepository,
                         PerfilEntrenadorRepository perfilEntrenadorRepository,
-                        SeguimientoAmigoRepository seguimientoAmigoRepository) {
+                        SeguimientoAmigoRepository seguimientoAmigoRepository,
+                        PartidoRepository partidoRepository) {
         this.usuarioRepository = usuarioRepository;
         this.perfilJugadorRepository = perfilJugadorRepository;
         this.perfilEntrenadorRepository = perfilEntrenadorRepository;
         this.seguimientoAmigoRepository = seguimientoAmigoRepository;
+        this.partidoRepository = partidoRepository;
     }
 
     @Transactional(readOnly = true)
@@ -91,6 +97,24 @@ public class AmigosService {
         boolean seguido = seguimientoAmigoRepository.existsBySeguidorIdAndSeguidoId(usuarioActualId, usuarioObjetivoId);
 
         return construirDto(usuario, perfilJugador, perfilEntrenador, seguido);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PartidoJugadoPublicoDto> listarPartidosJugadosPublicos(Long usuarioObjetivoId) {
+        usuarioRepository.findById(usuarioObjetivoId)
+                .orElseThrow(() -> new IllegalArgumentException("El perfil solicitado no existe."));
+
+        PerfilJugador perfilJugador = perfilJugadorRepository.findByUsuarioId(usuarioObjetivoId).orElse(null);
+        if (perfilJugador == null) {
+            return List.of();
+        }
+
+        return partidoRepository.findPartidosTerminadosNoCanceladosByJugadorId(perfilJugador.getId()).stream()
+                .filter(Partido::isTerminado)
+                .filter(partido -> !partido.isCancelado())
+                .sorted(Comparator.comparing(Partido::getFechaHora, Comparator.nullsLast(Comparator.reverseOrder())))
+                .map(partido -> convertirAPartidoJugadoPublicoDto(partido, perfilJugador.getId()))
+                .toList();
     }
 
     public void seguir(Long usuarioActualId, Long usuarioObjetivoId) {
@@ -158,6 +182,23 @@ public class AmigosService {
             dto.setEntrenadorDispViernes(perfilEntrenador.getDispViernes());
             dto.setEntrenadorDispSabado(perfilEntrenador.getDispSabado());
             dto.setEntrenadorDispDomingo(perfilEntrenador.getDispDomingo());
+        }
+
+        return dto;
+    }
+
+    private PartidoJugadoPublicoDto convertirAPartidoJugadoPublicoDto(Partido partido, Long perfilObjetivoId) {
+        PartidoJugadoPublicoDto dto = new PartidoJugadoPublicoDto();
+        dto.setPartidoId(partido.getId());
+        dto.setFechaHora(partido.getFechaHora());
+        dto.setUbicacion(partido.getUbicacion());
+        dto.setTipoPartido(partido.getTipoPartido());
+
+        PerfilJugador creador = partido.getCreador();
+        if (creador != null) {
+            dto.setCreadorId(creador.getId());
+            dto.setCreadorApodo(creador.getApodo());
+            dto.setUsuarioObjetivoFueCreador(creador.getId().equals(perfilObjetivoId));
         }
 
         return dto;
