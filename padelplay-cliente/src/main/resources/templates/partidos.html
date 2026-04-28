@@ -93,7 +93,7 @@
                 </div>
 
                 <div id="mensaje-sin-resultados" class="col-span-full text-center py-12 hidden">
-                    <p class="text-slate-400 font-medium text-lg">No hay resultados con los filtros actuales.</p>
+                    <p class="text-slate-400 font-medium text-lg">No hay partidos con los filtros actuales.</p>
                 </div>
 
                 <div th:each="partido : ${partidos}"
@@ -133,10 +133,6 @@
                                 <span class="material-symbols-outlined text-[12px]">person</span>
                                 Org: <span class="text-slate-200 font-bold"
                                     th:text="${partido.creador != null && partido.creador.apodo != '' ? partido.creador.apodo : 'Organizador'}">Creador</span>
-                            </p>
-                            <p th:if="${partido.terminado and partido.resultado != null and !partido.resultado.isEmpty()}" 
-                               class="text-[#D4FF00] text-sm font-black mt-2 bg-black/40 px-3 py-1 rounded-lg inline-block">
-                                RESULTADO: <span th:text="${partido.resultado}">6-4, 6-2</span>
                             </p>
                         </div>
                     </div>
@@ -350,15 +346,9 @@
                         </div>
 
                         <form id="finish-form" method="POST" action="">
-                            <div class="space-y-4 mb-6">
-                                <label class="text-[10px] uppercase font-bold text-slate-400 px-1 tracking-widest">Introducir Resultado</label>
-                                <div class="relative group">
-                                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-400 transition-colors">scoreboard</span>
-                                    <input name="resultado" required
-                                        class="w-full bg-[#111416] border border-transparent rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all font-medium outline-none uppercase"
-                                        placeholder="Ej: 6-4, 6-2" type="text" autocomplete="off" />
-                                </div>
-                            </div>
+                            <p class="text-sm text-slate-400 leading-relaxed mb-6">
+                                Esta acción marcará el partido como terminado. El flujo de resultados se ha retirado de esta rama para rehacerlo desde cero.
+                            </p>
 
                             <div class="space-y-3 pt-2">
                                 <button type="submit"
@@ -517,7 +507,6 @@
 
             function closeFinishModal() {
                 document.getElementById('finish-modal').classList.add('hidden');
-                document.querySelector('#finish-form input[name="resultado"]').value = '';
             }
         </script>
     </div>

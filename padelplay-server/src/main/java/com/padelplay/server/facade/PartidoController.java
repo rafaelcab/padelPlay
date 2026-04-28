@@ -177,41 +177,10 @@ public class PartidoController {
     @PostMapping("/{id}/terminar")
     public ResponseEntity<?> terminarPartido(
             @PathVariable("id") Long partidoId,
-            @RequestParam(value = "resultado", required = false) String resultado,
             @RequestHeader("Authorization") String authHeader) {
         try {
             Long usuarioId = extraerUsuarioId(authHeader);
-            PartidoDto partidoActualizado = partidoService.terminarPartido(partidoId, usuarioId, resultado);
-            return ResponseEntity.ok(partidoActualizado);
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        }
-    }
-
-    @PostMapping("/{id}/confirmar-resultado")
-    public ResponseEntity<?> confirmarResultado(
-            @PathVariable("id") Long partidoId,
-            @RequestHeader("Authorization") String authHeader) {
-        try {
-            Long usuarioId = extraerUsuarioId(authHeader);
-            PartidoDto partidoActualizado = partidoService.confirmarResultado(partidoId, usuarioId);
-            return ResponseEntity.ok(partidoActualizado);
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        }
-    }
-
-    @PostMapping("/{id}/rechazar-resultado")
-    public ResponseEntity<?> rechazarResultado(
-            @PathVariable("id") Long partidoId,
-            @RequestHeader("Authorization") String authHeader) {
-        try {
-            Long usuarioId = extraerUsuarioId(authHeader);
-            PartidoDto partidoActualizado = partidoService.rechazarResultado(partidoId, usuarioId);
+            PartidoDto partidoActualizado = partidoService.terminarPartido(partidoId, usuarioId);
             return ResponseEntity.ok(partidoActualizado);
         } catch (IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

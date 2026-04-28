@@ -50,7 +50,7 @@ public class FeedbackPartidoService {
     }
 
     /**
-     * Guarda el feedback para un partido específico.
+     * Guarda el feedback de un entrenador para un partido específico.
      */
     public FeedbackPartidoDto guardarFeedback(Long entrenadorId, Long alumnoId, Long partidoId,
                                                 Double calificacion, String comentario,

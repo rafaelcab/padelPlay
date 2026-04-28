@@ -202,14 +202,6 @@ public class ReporteExperienciaService {
         dto.setTipoPartido(partido.getTipoPartido());
         dto.setParticipantesPendientes(participantesPendientes);
         dto.setReporteCompletado(participantesPendientes == 0);
-        
-        // Nuevos campos de validación de resultado
-        dto.setResultado(partido.getResultado());
-        dto.setResultadoConfirmado(partido.getConfirmacionesResultadoIds() != null && 
-                partido.getConfirmacionesResultadoIds().contains(reportante.getId()));
-        dto.setResultadoRechazado(partido.getRechazosResultadoIds() != null && 
-                partido.getRechazosResultadoIds().contains(reportante.getId()));
-        
         return dto;
     }
 

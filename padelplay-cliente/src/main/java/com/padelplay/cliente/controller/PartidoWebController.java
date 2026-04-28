@@ -315,7 +315,6 @@ public class PartidoWebController {
 
     @PostMapping("/{id}/terminar")
     public String terminarPartido(@PathVariable("id") Long partidoId,
-            @RequestParam("resultado") String resultado,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         String token = (String) session.getAttribute("token");
@@ -335,7 +334,7 @@ public class PartidoWebController {
             headers.setBearerAuth(token);
 
             HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
-            String url = BACKEND_URL + "/" + partidoId + "/terminar?resultado=" + resultado;
+            String url = BACKEND_URL + "/" + partidoId + "/terminar";
             restTemplate.exchange(url, HttpMethod.POST, requestEntity, PartidoDto.class);
 
             redirectAttributes.addFlashAttribute("exito", "Partido marcado como terminado correctamente.");

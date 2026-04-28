@@ -2,9 +2,7 @@ package com.padelplay.server.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "partidos")
@@ -37,15 +35,6 @@ public class Partido {
 
     @Column(nullable = false)
     private boolean terminado = false;
-
-    @Column
-    private String resultado;
-
-    @ElementCollection
-    private Set<Long> confirmacionesResultadoIds = new HashSet<>();
-
-    @ElementCollection
-    private Set<Long> rechazosResultadoIds = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(name = "creador_id", nullable = false)
@@ -128,30 +117,6 @@ public class Partido {
 
     public void setTerminado(boolean terminado) {
         this.terminado = terminado;
-    }
-
-    public String getResultado() {
-        return resultado;
-    }
-
-    public void setResultado(String resultado) {
-        this.resultado = resultado;
-    }
-
-    public Set<Long> getConfirmacionesResultadoIds() {
-        return confirmacionesResultadoIds;
-    }
-
-    public void setConfirmacionesResultadoIds(Set<Long> confirmacionesResultadoIds) {
-        this.confirmacionesResultadoIds = confirmacionesResultadoIds;
-    }
-
-    public Set<Long> getRechazosResultadoIds() {
-        return rechazosResultadoIds;
-    }
-
-    public void setRechazosResultadoIds(Set<Long> rechazosResultadoIds) {
-        this.rechazosResultadoIds = rechazosResultadoIds;
     }
 
     public PerfilJugador getCreador() {
