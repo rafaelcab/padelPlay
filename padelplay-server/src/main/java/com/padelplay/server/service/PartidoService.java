@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.HashSet;
 
 @Service
 public class PartidoService {
@@ -266,7 +265,7 @@ public class PartidoService {
     }
 
     @Transactional
-    public PartidoDto terminarPartido(Long partidoId, Long usuarioId, String resultado) {
+    public PartidoDto terminarPartido(Long partidoId, Long usuarioId) {
         Partido partido = partidoRepository.findById(partidoId)
                 .orElseThrow(() -> new IllegalArgumentException("El partido no existe."));
 
@@ -290,78 +289,9 @@ public class PartidoService {
         }
 
         partido.setTerminado(true);
-        partido.setResultado(resultado);
-
-        // El creador confirma automáticamente su propio resultado
-        partido.getConfirmacionesResultadoIds().add(partido.getCreador().getId());
 
         Partido partidoActualizado = partidoRepository.save(partido);
         return convertirADto(partidoActualizado);
-    }
-
-    @Transactional
-    public PartidoDto confirmarResultado(Long partidoId, Long usuarioId) {
-        Partido partido = partidoRepository.findById(partidoId)
-                .orElseThrow(() -> new IllegalArgumentException("El partido no existe"));
-
-        if (!partido.isTerminado()) {
-            throw new IllegalStateException("El partido no está terminado");
-        }
-
-        // Obtener el ID del perfil del jugador asociado al usuarioId
-        // Nota: asumo que usuarioId es el ID del Usuario, no del PerfilJugador.
-        // Si fuera el del perfil, sería directo. Pero en los controladores solemos
-        // extraer el usuarioId del JWT.
-
-        // El metodo findPartidosTerminadosNoCanceladosByJugadorId usa el ID del perfil.
-        // Vamos a verificar si el usuario participa buscando en su lista de jugadores
-        // apuntados.
-        boolean participa = partido.getJugadoresApuntados().stream()
-                .anyMatch(j -> j.getUsuario().getId().equals(usuarioId));
-
-        if (!participa) {
-            throw new IllegalStateException("Solo los participantes pueden confirmar el resultado");
-        }
-
-        // Buscamos el perfil del jugador para guardar su ID
-        Long perfilId = partido.getJugadoresApuntados().stream()
-                .filter(j -> j.getUsuario().getId().equals(usuarioId))
-                .findFirst()
-                .get()
-                .getId();
-
-        partido.getRechazosResultadoIds().remove(perfilId);
-        partido.getConfirmacionesResultadoIds().add(perfilId);
-
-        return convertirADto(partidoRepository.save(partido));
-    }
-
-    @Transactional
-    public PartidoDto rechazarResultado(Long partidoId, Long usuarioId) {
-        Partido partido = partidoRepository.findById(partidoId)
-                .orElseThrow(() -> new IllegalArgumentException("El partido no existe"));
-
-        if (!partido.isTerminado()) {
-            throw new IllegalStateException("El partido no está terminado");
-        }
-
-        boolean participa = partido.getJugadoresApuntados().stream()
-                .anyMatch(j -> j.getUsuario().getId().equals(usuarioId));
-
-        if (!participa) {
-            throw new IllegalStateException("Solo los participantes pueden rechazar el resultado");
-        }
-
-        Long perfilId = partido.getJugadoresApuntados().stream()
-                .filter(j -> j.getUsuario().getId().equals(usuarioId))
-                .findFirst()
-                .get()
-                .getId();
-
-        partido.getConfirmacionesResultadoIds().remove(perfilId);
-        partido.getRechazosResultadoIds().add(perfilId);
-
-        return convertirADto(partidoRepository.save(partido));
     }
 
     // === MÉTODOS AUXILIARES ===
@@ -386,12 +316,6 @@ public class PartidoService {
         dto.setCodigoAcceso(p.getCodigoAcceso());
         dto.setCancelado(p.isCancelado());
         dto.setTerminado(p.isTerminado());
-        dto.setResultado(p.getResultado());
-        dto.setConfirmacionesResultadoIds(
-                p.getConfirmacionesResultadoIds() != null ? new HashSet<>(p.getConfirmacionesResultadoIds())
-                        : new HashSet<>());
-        dto.setRechazosResultadoIds(
-                p.getRechazosResultadoIds() != null ? new HashSet<>(p.getRechazosResultadoIds()) : new HashSet<>());
 
         PerfilJugadorDto creadorDto = new PerfilJugadorDto();
         creadorDto.setId(p.getCreador().getId());

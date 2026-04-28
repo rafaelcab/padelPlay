@@ -15,7 +15,33 @@
             border: 1px solid #1e293b;
         }
 
-        /* Schedule grid (Visual only) */
+        .trajectory-card {
+            background: linear-gradient(180deg, rgba(29, 32, 35, 0.98) 0%, rgba(16, 18, 20, 0.98) 100%);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+        }
+
+        .team-row {
+            background: rgba(15, 17, 19, 0.95);
+            border: 1px solid rgba(51, 65, 85, 0.55);
+        }
+
+        .player-pill {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+        }
+
+        .player-pill--highlight {
+            background: rgba(212, 255, 0, 0.10);
+            border-color: rgba(212, 255, 0, 0.35);
+            color: #f7fee7;
+        }
+
+        .result-chip {
+            background: rgba(212, 255, 0, 0.10);
+            border: 1px solid rgba(212, 255, 0, 0.25);
+            color: #d4ff00;
+        }
+
         .schedule-grid {
             display: grid;
             grid-template-columns: 50px repeat(7, 1fr);
@@ -24,6 +50,7 @@
             overflow-x: auto;
             padding-bottom: 0.5rem;
         }
+
         .schedule-cell {
             background-color: #232629;
             border-radius: 6px;
@@ -34,14 +61,16 @@
             font-size: 0.65rem;
             color: #aaabad;
             border: 1px solid transparent;
-            pointer-events: none; /* Make it read-only */
+            pointer-events: none;
         }
+
         .schedule-cell.selected {
             background-color: #D4FF00;
             color: #3c4a00;
             font-weight: 700;
             border-color: #D4FF00;
         }
+
         .schedule-header-cell {
             font-size: 0.7rem;
             font-weight: 700;
@@ -51,6 +80,7 @@
             padding-bottom: 8px;
             letter-spacing: 0.05em;
         }
+
         .schedule-time-cell {
             font-size: 0.65rem;
             color: #aaabad;
@@ -72,18 +102,18 @@
         </a>
         <div class="flex items-center gap-2 text-slate-400 text-sm">
             <span class="material-symbols-outlined text-[18px]">groups</span>
-            <span th:text="${amigo.totalSeguidores} + ' seguidores'">0 seguidores</span>
+            <span th:text="${amigo.totalSeguidores + ' seguidores'}">0 seguidores</span>
         </div>
     </div>
 
     <div class="info-card rounded-3xl p-7 mb-6">
         <div class="flex items-start gap-6 flex-wrap">
             <img class="w-24 h-24 rounded-full object-cover border-2 border-slate-700"
-                 th:src="${amigo.pictureUrl != null && !amigo.pictureUrl.isBlank()} ? ${amigo.pictureUrl} : 'https://via.placeholder.com/120x120.png?text=Perfil'"
+                 th:src="${amigo.pictureUrl != null && !amigo.pictureUrl.isBlank() ? amigo.pictureUrl : 'https://via.placeholder.com/120x120.png?text=Perfil'}"
                  alt="Avatar"/>
             <div class="flex-1 min-w-[250px]">
                 <h1 class="text-4xl font-headline font-extrabold tracking-tight text-[#D4FF00]" th:text="${amigo.nombre}">Nombre</h1>
-                <p class="text-slate-400 mt-2" th:text="${amigo.email != null && !amigo.email.isBlank()} ? ${amigo.email} : 'No especifica'">No especifica</p>
+                <p class="text-slate-400 mt-2" th:text="${amigo.email != null && !amigo.email.isBlank() ? amigo.email : 'No especifica'}">No especifica</p>
                 <div class="flex gap-2 mt-4">
                     <span th:if="${amigo.tienePerfilJugador}" class="px-3 py-1 rounded-full text-xs font-bold bg-[#D4FF00]/10 text-[#D4FF00] border border-[#D4FF00]/30">Jugador</span>
                     <span th:if="${amigo.tienePerfilEntrenador}" class="px-3 py-1 rounded-full text-xs font-bold bg-sky-500/10 text-sky-300 border border-sky-400/30">Entrenador</span>
@@ -100,51 +130,48 @@
     <div th:if="${error}" class="mb-4 rounded-xl border border-red-800 bg-red-900/20 text-red-300 px-4 py-3 font-semibold" th:text="${error}"></div>
 
     <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Información de jugador (Condicional) -->
         <article class="info-card rounded-2xl p-6" th:if="${amigo.tienePerfilJugador}">
             <h2 class="text-white text-xl font-bold mb-4 flex items-center gap-2">
                 <span class="material-symbols-outlined text-[#D4FF00]">sports_tennis</span>
-                Información de jugador
+                Informacion de jugador
             </h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Apodo</p><p class="text-white" th:text="${amigo.jugadorApodo != null && !amigo.jugadorApodo.isBlank()} ? ${amigo.jugadorApodo} : 'No especifica'">No especifica</p></div>
-                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Años experiencia</p><p class="text-white" th:text="${amigo.jugadorAniosExperiencia != null} ? ${amigo.jugadorAniosExperiencia} : 'No especifica'">No especifica</p></div>
-                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Nivel juego</p><p class="text-white" th:text="${amigo.jugadorNivelJuego != null && !amigo.jugadorNivelJuego.isBlank()} ? ${amigo.jugadorNivelJuego} : 'No especifica'">No especifica</p></div>
-                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Teléfono</p><p class="text-white" th:text="${amigo.jugadorTelefono != null && !amigo.jugadorTelefono.isBlank()} ? ${amigo.jugadorTelefono} : 'No especifica'">No especifica</p></div>
-                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Nivel (numérico)</p><p class="text-white" th:text="${amigo.jugadorNivel != null} ? ${amigo.jugadorNivel} : 'No especifica'">No especifica</p></div>
-                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Posición</p><p class="text-white" th:text="${amigo.jugadorPosicion != null && !amigo.jugadorPosicion.isBlank()} ? ${amigo.jugadorPosicion} : 'No especifica'">No especifica</p></div>
-                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Estilo juego</p><p class="text-white" th:text="${amigo.jugadorEstiloJuego != null && !amigo.jugadorEstiloJuego.isBlank()} ? ${amigo.jugadorEstiloJuego} : 'No especifica'">No especifica</p></div>
-                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Mano hábil</p><p class="text-white" th:text="${amigo.jugadorManoHabil != null && !amigo.jugadorManoHabil.isBlank()} ? ${amigo.jugadorManoHabil} : 'No especifica'">No especifica</p></div>
+                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Apodo</p><p class="text-white" th:text="${amigo.jugadorApodo != null && !amigo.jugadorApodo.isBlank() ? amigo.jugadorApodo : 'No especifica'}">No especifica</p></div>
+                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Anios experiencia</p><p class="text-white" th:text="${amigo.jugadorAniosExperiencia != null ? amigo.jugadorAniosExperiencia : 'No especifica'}">No especifica</p></div>
+                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Nivel juego</p><p class="text-white" th:text="${amigo.jugadorNivelJuego != null && !amigo.jugadorNivelJuego.isBlank() ? amigo.jugadorNivelJuego : 'No especifica'}">No especifica</p></div>
+                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Telefono</p><p class="text-white" th:text="${amigo.jugadorTelefono != null && !amigo.jugadorTelefono.isBlank() ? amigo.jugadorTelefono : 'No especifica'}">No especifica</p></div>
+                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Nivel (numerico)</p><p class="text-white" th:text="${amigo.jugadorNivel != null ? amigo.jugadorNivel : 'No especifica'}">No especifica</p></div>
+                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Posicion</p><p class="text-white" th:text="${amigo.jugadorPosicion != null && !amigo.jugadorPosicion.isBlank() ? amigo.jugadorPosicion : 'No especifica'}">No especifica</p></div>
+                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Estilo juego</p><p class="text-white" th:text="${amigo.jugadorEstiloJuego != null && !amigo.jugadorEstiloJuego.isBlank() ? amigo.jugadorEstiloJuego : 'No especifica'}">No especifica</p></div>
+                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Mano habil</p><p class="text-white" th:text="${amigo.jugadorManoHabil != null && !amigo.jugadorManoHabil.isBlank() ? amigo.jugadorManoHabil : 'No especifica'}">No especifica</p></div>
             </div>
             <div class="field-box rounded-xl p-3 mt-3">
                 <p class="text-slate-500 uppercase text-[11px]">Observaciones</p>
-                <p class="text-white" th:text="${amigo.jugadorObservaciones != null && !amigo.jugadorObservaciones.isBlank()} ? ${amigo.jugadorObservaciones} : 'No especifica'">No especifica</p>
+                <p class="text-white" th:text="${amigo.jugadorObservaciones != null && !amigo.jugadorObservaciones.isBlank() ? amigo.jugadorObservaciones : 'No especifica'}">No especifica</p>
             </div>
         </article>
 
-        <!-- Información de entrenador (Condicional) -->
         <article class="info-card rounded-2xl p-6" th:if="${amigo.tienePerfilEntrenador}">
             <h2 class="text-white text-xl font-bold mb-4 flex items-center gap-2">
                 <span class="material-symbols-outlined text-sky-400">school</span>
-                Información de entrenador
+                Informacion de entrenador
             </h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Apodo</p><p class="text-white" th:text="${amigo.entrenadorApodo != null && !amigo.entrenadorApodo.isBlank()} ? ${amigo.entrenadorApodo} : 'No especifica'">No especifica</p></div>
-                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Años experiencia</p><p class="text-white" th:text="${amigo.entrenadorAniosExperiencia != null} ? ${amigo.entrenadorAniosExperiencia} : 'No especifica'">No especifica</p></div>
-                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Teléfono</p><p class="text-white" th:text="${amigo.entrenadorTelefono != null && !amigo.entrenadorTelefono.isBlank()} ? ${amigo.entrenadorTelefono} : 'No especifica'">No especifica</p></div>
-                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Ubicación</p><p class="text-white" th:text="${amigo.entrenadorUbicacion != null && !amigo.entrenadorUbicacion.isBlank()} ? ${amigo.entrenadorUbicacion} : 'No especifica'">No especifica</p></div>
-                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Club actual</p><p class="text-white" th:text="${amigo.entrenadorClubActual != null && !amigo.entrenadorClubActual.isBlank()} ? ${amigo.entrenadorClubActual} : 'No especifica'">No especifica</p></div>
-                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Metodología</p><p class="text-white" th:text="${amigo.entrenadorMetodologia != null && !amigo.entrenadorMetodologia.isBlank()} ? ${amigo.entrenadorMetodologia} : 'No especifica'">No especifica</p></div>
+                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Apodo</p><p class="text-white" th:text="${amigo.entrenadorApodo != null && !amigo.entrenadorApodo.isBlank() ? amigo.entrenadorApodo : 'No especifica'}">No especifica</p></div>
+                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Anios experiencia</p><p class="text-white" th:text="${amigo.entrenadorAniosExperiencia != null ? amigo.entrenadorAniosExperiencia : 'No especifica'}">No especifica</p></div>
+                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Telefono</p><p class="text-white" th:text="${amigo.entrenadorTelefono != null && !amigo.entrenadorTelefono.isBlank() ? amigo.entrenadorTelefono : 'No especifica'}">No especifica</p></div>
+                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Ubicacion</p><p class="text-white" th:text="${amigo.entrenadorUbicacion != null && !amigo.entrenadorUbicacion.isBlank() ? amigo.entrenadorUbicacion : 'No especifica'}">No especifica</p></div>
+                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Club actual</p><p class="text-white" th:text="${amigo.entrenadorClubActual != null && !amigo.entrenadorClubActual.isBlank() ? amigo.entrenadorClubActual : 'No especifica'}">No especifica</p></div>
+                <div class="field-box rounded-xl p-3"><p class="text-slate-500 uppercase text-[11px]">Metodologia</p><p class="text-white" th:text="${amigo.entrenadorMetodologia != null && !amigo.entrenadorMetodologia.isBlank() ? amigo.entrenadorMetodologia : 'No especifica'}">No especifica</p></div>
             </div>
             <div class="field-box rounded-xl p-3 mt-3">
-                <p class="text-slate-500 uppercase text-[11px]">Descripción</p>
-                <p class="text-white" th:text="${amigo.entrenadorDescripcion != null && !amigo.entrenadorDescripcion.isBlank()} ? ${amigo.entrenadorDescripcion} : 'No especifica'">No especifica</p>
+                <p class="text-slate-500 uppercase text-[11px]">Descripcion</p>
+                <p class="text-white" th:text="${amigo.entrenadorDescripcion != null && !amigo.entrenadorDescripcion.isBlank() ? amigo.entrenadorDescripcion : 'No especifica'}">No especifica</p>
             </div>
 
-            <!-- Horario Semanal visual -->
             <div class="mt-8 pt-6 border-t border-slate-700">
-                <p class="text-[#D4FF00] font-bold text-sm mb-4">Disponibilidad Semanal</p>
-                
+                <p class="text-[#D4FF00] font-bold text-sm mb-4">Disponibilidad semanal</p>
+
                 <input type="hidden" id="dispLunes" th:value="${amigo.entrenadorDispLunes}">
                 <input type="hidden" id="dispMartes" th:value="${amigo.entrenadorDispMartes}">
                 <input type="hidden" id="dispMiercoles" th:value="${amigo.entrenadorDispMiercoles}">
@@ -152,8 +179,89 @@
                 <input type="hidden" id="dispViernes" th:value="${amigo.entrenadorDispViernes}">
                 <input type="hidden" id="dispSabado" th:value="${amigo.entrenadorDispSabado}">
                 <input type="hidden" id="dispDomingo" th:value="${amigo.entrenadorDispDomingo}">
-                
+
                 <div id="amigoScheduleGrid" class="schedule-grid"></div>
+            </div>
+        </article>
+    </section>
+
+    <section class="mt-6" th:if="${amigo.tienePerfilJugador}">
+        <article class="info-card rounded-2xl p-6">
+            <div class="flex items-center justify-between gap-4 flex-wrap mb-5">
+                <div>
+                    <h2 class="text-white text-xl font-bold flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[#D4FF00]">history</span>
+                        Ultimos partidos
+                    </h2>
+                    <p class="text-slate-400 text-sm mt-1">Trayectoria reciente con resultados y equipos confirmados.</p>
+                </div>
+                <a th:if="${trayectoriaPreview != null && trayectoriaPreview.hasNext}"
+                   th:href="@{/comunidad/{usuarioId}/trayectoria(usuarioId=${amigo.usuarioId})}"
+                   class="px-4 py-2 rounded-full border border-[#D4FF00]/30 text-[#D4FF00] hover:bg-[#D4FF00]/10 transition-colors font-bold text-xs uppercase tracking-widest">
+                    Ver mas
+                </a>
+            </div>
+
+            <div class="space-y-4" th:if="${trayectoriaPreview != null && !trayectoriaPreview.items.empty}">
+                <article class="trajectory-card rounded-2xl p-5"
+                         th:each="partido : ${trayectoriaPreview.items}">
+                    <div class="flex items-start justify-between gap-4 flex-wrap">
+                        <div>
+                            <p class="text-xs uppercase tracking-[0.25em] text-slate-500"
+                               th:text="${#temporals.format(partido.fechaHora, 'dd/MM/yyyy HH:mm')}">27/04/2026 20:00</p>
+                            <h3 class="text-white font-bold text-lg mt-2" th:text="${partido.ubicacion}">Club Norte</h3>
+                            <p class="text-slate-400 text-sm mt-1">
+                                <span th:text="${partido.tipoPartido}">ABIERTO</span>
+                                <span class="mx-2 text-slate-600">/</span>
+                                <span th:if="${partido.tipoFinalizacion == 'FINALIZADO_NORMAL'}"
+                                      th:text="${partido.juegosEquipoA + ' - ' + partido.juegosEquipoB}">6 - 4</span>
+                                <span th:if="${partido.tipoFinalizacion == 'WO_EQUIPO_A'}">Victoria por WO del equipo A</span>
+                                <span th:if="${partido.tipoFinalizacion == 'WO_EQUIPO_B'}">Victoria por WO del equipo B</span>
+                                <span th:if="${partido.tipoFinalizacion == 'ABANDONO_EQUIPO_A'}">Abandono del equipo A</span>
+                                <span th:if="${partido.tipoFinalizacion == 'ABANDONO_EQUIPO_B'}">Abandono del equipo B</span>
+                            </p>
+                        </div>
+                        <span class="result-chip px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest"
+                              th:text="${partido.equipoUsuarioObjetivo != null ? 'Jugo en equipo ' + partido.equipoUsuarioObjetivo : 'Trayectoria publica'}">
+                            Jugo en equipo A
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                        <div class="team-row rounded-xl p-4">
+                            <p class="text-slate-400 text-xs uppercase tracking-[0.2em] mb-3">Equipo A</p>
+                            <div class="space-y-2">
+                                <div class="player-pill rounded-xl px-3 py-2 flex items-center justify-between gap-3"
+                                     th:each="jugador : ${partido.equipoA}"
+                                     th:classappend="${jugador.usuarioObjetivo} ? ' player-pill--highlight' : ''">
+                                    <span th:classappend="${jugador.usuarioObjetivo} ? ' font-semibold' : ''"
+                                          th:text="${jugador.apodo}">jugador1</span>
+                                    <span th:if="${jugador.usuarioObjetivo}"
+                                          class="text-[10px] uppercase tracking-[0.2em] text-[#D4FF00] font-bold">Perfil visitado</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="team-row rounded-xl p-4">
+                            <p class="text-slate-400 text-xs uppercase tracking-[0.2em] mb-3">Equipo B</p>
+                            <div class="space-y-2">
+                                <div class="player-pill rounded-xl px-3 py-2 flex items-center justify-between gap-3"
+                                     th:each="jugador : ${partido.equipoB}"
+                                     th:classappend="${jugador.usuarioObjetivo} ? ' player-pill--highlight' : ''">
+                                    <span th:classappend="${jugador.usuarioObjetivo} ? ' font-semibold' : ''"
+                                          th:text="${jugador.apodo}">jugador3</span>
+                                    <span th:if="${jugador.usuarioObjetivo}"
+                                          class="text-[10px] uppercase tracking-[0.2em] text-[#D4FF00] font-bold">Perfil visitado</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <div th:if="${trayectoriaPreview == null || trayectoriaPreview.items.empty}"
+                 class="field-box rounded-2xl px-5 py-6 text-slate-400">
+                Todavia no hay partidos terminados con resultado para mostrar en esta trayectoria.
             </div>
         </article>
     </section>
@@ -161,7 +269,7 @@
     <script th:if="${amigo.tienePerfilEntrenador}">
         (function () {
             const days = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'];
-            const displayDays = ['Lun', 'Mar', 'Mi\u00e9', 'Jue', 'Vie', 'S\u00e1b', 'Dom'];
+            const displayDays = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
             const hours = [];
             for (let i = 8; i <= 22; i++) {
                 hours.push(i.toString().padStart(2, '0') + ':00');
@@ -170,10 +278,10 @@
             const grid = document.getElementById('amigoScheduleGrid');
             if (!grid) return;
 
-            // Headers
             let corner = document.createElement('div');
             corner.className = 'schedule-header-cell';
             grid.appendChild(corner);
+
             displayDays.forEach(function (d) {
                 let h = document.createElement('div');
                 h.className = 'schedule-header-cell';
@@ -190,7 +298,7 @@
                 days.forEach(function (day) {
                     let cell = document.createElement('div');
                     cell.className = 'schedule-cell';
-                    
+
                     let hiddenInput = document.getElementById('disp' + day);
                     if (hiddenInput && hiddenInput.value) {
                         let slots = hiddenInput.value.split(',');

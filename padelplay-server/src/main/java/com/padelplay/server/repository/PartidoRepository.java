@@ -38,6 +38,7 @@ public interface PartidoRepository extends JpaRepository<Partido, Long> {
 	@Query("""
 			select distinct p
 			from Partido p
+			join fetch p.creador c
 			join p.jugadoresApuntados j
 			where j.id = :perfilJugadorId
 			and p.cancelado = false
@@ -45,4 +46,14 @@ public interface PartidoRepository extends JpaRepository<Partido, Long> {
 			order by p.fechaHora desc
 			""")
 	List<Partido> findPartidosTerminadosNoCanceladosByJugadorId(Long perfilJugadorId);
+
+	@Query("""
+			select distinct p
+			from Partido p
+			left join fetch p.jugadoresApuntados
+			where p.creador.id = :creadorId
+			order by p.fechaHora desc
+			""")
+	List<Partido> findByCreadorIdWithJugadores(@Param("creadorId") Long creadorId);
 }
+

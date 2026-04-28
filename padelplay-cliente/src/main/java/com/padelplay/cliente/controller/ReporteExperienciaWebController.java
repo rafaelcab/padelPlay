@@ -111,34 +111,6 @@ public class ReporteExperienciaWebController {
         return "redirect:/perfil/reportes/" + partidoId;
     }
 
-    @PostMapping("/{partidoId}/confirmar")
-    public String confirmarResultado(@PathVariable Long partidoId, HttpSession session, RedirectAttributes redirectAttributes) {
-        String token = (String) session.getAttribute("token");
-        if (token == null) return "redirect:/login";
-
-        try {
-            reporteExperienciaProxy.confirmarResultado(token, partidoId);
-            redirectAttributes.addFlashAttribute("exito", "Resultado confirmado correctamente.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "No se pudo confirmar el resultado.");
-        }
-        return "redirect:/perfil/mi-perfil";
-    }
-
-    @PostMapping("/{partidoId}/rechazar")
-    public String rechazarResultado(@PathVariable Long partidoId, HttpSession session, RedirectAttributes redirectAttributes) {
-        String token = (String) session.getAttribute("token");
-        if (token == null) return "redirect:/login";
-
-        try {
-            reporteExperienciaProxy.rechazarResultado(token, partidoId);
-            redirectAttributes.addFlashAttribute("exito", "Resultado rechazado.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "No se pudo rechazar el resultado.");
-        }
-        return "redirect:/perfil/mi-perfil";
-    }
-
     private Optional<PartidoPendienteReporteDto> obtenerPartido(String token, Long partidoId) {
         List<PartidoPendienteReporteDto> partidos = reporteExperienciaProxy.obtenerPartidosJugados(token);
         if (partidos == null) {
