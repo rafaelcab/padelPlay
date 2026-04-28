@@ -154,6 +154,21 @@ public class PerfilViewController {
             if (estado.getPerfilJugador() != null) {
                 cargarResumenAdmin(model, estado.getPerfilJugador().getId());
             }
+
+            // Cargar partidos recientes según el rol activo
+            if ("ENTRENADOR".equals(estado.getRolActivo())) {
+                try {
+                    List<PartidoDto> recientesEntrenador = perfilServiceProxy.obtenerPartidosDeAlumnos(token);
+                    // Tomar solo los 3 más recientes para el dashboard
+                    if (recientesEntrenador.size() > 3) {
+                        recientesEntrenador = recientesEntrenador.subList(0, 3);
+                    }
+                    model.addAttribute("partidosRecientes", recientesEntrenador);
+                } catch (Exception e) {
+                    model.addAttribute("partidosRecientes", java.util.List.of());
+                }
+            }
+
             return "perfil-dashboard";
         } catch (Exception e) {
             if (esSesionInvalida(e))
@@ -399,7 +414,8 @@ public class PerfilViewController {
         try {
             // Recuperar el perfil existente para no sobreescribir otros campos
             PerfilEntrenadorDto perfil = perfilServiceProxy.obtenerPerfilEntrenador(token);
-            if (perfil == null) perfil = new PerfilEntrenadorDto();
+            if (perfil == null)
+                perfil = new PerfilEntrenadorDto();
 
             perfil.setDispLunes(dispLunes != null ? dispLunes : "");
             perfil.setDispMartes(dispMartes != null ? dispMartes : "");
@@ -423,6 +439,64 @@ public class PerfilViewController {
         return "redirect:/perfil/dashboard";
     }
 
+    // =========================================================================
+    // DASHBOARD O SECCIÓN PRINCIPAL PARA ENTRENADOR
+    // GET /perfil/entrenador
+    // =========================================================================
+    @GetMapping("/entrenador")
+    public String seccionEntrenador(HttpSession session) {
+        String token = (String) session.getAttribute("token");
+
+        if (token == null)
+            return "redirect:/login";
+
+        try {
+            EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
+            if (estado != null && "ENTRENADOR".equals(estado.getRolActivo())) {
+                // Si es entrenador, redirigir al historial de partidos
+                return "redirect:/perfil/entrenador/historial-partidos";
+            } else {
+                // Si no es entrenador, redirigir al dashboard general
+                return "redirect:/perfil/entrenador/historial-partidos";
+            }
+        } catch (Exception e) {
+            return "redirect:/perfil/dashboard";
+        }
+    }
+
+    // =========================================================================
+    // HISTORIAL DE PARTIDOS PARA ENTRENADOR
+    // GET /perfil/entrenador/historial-partidos
+    // =========================================================================
+    @GetMapping("/entrenador/historial-partidos")
+    public String mostrarHistorialPartidosEntrenador(Model model, HttpSession session) {
+        String token = (String) session.getAttribute("token");
+
+        if (token == null)
+            return "redirect:/login";
+
+        try {
+            EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
+            model.addAttribute("estado", estado);
+
+            try {
+                List<PartidoDto> partidosAlumnos = perfilServiceProxy.obtenerPartidosDeAlumnos(token);
+                model.addAttribute("partidos", partidosAlumnos);
+            } catch (Exception ex) {
+                model.addAttribute("error", "Error al obtener partidos: " + ex.getMessage());
+                model.addAttribute("partidos", java.util.List.of());
+            }
+
+        } catch (Exception e) {
+            if (esSesionInvalida(e))
+                return redirigirALogin(session);
+            model.addAttribute("error", "Error al cargar el historial: " + e.getMessage());
+            model.addAttribute("partidos", java.util.List.of());
+        }
+
+        return "entrenador-historial-partidos";
+    }
+
     // === MÉTODOS PRIVADOS DE UTILIDAD (Unificados) ===
 
     private boolean esSesionInvalida(Exception e) {
@@ -437,19 +511,25 @@ public class PerfilViewController {
 
     private void cargarResumenAdmin(Model model, Long perfilJugadorId) {
         try {
-            ResponseEntity<PartidoDto[]> response = restTemplate.getForEntity("http://localhost:8080/api/partidos", PartidoDto[].class);
-            List<PartidoDto> partidos = java.util.Arrays.asList(response.getBody() != null ? response.getBody() : new PartidoDto[0]);
+            ResponseEntity<PartidoDto[]> response = restTemplate.getForEntity("http://localhost:8080/api/partidos",
+                    PartidoDto[].class);
+            List<PartidoDto> partidos = java.util.Arrays
+                    .asList(response.getBody() != null ? response.getBody() : new PartidoDto[0]);
 
             long creados = partidos.stream()
-                    .filter(partido -> partido.getCreador() != null && perfilJugadorId.equals(partido.getCreador().getId()))
+                    .filter(partido -> partido.getCreador() != null
+                            && perfilJugadorId.equals(partido.getCreador().getId()))
                     .count();
             long activos = partidos.stream()
-                    .filter(partido -> partido.getCreador() != null && perfilJugadorId.equals(partido.getCreador().getId()))
+                    .filter(partido -> partido.getCreador() != null
+                            && perfilJugadorId.equals(partido.getCreador().getId()))
                     .filter(partido -> !partido.isCancelado())
-                    .filter(partido -> partido.getFechaHora() != null && partido.getFechaHora().isAfter(LocalDateTime.now().minusMinutes(5)))
+                    .filter(partido -> partido.getFechaHora() != null
+                            && partido.getFechaHora().isAfter(LocalDateTime.now().minusMinutes(5)))
                     .count();
             long cancelados = partidos.stream()
-                    .filter(partido -> partido.getCreador() != null && perfilJugadorId.equals(partido.getCreador().getId()))
+                    .filter(partido -> partido.getCreador() != null
+                            && perfilJugadorId.equals(partido.getCreador().getId()))
                     .filter(PartidoDto::isCancelado)
                     .count();
 

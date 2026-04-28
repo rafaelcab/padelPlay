@@ -12,17 +12,25 @@ import java.util.List;
 @Repository
 public interface PartidoRepository extends JpaRepository<Partido, Long> {
 
-	boolean existsByUbicacionIgnoreCaseAndFechaHoraGreaterThanEqualAndFechaHoraLessThan(
-			String ubicacion,
-			LocalDateTime fechaInicio,
-			LocalDateTime fechaFin
-	);
+        @Query("SELECT DISTINCT p FROM Partido p LEFT JOIN p.jugadoresApuntados pj WHERE p.creador.id = :jugadorId OR pj.id = :jugadorId ORDER BY p.fechaHora DESC")
+        List<Partido> findPartidosByJugador(@Param("jugadorId") Long jugadorId);
 
-	boolean existsByUbicacionIgnoreCaseAndCanceladoFalseAndFechaHoraGreaterThanEqualAndFechaHoraLessThan(
-			String ubicacion,
-			LocalDateTime fechaInicio,
-			LocalDateTime fechaFin
-	);
+        boolean existsByUbicacionIgnoreCaseAndFechaHoraGreaterThanEqualAndFechaHoraLessThan(
+                        String ubicacion,
+                        LocalDateTime fechaInicio,
+                        LocalDateTime fechaFin);
+
+        boolean existsByUbicacionIgnoreCaseAndCanceladoFalseAndFechaHoraGreaterThanEqualAndFechaHoraLessThan(
+                        String ubicacion,
+                        LocalDateTime fechaInicio,
+                        LocalDateTime fechaFin);
+
+        @Query("SELECT DISTINCT p FROM Partido p " +
+                        "WHERE p.creador.usuario.id = :entrenadorId " +
+                        "OR p.creador.usuario.id IN " +
+                        "(SELECT DISTINCT s.jugador.id FROM SolicitudEntrenamiento s WHERE s.entrenador.usuario.id = :entrenadorId) " +
+                        "ORDER BY p.fechaHora DESC")
+        List<Partido> findPartidosDeAlumnos(@Param("entrenadorId") Long entrenadorId);
 
 	@Query("select distinct p.ubicacion from Partido p where p.cancelado = false and p.fechaHora < :fin and p.fechaHora >= :inicio")
 	List<String> findDistinctUbicacionesOcupadasEnFranja(LocalDateTime inicio, LocalDateTime fin);
@@ -48,3 +56,4 @@ public interface PartidoRepository extends JpaRepository<Partido, Long> {
 			""")
 	List<Partido> findByCreadorIdWithJugadores(@Param("creadorId") Long creadorId);
 }
+

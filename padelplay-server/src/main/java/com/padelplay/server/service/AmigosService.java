@@ -1,18 +1,21 @@
 package com.padelplay.server.service;
 
 import com.padelplay.common.dto.AmigoPerfilDto;
+import com.padelplay.common.dto.JugadorEquipoPublicoDto;
 import com.padelplay.common.dto.PartidoJugadoPublicoDto;
+import com.padelplay.common.dto.PartidosJugadosPublicosCursorDto;
 import com.padelplay.server.entity.DetallesTecnicos;
-import com.padelplay.server.entity.Partido;
 import com.padelplay.server.entity.PerfilEntrenador;
 import com.padelplay.server.entity.PerfilJugador;
+import com.padelplay.server.entity.ResultadoPartido;
 import com.padelplay.server.entity.SeguimientoAmigo;
 import com.padelplay.server.entity.Usuario;
+import com.padelplay.server.repository.ResultadoPartidoRepository;
 import com.padelplay.server.repository.PerfilEntrenadorRepository;
 import com.padelplay.server.repository.PerfilJugadorRepository;
-import com.padelplay.server.repository.PartidoRepository;
 import com.padelplay.server.repository.SeguimientoAmigoRepository;
 import com.padelplay.server.repository.UsuarioRepository;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,18 +35,21 @@ public class AmigosService {
     private final PerfilJugadorRepository perfilJugadorRepository;
     private final PerfilEntrenadorRepository perfilEntrenadorRepository;
     private final SeguimientoAmigoRepository seguimientoAmigoRepository;
-    private final PartidoRepository partidoRepository;
+    private final ResultadoPartidoRepository resultadoPartidoRepository;
+    private final TrayectoriaCursorService trayectoriaCursorService;
 
     public AmigosService(UsuarioRepository usuarioRepository,
                         PerfilJugadorRepository perfilJugadorRepository,
                         PerfilEntrenadorRepository perfilEntrenadorRepository,
                         SeguimientoAmigoRepository seguimientoAmigoRepository,
-                        PartidoRepository partidoRepository) {
+                        ResultadoPartidoRepository resultadoPartidoRepository,
+                        TrayectoriaCursorService trayectoriaCursorService) {
         this.usuarioRepository = usuarioRepository;
         this.perfilJugadorRepository = perfilJugadorRepository;
         this.perfilEntrenadorRepository = perfilEntrenadorRepository;
         this.seguimientoAmigoRepository = seguimientoAmigoRepository;
-        this.partidoRepository = partidoRepository;
+        this.resultadoPartidoRepository = resultadoPartidoRepository;
+        this.trayectoriaCursorService = trayectoriaCursorService;
     }
 
     @Transactional(readOnly = true)
@@ -100,21 +106,66 @@ public class AmigosService {
     }
 
     @Transactional(readOnly = true)
-    public List<PartidoJugadoPublicoDto> listarPartidosJugadosPublicos(Long usuarioObjetivoId) {
+    public PartidosJugadosPublicosCursorDto listarPartidosJugadosPublicos(Long usuarioObjetivoId,
+                                                                          Integer limitSolicitado,
+                                                                          String cursor,
+                                                                          String direction) {
         usuarioRepository.findById(usuarioObjetivoId)
-                .orElseThrow(() -> new IllegalArgumentException("El perfil solicitado no existe."));
+                .orElseThrow(() -> new EntidadNoEncontradaException("El perfil solicitado no existe."));
+
+        int limit = normalizarLimit(limitSolicitado);
+        String normalizedDirection = normalizarDirection(direction);
 
         PerfilJugador perfilJugador = perfilJugadorRepository.findByUsuarioId(usuarioObjetivoId).orElse(null);
         if (perfilJugador == null) {
-            return List.of();
+            return new PartidosJugadosPublicosCursorDto();
         }
 
-        return partidoRepository.findPartidosTerminadosNoCanceladosByJugadorId(perfilJugador.getId()).stream()
-                .filter(Partido::isTerminado)
-                .filter(partido -> !partido.isCancelado())
-                .sorted(Comparator.comparing(Partido::getFechaHora, Comparator.nullsLast(Comparator.reverseOrder())))
-                .map(partido -> convertirAPartidoJugadoPublicoDto(partido, perfilJugador.getId()))
-                .toList();
+        TrayectoriaCursorService.TrayectoriaCursor decodedCursor = trayectoriaCursorService.decodificar(cursor);
+
+        List<ResultadoPartido> resultados = obtenerResultadosTrayectoria(
+                perfilJugador.getId(),
+                limit + 1,
+                decodedCursor,
+                normalizedDirection
+        );
+
+        boolean hasExtra = resultados.size() > limit;
+        List<ResultadoPartido> pagina = hasExtra ? resultados.subList(0, limit) : resultados;
+
+        if ("previous".equals(normalizedDirection)) {
+            pagina = pagina.stream()
+                    .sorted(Comparator.comparing((ResultadoPartido r) -> r.getPartido().getFechaHora(), Comparator.nullsLast(Comparator.reverseOrder()))
+                            .thenComparing(r -> r.getPartido().getId(), Comparator.reverseOrder()))
+                    .toList();
+        }
+
+        PartidosJugadosPublicosCursorDto dto = new PartidosJugadosPublicosCursorDto();
+        dto.setItems(pagina.stream()
+                .map(resultado -> convertirAPartidoJugadoPublicoDto(resultado, perfilJugador.getId()))
+                .toList());
+        dto.setHasNext(calcularHasNext(normalizedDirection, hasExtra, decodedCursor));
+        dto.setHasPrevious(calcularHasPrevious(normalizedDirection, hasExtra, decodedCursor));
+
+        if (!pagina.isEmpty()) {
+            ResultadoPartido primero = pagina.get(0);
+            ResultadoPartido ultimo = pagina.get(pagina.size() - 1);
+
+            if (dto.isHasPrevious()) {
+                dto.setPreviousCursor(trayectoriaCursorService.codificar(
+                        primero.getPartido().getFechaHora(),
+                        primero.getPartido().getId()
+                ));
+            }
+            if (dto.isHasNext()) {
+                dto.setNextCursor(trayectoriaCursorService.codificar(
+                        ultimo.getPartido().getFechaHora(),
+                        ultimo.getPartido().getId()
+                ));
+            }
+        }
+
+        return dto;
     }
 
     public void seguir(Long usuarioActualId, Long usuarioObjetivoId) {
@@ -187,20 +238,110 @@ public class AmigosService {
         return dto;
     }
 
-    private PartidoJugadoPublicoDto convertirAPartidoJugadoPublicoDto(Partido partido, Long perfilObjetivoId) {
-        PartidoJugadoPublicoDto dto = new PartidoJugadoPublicoDto();
-        dto.setPartidoId(partido.getId());
-        dto.setFechaHora(partido.getFechaHora());
-        dto.setUbicacion(partido.getUbicacion());
-        dto.setTipoPartido(partido.getTipoPartido());
+    private List<ResultadoPartido> obtenerResultadosTrayectoria(Long perfilJugadorId,
+                                                                int limit,
+                                                                TrayectoriaCursorService.TrayectoriaCursor cursor,
+                                                                String direction) {
+        PageRequest pageRequest = PageRequest.of(0, limit);
 
-        PerfilJugador creador = partido.getCreador();
+        if (cursor == null) {
+            return resultadoPartidoRepository.findTrayectoriaPublicaInicial(perfilJugadorId, pageRequest);
+        }
+
+        if ("previous".equals(direction)) {
+            return resultadoPartidoRepository.findTrayectoriaPublicaPrevious(
+                    perfilJugadorId,
+                    cursor.fechaHora(),
+                    cursor.partidoId(),
+                    pageRequest
+            );
+        }
+
+        return resultadoPartidoRepository.findTrayectoriaPublicaNext(
+                perfilJugadorId,
+                cursor.fechaHora(),
+                cursor.partidoId(),
+                pageRequest
+        );
+    }
+
+    private int normalizarLimit(Integer limitSolicitado) {
+        if (limitSolicitado == null) {
+            return 10;
+        }
+        if (limitSolicitado < 1 || limitSolicitado > 10) {
+            throw new IllegalArgumentException("El limite solicitado no es valido.");
+        }
+        return limitSolicitado;
+    }
+
+    private String normalizarDirection(String direction) {
+        if (direction == null || direction.isBlank()) {
+            return "next";
+        }
+        if (!"next".equalsIgnoreCase(direction) && !"previous".equalsIgnoreCase(direction)) {
+            throw new IllegalArgumentException("La direccion solicitada no es valida.");
+        }
+        return direction.toLowerCase();
+    }
+
+    private boolean calcularHasNext(String direction,
+                                    boolean hasExtra,
+                                    TrayectoriaCursorService.TrayectoriaCursor cursor) {
+        if ("previous".equals(direction)) {
+            return cursor != null;
+        }
+        return hasExtra;
+    }
+
+    private boolean calcularHasPrevious(String direction,
+                                        boolean hasExtra,
+                                        TrayectoriaCursorService.TrayectoriaCursor cursor) {
+        if ("previous".equals(direction)) {
+            return hasExtra;
+        }
+        return cursor != null;
+    }
+
+    private PartidoJugadoPublicoDto convertirAPartidoJugadoPublicoDto(ResultadoPartido resultado, Long perfilObjetivoId) {
+        PartidoJugadoPublicoDto dto = new PartidoJugadoPublicoDto();
+        dto.setPartidoId(resultado.getPartido().getId());
+        dto.setFechaHora(resultado.getPartido().getFechaHora());
+        dto.setUbicacion(resultado.getPartido().getUbicacion());
+        dto.setTipoPartido(resultado.getPartido().getTipoPartido());
+        dto.setTipoFinalizacion(resultado.getTipoFinalizacion().name());
+        dto.setJuegosEquipoA(resultado.getJuegosEquipoA());
+        dto.setJuegosEquipoB(resultado.getJuegosEquipoB());
+
+        List<JugadorEquipoPublicoDto> equipoA = List.of(
+                convertirAJugadorEquipoDto(resultado.getEquipoAJugador1(), perfilObjetivoId),
+                convertirAJugadorEquipoDto(resultado.getEquipoAJugador2(), perfilObjetivoId)
+        );
+        List<JugadorEquipoPublicoDto> equipoB = List.of(
+                convertirAJugadorEquipoDto(resultado.getEquipoBJugador1(), perfilObjetivoId),
+                convertirAJugadorEquipoDto(resultado.getEquipoBJugador2(), perfilObjetivoId)
+        );
+        dto.setEquipoA(equipoA);
+        dto.setEquipoB(equipoB);
+        dto.setEquipoUsuarioObjetivo(
+                equipoA.stream().anyMatch(JugadorEquipoPublicoDto::isUsuarioObjetivo) ? "A" : "B"
+        );
+
+        PerfilJugador creador = resultado.getPartido().getCreador();
         if (creador != null) {
             dto.setCreadorId(creador.getId());
             dto.setCreadorApodo(creador.getApodo());
             dto.setUsuarioObjetivoFueCreador(creador.getId().equals(perfilObjetivoId));
         }
 
+        return dto;
+    }
+
+    private JugadorEquipoPublicoDto convertirAJugadorEquipoDto(PerfilJugador jugador, Long perfilObjetivoId) {
+        JugadorEquipoPublicoDto dto = new JugadorEquipoPublicoDto();
+        dto.setPerfilJugadorId(jugador.getId());
+        dto.setApodo(jugador.getApodo());
+        dto.setUsuarioObjetivo(jugador.getId().equals(perfilObjetivoId));
         return dto;
     }
 }

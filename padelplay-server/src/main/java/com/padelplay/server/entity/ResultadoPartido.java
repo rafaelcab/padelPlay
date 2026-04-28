@@ -22,7 +22,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "resultados_partido")
+@Table(
+        name = "resultados_partido",
+        indexes = {
+                @jakarta.persistence.Index(name = "idx_resultado_partido_id", columnList = "partido_id"),
+                @jakarta.persistence.Index(name = "idx_resultado_equipo_a_1", columnList = "equipo_a_jugador_1_id"),
+                @jakarta.persistence.Index(name = "idx_resultado_equipo_a_2", columnList = "equipo_a_jugador_2_id"),
+                @jakarta.persistence.Index(name = "idx_resultado_equipo_b_1", columnList = "equipo_b_jugador_1_id"),
+                @jakarta.persistence.Index(name = "idx_resultado_equipo_b_2", columnList = "equipo_b_jugador_2_id")
+        }
+)
 public class ResultadoPartido {
 
     @Id

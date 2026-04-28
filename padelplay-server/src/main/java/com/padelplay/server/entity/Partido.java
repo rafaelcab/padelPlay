@@ -5,7 +5,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "partidos")
+@Table(
+        name = "partidos",
+        indexes = {
+                @Index(name = "idx_partidos_trayectoria_estado_fecha", columnList = "terminado, cancelado, fecha_hora, id")
+        }
+)
 public class Partido {
 
     @Id

@@ -24,8 +24,8 @@ public class PartidoService {
 
     @Autowired
     public PartidoService(PartidoRepository partidoRepository,
-                         PerfilJugadorRepository perfilJugadorRepository,
-                         RecordatorioPartidoService recordatorioPartidoService) {
+            PerfilJugadorRepository perfilJugadorRepository,
+            RecordatorioPartidoService recordatorioPartidoService) {
         this.partidoRepository = partidoRepository;
         this.perfilJugadorRepository = perfilJugadorRepository;
         this.recordatorioPartidoService = recordatorioPartidoService;
@@ -40,18 +40,54 @@ public class PartidoService {
      */
     @Transactional
     public List<PartidoDto> listarPartidos() {
-        List<Partido> partidos = partidoRepository.findAll();
+        List<Partido> todos = partidoRepository.findAll();
 
-        List<Partido> sinJugadores = partidos.stream()
+        // Separamos los que están vacíos para borrarlos de fondo
+        List<Partido> vacios = todos.stream()
                 .filter(p -> p.getJugadoresApuntados() == null || p.getJugadoresApuntados().isEmpty())
-                .toList();
+                .collect(Collectors.toList());
 
-        if (!sinJugadores.isEmpty()) {
-            partidoRepository.deleteAll(sinJugadores);
+        if (!vacios.isEmpty()) {
+            partidoRepository.deleteAllInBatch(vacios); // Más rápido que deleteAll
         }
 
-        return partidos.stream()
+        // Devolvemos solo los que SI tienen jugadores (los que no vamos a borrar)
+        return todos.stream()
                 .filter(p -> p.getJugadoresApuntados() != null && !p.getJugadoresApuntados().isEmpty())
+                .map(this::convertirADto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtiene los partidos recientes de un jugador (creados o a los que se unió).
+     */
+    @Transactional(readOnly = true)
+    public List<PartidoDto> obtenerPartidosRecientesPorJugador(Long jugadorId) {
+        return partidoRepository.findPartidosByJugador(jugadorId)
+                .stream()
+                .limit(5) // Limitar a los 5 más recientes
+                .map(this::convertirADto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtiene todos los partidos de un jugador (creados o a los que se unió).
+     */
+    @Transactional(readOnly = true)
+    public List<PartidoDto> obtenerTodosLosPartidosPorJugador(Long jugadorId) {
+        return partidoRepository.findPartidosByJugador(jugadorId)
+                .stream()
+                .map(this::convertirADto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtiene todos los partidos creados por los alumnos de un entrenador.
+     */
+    @Transactional(readOnly = true)
+    public List<PartidoDto> obtenerPartidosDeAlumnos(Long entrenadorUsuarioId) {
+        return partidoRepository.findPartidosDeAlumnos(entrenadorUsuarioId)
+                .stream()
                 .map(this::convertirADto)
                 .collect(Collectors.toList());
     }

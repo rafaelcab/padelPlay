@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{base :: layout(~{::title}, ~{::style}, ~{::main})}">
+
+<head>
+    <title>Trayectoria publica - PadelPlay</title>
+    <style>
+        .page-card {
+            background: #1d2023;
+            border: 1px solid #334155;
+        }
+
+        .trajectory-card {
+            background: linear-gradient(180deg, rgba(29, 32, 35, 0.98) 0%, rgba(16, 18, 20, 0.98) 100%);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+        }
+
+        .team-row {
+            background: rgba(15, 17, 19, 0.95);
+            border: 1px solid rgba(51, 65, 85, 0.55);
+        }
+
+        .player-pill {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+        }
+
+        .player-pill--highlight {
+            background: rgba(212, 255, 0, 0.10);
+            border-color: rgba(212, 255, 0, 0.35);
+            color: #f7fee7;
+        }
+
+        .result-chip {
+            background: rgba(212, 255, 0, 0.10);
+            border: 1px solid rgba(212, 255, 0, 0.25);
+            color: #d4ff00;
+        }
+    </style>
+</head>
+
+<body>
+<main class="max-w-screen-xl mx-auto px-6 pt-32 pb-20" th:if="${amigo != null}">
+    <div class="flex items-center justify-between gap-4 flex-wrap mb-8">
+        <a th:href="@{/comunidad/{usuarioId}(usuarioId=${amigo.usuarioId})}"
+           class="text-slate-400 hover:text-[#D4FF00] transition-colors flex items-center gap-2">
+            <span class="material-symbols-outlined">arrow_back</span>
+            Volver al perfil
+        </a>
+        <span class="px-4 py-2 rounded-full border border-[#D4FF00]/25 text-[#D4FF00] text-xs uppercase tracking-[0.25em] font-bold">
+            Trayectoria completa
+        </span>
+    </div>
+
+    <section class="page-card rounded-3xl p-7">
+        <div class="flex items-start justify-between gap-4 flex-wrap mb-6">
+            <div>
+                <p class="text-slate-400 text-sm uppercase tracking-[0.25em]">Comunidad</p>
+                <h1 class="text-4xl font-headline font-extrabold tracking-tight text-[#D4FF00] mt-2"
+                    th:text="${amigo.nombre}">Nombre</h1>
+                <p class="text-slate-400 mt-2">Partidos terminados con resultado, ordenados del mas reciente al mas antiguo.</p>
+            </div>
+            <div class="text-right">
+                <p class="text-slate-500 text-xs uppercase tracking-[0.2em]">Perfil visitado</p>
+                <p class="text-white font-semibold mt-2"
+                   th:text="${amigo.jugadorApodo != null && !amigo.jugadorApodo.isBlank() ? amigo.jugadorApodo : amigo.nombre}">apodo</p>
+            </div>
+        </div>
+
+        <div class="space-y-4" th:if="${trayectoria != null && !trayectoria.items.empty}">
+            <article class="trajectory-card rounded-2xl p-5"
+                     th:each="partido : ${trayectoria.items}">
+                <div class="flex items-start justify-between gap-4 flex-wrap">
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.25em] text-slate-500"
+                           th:text="${#temporals.format(partido.fechaHora, 'dd/MM/yyyy HH:mm')}">27/04/2026 20:00</p>
+                        <h2 class="text-white font-bold text-lg mt-2" th:text="${partido.ubicacion}">Club Norte</h2>
+                        <p class="text-slate-400 text-sm mt-1">
+                            <span th:text="${partido.tipoPartido}">ABIERTO</span>
+                            <span class="mx-2 text-slate-600">/</span>
+                            <span th:if="${partido.tipoFinalizacion == 'FINALIZADO_NORMAL'}"
+                                  th:text="${partido.juegosEquipoA + ' - ' + partido.juegosEquipoB}">6 - 4</span>
+                            <span th:if="${partido.tipoFinalizacion == 'WO_EQUIPO_A'}">Victoria por WO del equipo A</span>
+                            <span th:if="${partido.tipoFinalizacion == 'WO_EQUIPO_B'}">Victoria por WO del equipo B</span>
+                            <span th:if="${partido.tipoFinalizacion == 'ABANDONO_EQUIPO_A'}">Abandono del equipo A</span>
+                            <span th:if="${partido.tipoFinalizacion == 'ABANDONO_EQUIPO_B'}">Abandono del equipo B</span>
+                        </p>
+                    </div>
+                    <span class="result-chip px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest"
+                          th:text="${partido.equipoUsuarioObjetivo != null ? 'Jugo en equipo ' + partido.equipoUsuarioObjetivo : 'Trayectoria publica'}">
+                        Jugo en equipo A
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                    <div class="team-row rounded-xl p-4">
+                        <p class="text-slate-400 text-xs uppercase tracking-[0.2em] mb-3">Equipo A</p>
+                        <div class="space-y-2">
+                            <div class="player-pill rounded-xl px-3 py-2 flex items-center justify-between gap-3"
+                                 th:each="jugador : ${partido.equipoA}"
+                                 th:classappend="${jugador.usuarioObjetivo} ? ' player-pill--highlight' : ''">
+                                <span th:classappend="${jugador.usuarioObjetivo} ? ' font-semibold' : ''"
+                                      th:text="${jugador.apodo}">jugador1</span>
+                                <span th:if="${jugador.usuarioObjetivo}"
+                                      class="text-[10px] uppercase tracking-[0.2em] text-[#D4FF00] font-bold">Perfil visitado</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="team-row rounded-xl p-4">
+                        <p class="text-slate-400 text-xs uppercase tracking-[0.2em] mb-3">Equipo B</p>
+                        <div class="space-y-2">
+                            <div class="player-pill rounded-xl px-3 py-2 flex items-center justify-between gap-3"
+                                 th:each="jugador : ${partido.equipoB}"
+                                 th:classappend="${jugador.usuarioObjetivo} ? ' player-pill--highlight' : ''">
+                                <span th:classappend="${jugador.usuarioObjetivo} ? ' font-semibold' : ''"
+                                      th:text="${jugador.apodo}">jugador3</span>
+                                <span th:if="${jugador.usuarioObjetivo}"
+                                      class="text-[10px] uppercase tracking-[0.2em] text-[#D4FF00] font-bold">Perfil visitado</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div th:if="${trayectoria == null || trayectoria.items.empty}"
+             class="rounded-2xl border border-slate-800 bg-[#0f1113] px-5 py-6 text-slate-400">
+            No hay suficientes resultados registrados para construir esta trayectoria todavia.
+        </div>
+
+        <div class="flex items-center justify-between gap-4 flex-wrap mt-8"
+             th:if="${trayectoria != null && (!trayectoria.items.empty || trayectoria.hasPrevious || trayectoria.hasNext)}">
+            <a th:if="${trayectoria.hasPrevious && trayectoria.previousCursor != null}"
+               th:href="@{/comunidad/{usuarioId}/trayectoria(usuarioId=${amigo.usuarioId}, cursor=${trayectoria.previousCursor}, direction='previous')}"
+               class="px-5 py-3 rounded-full border border-slate-600 text-slate-200 hover:border-[#D4FF00]/40 hover:text-[#D4FF00] transition-colors font-bold text-xs uppercase tracking-widest">
+                Ver anteriores
+            </a>
+            <span th:if="${!trayectoria.hasPrevious || trayectoria.previousCursor == null}"
+                  class="px-5 py-3 rounded-full border border-slate-800 text-slate-600 font-bold text-xs uppercase tracking-widest">
+                Inicio de trayectoria
+            </span>
+
+            <a th:if="${trayectoria.hasNext && trayectoria.nextCursor != null}"
+               th:href="@{/comunidad/{usuarioId}/trayectoria(usuarioId=${amigo.usuarioId}, cursor=${trayectoria.nextCursor}, direction='next')}"
+               class="px-5 py-3 rounded-full bg-[#D4FF00] text-black hover:bg-[#bfe800] transition-colors font-black text-xs uppercase tracking-widest">
+                Cargar 10 mas
+            </a>
+            <span th:if="${!trayectoria.hasNext || trayectoria.nextCursor == null}"
+                  class="px-5 py-3 rounded-full border border-slate-800 text-slate-600 font-bold text-xs uppercase tracking-widest">
+                No hay mas partidos
+            </span>
+        </div>
+    </section>
+</main>
+</body>
+
+</html>

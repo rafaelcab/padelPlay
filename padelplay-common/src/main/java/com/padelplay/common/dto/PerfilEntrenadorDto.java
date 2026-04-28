@@ -32,6 +32,14 @@ public class PerfilEntrenadorDto {
     private Set<String> especialidades = new HashSet<>();
     private List<CertificacionDto> certificaciones = new ArrayList<>();
 
+    // Campos añadidos para la vista
+    private String nombre;
+    private String fotoUrl;
+    private Double rating;
+    private String nivel;
+    private String especialidad;
+    private Integer experiencia;
+
     public PerfilEntrenadorDto() {
     }
 
@@ -203,5 +211,53 @@ public class PerfilEntrenadorDto {
 
     public void setCertificaciones(List<CertificacionDto> certificaciones) {
         this.certificaciones = certificaciones;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getFotoUrl() {
+        return fotoUrl;
+    }
+
+    public void setFotoUrl(String fotoUrl) {
+        this.fotoUrl = fotoUrl;
+    }
+
+    public Double getRating() {
+        return rating;
+    }
+
+    public void setRating(Double rating) {
+        this.rating = rating;
+    }
+
+    public String getNivel() {
+        return nivel;
+    }
+
+    public void setNivel(String nivel) {
+        this.nivel = nivel;
+    }
+
+    public String getEspecialidad() {
+        return especialidad;
+    }
+
+    public void setEspecialidad(String especialidad) {
+        this.especialidad = especialidad;
+    }
+
+    public Integer getExperiencia() {
+        return experiencia;
+    }
+
+    public void setExperiencia(Integer experiencia) {
+        this.experiencia = experiencia;
     }
 }

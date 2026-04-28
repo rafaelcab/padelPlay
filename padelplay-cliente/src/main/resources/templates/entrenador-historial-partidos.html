@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{base :: layout(~{::title}, ~{::style}, ~{::section})}">
+
+<head>
+    <title>Historial de Partidos - PadelPlay</title>
+    <style>
+        :root {
+            --color-background: #0c0e10;
+            --color-surface-container-low: #111416;
+            --color-surface-container-high: #1d2023;
+            --color-surface-container-highest: #232629;
+            --color-surface-bright: #292c30;
+            --color-primary: #f4ffc6;
+            --color-primary-fixed: #d1fc00;
+            --color-primary-dim: #c7ef00;
+            --color-on-primary-fixed: #3c4a00;
+            --color-secondary: #e2e2e5;
+            --color-on-surface: #eeeef0;
+            --color-on-surface-variant: #aaabad;
+            --color-outline-variant: #46484a;
+            --color-error: #ff7351;
+            --font-headline: 'Plus Jakarta Sans', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            margin-top: 2rem;
+        }
+
+        .brand-eyebrow {
+            font-family: var(--font-headline);
+            font-weight: 800;
+            font-style: italic;
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            color: var(--color-primary-fixed);
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+
+        h1 {
+            font-family: var(--font-headline);
+            font-weight: 700;
+            font-size: 2.5rem;
+            letter-spacing: -0.02em;
+            color: var(--color-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--color-on-surface-variant);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        .error-message {
+            background: rgba(255, 115, 81, 0.12);
+            border: 1px solid rgba(255, 115, 81, 0.3);
+            color: var(--color-error);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .partidos-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .partido-card {
+            background: rgba(17, 20, 22, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .partido-card:hover {
+            background: rgba(29, 32, 35, 0.9);
+            border-color: var(--color-primary-fixed);
+        }
+
+        .partido-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .partido-fecha {
+            font-size: 0.9rem;
+            color: var(--color-on-surface-variant);
+            margin-bottom: 0.5rem;
+        }
+
+        .partido-ubicacion {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-on-surface);
+            margin-bottom: 0.5rem;
+        }
+
+        .partido-nivel {
+            display: inline-block;
+            background: rgba(209, 252, 0, 0.1);
+            color: var(--color-primary-fixed);
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-right: 0.5rem;
+        }
+
+        .partido-jugadores {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .jugador-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--color-surface-container-highest);
+            padding: 0.4rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+        }
+
+        .jugador-avatar {
+            width: 1.4rem;
+            height: 1.4rem;
+            border-radius: 50%;
+            background: var(--color-primary-fixed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-on-primary-fixed);
+            font-weight: 800;
+            font-size: 0.7rem;
+        }
+
+        .partido-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.5rem;
+        }
+
+        .btn-secondary,
+        .btn-feedback {
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            font-family: var(--font-headline);
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .btn-secondary {
+            background: var(--color-surface-container-highest);
+            color: var(--color-on-surface);
+            border: 1px solid var(--color-outline-variant);
+        }
+
+        .btn-feedback {
+            background: var(--color-primary-fixed);
+            color: var(--color-on-primary-fixed);
+            border: none;
+        }
+
+        .btn-feedback:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 1rem;
+            background: rgba(17, 20, 22, 0.4);
+            border-radius: 2rem;
+            border: 2px dashed rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+    <section class="w-full min-h-[600px] flex flex-col">
+        <div class="container">
+            <div class="header">
+                <p class="brand-eyebrow">PadelPlay Entrenador</p>
+                <h1>Historial de Partidos</h1>
+                <p class="subtitle">Revisa los partidos de tus alumnos y proporciona feedback</p>
+            </div>
+
+            <div class="error-message" th:if="${error}" th:text="${error}"></div>
+
+            <div class="partidos-grid" th:if="${partidos != null and not #lists.isEmpty(partidos)}">
+                <div th:each="partido : ${partidos}" class="partido-card">
+                    <div class="partido-header">
+                        <div class="partido-info">
+                            <div class="partido-fecha"
+                                th:text="${partido.fechaHora != null ? #temporals.format(partido.fechaHora, 'dd/MM/yyyy HH:mm') : 'Fecha no disponible'}">
+                            </div>
+                            <div class="partido-ubicacion" th:text="${partido.ubicacion}"></div>
+                            <div>
+                                <span class="partido-nivel"
+                                    th:text="'Nivel: ' + ${#numbers.formatDecimal(partido.nivelRequerido != null ? partido.nivelRequerido : 0, 1, 1)}">
+                                </span>
+                                <span class="partido-nivel"
+                                    th:text="${partido.tipoPartido == 'PRIVADO' ? 'Privado' : 'Abierto'}">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="partido-jugadores">
+                        <div class="jugador-badge" th:if="${partido.creador != null}">
+                            <div class="jugador-avatar"
+                                th:text="${#strings.toUpperCase(#strings.substring(partido.creador.apodo, 0, 1))}">
+                            </div>
+                            <span>Creador: <strong th:text="${partido.creador.apodo}"></strong></span>
+                        </div>
+                        <div th:each="jugador : ${partido.jugadoresApuntados}" class="jugador-badge">
+                            <div class="jugador-avatar"
+                                th:text="${#strings.toUpperCase(#strings.substring(jugador.apodo, 0, 1))}"></div>
+                            <span th:text="${jugador.apodo}"></span>
+                        </div>
+                    </div>
+
+                    <div class="partido-actions">
+                        <a th:href="@{/partidos/{id}(id=${partido.id})}" class="btn-secondary">
+                            Ver Detalles
+                        </a>
+
+                        <a th:href="@{/perfil/entrenador/valorar-partido/{id}(id=${partido.id})}" class="btn-feedback">
+                            <span class="material-symbols-outlined" style="margin-right: 8px;"></span>
+                            Dar Feedback
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="empty-state" th:if="${partidos == null or #lists.isEmpty(partidos)}">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+                <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: white;">No hay partidos</h2>
+                <p>Aún no hay partidos finalizados para mostrar en tu historial.</p>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

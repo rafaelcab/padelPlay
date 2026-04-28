@@ -49,7 +49,18 @@ public class JwtService {
      * Extrae el ID de usuario del token.
      */
     public Long extraerUsuarioId(String token) {
-        return extraerClaims(token).get("userId", Long.class);
+        Object userIdClaim = extraerClaims(token).get("userId");
+        if (userIdClaim == null) {
+            return null;
+        }
+        if (userIdClaim instanceof Number) {
+            return ((Number) userIdClaim).longValue();
+        }
+        try {
+            return Long.valueOf(userIdClaim.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     /**

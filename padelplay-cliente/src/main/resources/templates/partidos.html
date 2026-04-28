@@ -93,7 +93,7 @@
                 </div>
 
                 <div id="mensaje-sin-resultados" class="col-span-full text-center py-12 hidden">
-                    <p class="text-slate-400 font-medium text-lg">No hay resultados con los filtros actuales.</p>
+                    <p class="text-slate-400 font-medium text-lg">No hay partidos con los filtros actuales.</p>
                 </div>
 
                 <div th:each="partido : ${partidos}"
@@ -351,6 +351,43 @@
                 </div>
             </div>
 
+            <!-- MODAL PARA DAR POR TERMINADO EL PARTIDO -->
+            <div id="finish-modal"
+                class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+
+                <div
+                    class="bg-[#1d2023] w-full max-w-md rounded-[2rem] p-8 shadow-[0px_40px_80px_rgba(0,0,0,0.6)] border border-white/5 relative overflow-hidden">
+
+                    <div
+                        class="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none">
+                    </div>
+
+                    <div class="relative z-10 space-y-8">
+                        <div class="text-center space-y-2">
+                            <h2 class="text-2xl font-headline font-extrabold tracking-tight text-white">¿Finalizar Partido?</h2>
+                            <p id="finish-modal-subtitle" class="text-slate-400 text-sm italic">Pista Central</p>
+                        </div>
+
+                        <form id="finish-form" method="POST" action="">
+                            <p class="text-sm text-slate-400 leading-relaxed mb-6">
+                                Esta acción marcará el partido como terminado. El flujo de resultados se ha retirado de esta rama para rehacerlo desde cero.
+                            </p>
+
+                            <div class="space-y-3 pt-2">
+                                <button type="submit"
+                                    class="w-full py-4 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-headline font-extrabold tracking-tight text-base hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] uppercase">
+                                    CONFIRMAR Y FINALIZAR
+                                </button>
+                                <button type="button" onclick="closeFinishModal()"
+                                    class="w-full py-4 rounded-full bg-transparent text-slate-400 font-semibold text-sm hover:text-white transition-colors">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
         </main>
 
         <footer
@@ -480,6 +517,19 @@
                 document.getElementById('join-modal').classList.add('hidden');
                 // Limpia el contenido escrito en el input de código, por si el usuario escribe algo, cancela y abre otro partido
                 document.querySelector('input[name="codigoAcceso"]').value = '';
+            }
+
+            function openFinishModal(btn) {
+                const partidoId = btn.getAttribute('data-id');
+                const ubicacion = btn.getAttribute('data-ubicacion');
+
+                document.getElementById('finish-modal-subtitle').textContent = ubicacion;
+                document.getElementById('finish-form').action = '/partidos/' + partidoId + '/terminar';
+                document.getElementById('finish-modal').classList.remove('hidden');
+            }
+
+            function closeFinishModal() {
+                document.getElementById('finish-modal').classList.add('hidden');
             }
         </script>
     </div>

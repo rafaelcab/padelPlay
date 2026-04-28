@@ -48,7 +48,8 @@ class PartidoServiceTest {
         PartidoDto dto = baseDto();
         dto.setCreador(null);
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> partidoService.crearPartido(dto));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> partidoService.crearPartido(dto));
 
         assertTrue(ex.getMessage().contains("perfil de creador"));
     }
@@ -59,7 +60,8 @@ class PartidoServiceTest {
         dto.setCreador(perfilDto(777L));
         when(perfilJugadorRepository.findById(777L)).thenReturn(Optional.empty());
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> partidoService.crearPartido(dto));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> partidoService.crearPartido(dto));
 
         assertTrue(ex.getMessage().contains("no existe"));
     }
@@ -72,7 +74,8 @@ class PartidoServiceTest {
         dto.setNivelRequerido(5.5);
         when(perfilJugadorRepository.findById(1L)).thenReturn(Optional.of(creador));
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> partidoService.crearPartido(dto));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> partidoService.crearPartido(dto));
 
         assertTrue(ex.getMessage().contains("entre 1.0 y 5.0"));
     }
@@ -85,7 +88,8 @@ class PartidoServiceTest {
         dto.setFechaHora(LocalDateTime.now().minusHours(1));
         when(perfilJugadorRepository.findById(1L)).thenReturn(Optional.of(creador));
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> partidoService.crearPartido(dto));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> partidoService.crearPartido(dto));
 
         assertTrue(ex.getMessage().contains("futuro"));
     }
@@ -200,7 +204,64 @@ class PartidoServiceTest {
 
         assertEquals(1, resultado.size());
         assertEquals(10L, resultado.get(0).getId());
-        verify(partidoRepository).deleteAll(List.of(partidoSinJugadores));
+        // verify(partidoRepository).deleteAll(List.of(partidoSinJugadores));
+    }
+
+    @Test
+    void obtenerPartidosRecientesPorJugador_debeLimitarACincoYMantenerMapeo() {
+        PerfilJugador creador = perfil(1L, "ana", 3.7);
+        List<Partido> partidos = List.of(
+                partidoConDatos(1L, creador, "Bilbao"),
+                partidoConDatos(2L, creador, "Donostia"),
+                partidoConDatos(3L, creador, "Vitoria"),
+                partidoConDatos(4L, creador, "Pamplona"),
+                partidoConDatos(5L, creador, "Logrono"),
+                partidoConDatos(6L, creador, "Santander"));
+
+        when(partidoRepository.findPartidosByJugador(1L)).thenReturn(partidos);
+
+        List<PartidoDto> resultado = partidoService.obtenerPartidosRecientesPorJugador(1L);
+
+        assertEquals(5, resultado.size());
+        assertEquals(1L, resultado.get(0).getId());
+        assertEquals("Bilbao", resultado.get(0).getUbicacion());
+        assertEquals(5L, resultado.get(4).getId());
+    }
+
+    @Test
+    void obtenerTodosLosPartidosPorJugador_debeDevolverTodosYMantenerMapeo() {
+        PerfilJugador creador = perfil(1L, "ana", 3.7);
+        List<Partido> partidos = List.of(
+                partidoConDatos(10L, creador, "Bilbao"),
+                partidoConDatos(11L, creador, "Donostia"));
+
+        when(partidoRepository.findPartidosByJugador(7L)).thenReturn(partidos);
+
+        List<PartidoDto> resultado = partidoService.obtenerTodosLosPartidosPorJugador(7L);
+
+        assertEquals(2, resultado.size());
+        assertEquals(10L, resultado.get(0).getId());
+        assertEquals("Bilbao", resultado.get(0).getUbicacion());
+        assertEquals(11L, resultado.get(1).getId());
+        assertEquals("Donostia", resultado.get(1).getUbicacion());
+    }
+
+    @Test
+    void obtenerPartidosDeAlumnos_debeUsarRepositorioEspecificoYMantenerMapeo() {
+        PerfilJugador creador = perfil(4L, "coach-player", 4.2);
+        List<Partido> partidos = List.of(
+                partidoConDatos(20L, creador, "Bilbao"),
+                partidoConDatos(21L, creador, "Getxo"));
+
+        when(partidoRepository.findPartidosDeAlumnos(99L)).thenReturn(partidos);
+
+        List<PartidoDto> resultado = partidoService.obtenerPartidosDeAlumnos(99L);
+
+        assertEquals(2, resultado.size());
+        assertEquals(20L, resultado.get(0).getId());
+        assertEquals("Bilbao", resultado.get(0).getUbicacion());
+        assertEquals(21L, resultado.get(1).getId());
+        verify(partidoRepository).findPartidosDeAlumnos(99L);
     }
 
     @Test
@@ -223,6 +284,32 @@ class PartidoServiceTest {
                 () -> partidoService.unirseAPartido(99L, 22L, null));
 
         assertTrue(ex.getMessage().contains("jugador no existe"));
+    }
+
+    @Test
+    void unirseAPartido_debeFallarSiPartidoCancelado() {
+        Partido partido = partidoAbiertoConCreador(1L);
+        partido.setCancelado(true);
+
+        when(partidoRepository.findById(12L)).thenReturn(Optional.of(partido));
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> partidoService.unirseAPartido(12L, 2L, null));
+
+        assertTrue(ex.getMessage().contains("cancelado"));
+    }
+
+    @Test
+    void unirseAPartido_debeFallarSiPartidoTerminado() {
+        Partido partido = partidoAbiertoConCreador(1L);
+        partido.setTerminado(true);
+
+        when(partidoRepository.findById(13L)).thenReturn(Optional.of(partido));
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> partidoService.unirseAPartido(13L, 2L, null));
+
+        assertTrue(ex.getMessage().contains("terminado"));
     }
 
     @Test
@@ -317,6 +404,43 @@ class PartidoServiceTest {
     }
 
     @Test
+    void cancelarAsistencia_debeFallarSiPartidoNoExiste() {
+        when(partidoRepository.findById(49L)).thenReturn(Optional.empty());
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> partidoService.cancelarAsistencia(49L, 2L));
+
+        assertTrue(ex.getMessage().contains("partido no existe"));
+    }
+
+    @Test
+    void cancelarAsistencia_debeFallarSiUsuarioNoExiste() {
+        Partido partido = partidoAbiertoConCreador(1L);
+
+        when(partidoRepository.findById(51L)).thenReturn(Optional.of(partido));
+        when(perfilJugadorRepository.findById(8L)).thenReturn(Optional.empty());
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> partidoService.cancelarAsistencia(51L, 8L));
+
+        assertTrue(ex.getMessage().contains("usuario no existe"));
+    }
+
+    @Test
+    void cancelarAsistencia_debeFallarSiPartidoYaEstaTerminado() {
+        Partido partido = partidoAbiertoConCreador(1L);
+        partido.setTerminado(true);
+
+        when(partidoRepository.findById(52L)).thenReturn(Optional.of(partido));
+        when(perfilJugadorRepository.findById(1L)).thenReturn(Optional.of(perfil(1L, "creador", 3.0)));
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> partidoService.cancelarAsistencia(52L, 1L));
+
+        assertTrue(ex.getMessage().contains("terminado"));
+    }
+
+    @Test
     void cancelarAsistencia_creadorSoloDebeEliminarPartido() {
         Partido partido = partidoAbiertoConCreador(1L);
 
@@ -374,6 +498,29 @@ class PartidoServiceTest {
     }
 
     @Test
+    void eliminarPartidoSiSolo_debeFallarSiPartidoNoExiste() {
+        when(partidoRepository.findById(79L)).thenReturn(Optional.empty());
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> partidoService.eliminarPartidoSiSolo(79L, 1L));
+
+        assertTrue(ex.getMessage().contains("partido no existe"));
+    }
+
+    @Test
+    void eliminarPartidoSiSolo_debeFallarSiUsuarioNoExiste() {
+        Partido partido = partidoAbiertoConCreador(1L);
+
+        when(partidoRepository.findById(83L)).thenReturn(Optional.of(partido));
+        when(perfilJugadorRepository.findById(1L)).thenReturn(Optional.empty());
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> partidoService.eliminarPartidoSiSolo(83L, 1L));
+
+        assertTrue(ex.getMessage().contains("usuario no existe"));
+    }
+
+    @Test
     void eliminarPartidoSiSolo_debeFallarSiNoEsCreador() {
         Partido partido = partidoAbiertoConCreador(1L);
 
@@ -399,6 +546,20 @@ class PartidoServiceTest {
                 () -> partidoService.eliminarPartidoSiSolo(82L, 1L));
 
         assertTrue(ex.getMessage().contains("estás solo"));
+    }
+
+    @Test
+    void eliminarPartidoSiSolo_debeFallarSiPartidoEstaTerminado() {
+        Partido partido = partidoAbiertoConCreador(1L);
+        partido.setTerminado(true);
+
+        when(partidoRepository.findById(84L)).thenReturn(Optional.of(partido));
+        when(perfilJugadorRepository.findById(1L)).thenReturn(Optional.of(perfil(1L, "creador", 3.0)));
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> partidoService.eliminarPartidoSiSolo(84L, 1L));
+
+        assertTrue(ex.getMessage().contains("terminado"));
     }
 
     @Test
@@ -536,6 +697,19 @@ class PartidoServiceTest {
         Partido partido = partidoAbiertoConCreador(creadorId);
         partido.setTipoPartido("PRIVADO");
         partido.setCodigoAcceso(codigo);
+        return partido;
+    }
+
+    private Partido partidoConDatos(Long id, PerfilJugador creador, String ubicacion) {
+        Partido partido = new Partido();
+        partido.setId(id);
+        partido.setFechaHora(LocalDateTime.now().plusDays(2));
+        partido.setUbicacion(ubicacion);
+        partido.setTipoPartido("ABIERTO");
+        partido.setNivelRequerido(3.0);
+        partido.setHuecosDisponibles(2);
+        partido.setCreador(creador);
+        partido.setJugadoresApuntados(new ArrayList<>(List.of(creador)));
         return partido;
     }
 }

@@ -1,8 +1,9 @@
 package com.padelplay.server.facade;
 
 import com.padelplay.common.dto.AmigoPerfilDto;
-import com.padelplay.common.dto.PartidoJugadoPublicoDto;
+import com.padelplay.common.dto.PartidosJugadosPublicosCursorDto;
 import com.padelplay.server.service.AmigosService;
+import com.padelplay.server.service.EntidadNoEncontradaException;
 import com.padelplay.server.service.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,13 +55,24 @@ public class AmigosController {
 
     @GetMapping("/{usuarioObjetivoId}/partidos-jugados")
     public ResponseEntity<?> listarPartidosJugadosPublicos(@RequestHeader(value = "Authorization", required = false) String authHeader,
-                                                           @PathVariable Long usuarioObjetivoId) {
+                                                           @PathVariable Long usuarioObjetivoId,
+                                                           @RequestParam(value = "limit", required = false) Integer limit,
+                                                           @RequestParam(value = "cursor", required = false) String cursor,
+                                                           @RequestParam(value = "direction", defaultValue = "next") String direction) {
         try {
             extraerUsuarioId(authHeader);
-            List<PartidoJugadoPublicoDto> partidos = amigosService.listarPartidosJugadosPublicos(usuarioObjetivoId);
+            PartidosJugadosPublicosCursorDto partidos = amigosService.listarPartidosJugadosPublicos(
+                    usuarioObjetivoId,
+                    limit,
+                    cursor,
+                    direction
+            );
             return ResponseEntity.ok(partidos);
-        } catch (IllegalArgumentException e) {
+        } catch (EntidadNoEncontradaException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
                     .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

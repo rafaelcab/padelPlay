@@ -68,12 +68,14 @@
             <a class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
                 th:href="@{/partidos/crear}" data-nav-path="/partidos/crear">Crear</a>
             <a class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
+                th:href="@{/entrenadores}" data-nav-prefix="/entrenadores">Entrenador</a>
+            <a class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
                 th:href="@{/comunidad}" data-nav-prefix="/comunidad">Comunidad</a>
+            <a class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
+                th:href="@{/torneos}" data-nav-path="/torneos">Torneos</a>
             <a th:if="${esAdminClub}"
                 class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
                 th:href="@{/estadisticas}" data-nav-path="/estadisticas">Stats</a>
-            <a class="font-headline tracking-tight font-bold uppercase text-sm text-slate-400 hover:text-slate-100 transition-colors"
-                href="#" data-nav-path="/torneos">Torneos</a>
         </nav>
 
         <div class="flex items-center gap-6">
@@ -91,7 +93,8 @@
                     class="absolute right-0 mt-4 w-[22rem] origin-top-right rounded-2xl glass-dropdown shadow-2xl opacity-0 invisible translate-y-2 transition-all duration-200 z-50 overflow-hidden">
                     <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
                         <div>
-                            <p class="font-headline text-sm uppercase tracking-tight text-white font-bold">Notificaciones</p>
+                            <p class="font-headline text-sm uppercase tracking-tight text-white font-bold">
+                                Notificaciones</p>
                             <p class="text-xs text-slate-400">Recordatorios de partidos</p>
                         </div>
                         <button id="notifications-refresh" type="button"

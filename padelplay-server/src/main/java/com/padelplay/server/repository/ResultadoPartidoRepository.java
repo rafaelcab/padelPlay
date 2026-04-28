@@ -2,11 +2,13 @@ package com.padelplay.server.repository;
 
 import com.padelplay.server.entity.ResultadoPartido;
 import com.padelplay.server.entity.EstadoValidacionResultadoPartido;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,4 +75,82 @@ public interface ResultadoPartidoRepository extends JpaRepository<ResultadoParti
             """)
     List<ResultadoPartido> findPendientesValidacionByPerfilJugadorId(@Param("perfilJugadorId") Long perfilJugadorId,
                                                                      @Param("estado") EstadoValidacionResultadoPartido estado);
+
+    @Query("""
+            select r
+            from ResultadoPartido r
+            join fetch r.partido p
+            join fetch r.registradoPor
+            join fetch r.equipoAJugador1
+            join fetch r.equipoAJugador2
+            join fetch r.equipoBJugador1
+            join fetch r.equipoBJugador2
+            where p.cancelado = false
+            and p.terminado = true
+            and (
+                r.equipoAJugador1.id = :perfilJugadorId
+                or r.equipoAJugador2.id = :perfilJugadorId
+                or r.equipoBJugador1.id = :perfilJugadorId
+                or r.equipoBJugador2.id = :perfilJugadorId
+            )
+            order by p.fechaHora desc, p.id desc
+            """)
+    List<ResultadoPartido> findTrayectoriaPublicaInicial(@Param("perfilJugadorId") Long perfilJugadorId,
+                                                         Pageable pageable);
+
+    @Query("""
+            select r
+            from ResultadoPartido r
+            join fetch r.partido p
+            join fetch r.registradoPor
+            join fetch r.equipoAJugador1
+            join fetch r.equipoAJugador2
+            join fetch r.equipoBJugador1
+            join fetch r.equipoBJugador2
+            where p.cancelado = false
+            and p.terminado = true
+            and (
+                r.equipoAJugador1.id = :perfilJugadorId
+                or r.equipoAJugador2.id = :perfilJugadorId
+                or r.equipoBJugador1.id = :perfilJugadorId
+                or r.equipoBJugador2.id = :perfilJugadorId
+            )
+            and (
+                p.fechaHora < :cursorFechaHora
+                or (p.fechaHora = :cursorFechaHora and p.id < :cursorPartidoId)
+            )
+            order by p.fechaHora desc, p.id desc
+            """)
+    List<ResultadoPartido> findTrayectoriaPublicaNext(@Param("perfilJugadorId") Long perfilJugadorId,
+                                                      @Param("cursorFechaHora") LocalDateTime cursorFechaHora,
+                                                      @Param("cursorPartidoId") Long cursorPartidoId,
+                                                      Pageable pageable);
+
+    @Query("""
+            select r
+            from ResultadoPartido r
+            join fetch r.partido p
+            join fetch r.registradoPor
+            join fetch r.equipoAJugador1
+            join fetch r.equipoAJugador2
+            join fetch r.equipoBJugador1
+            join fetch r.equipoBJugador2
+            where p.cancelado = false
+            and p.terminado = true
+            and (
+                r.equipoAJugador1.id = :perfilJugadorId
+                or r.equipoAJugador2.id = :perfilJugadorId
+                or r.equipoBJugador1.id = :perfilJugadorId
+                or r.equipoBJugador2.id = :perfilJugadorId
+            )
+            and (
+                p.fechaHora > :cursorFechaHora
+                or (p.fechaHora = :cursorFechaHora and p.id > :cursorPartidoId)
+            )
+            order by p.fechaHora asc, p.id asc
+            """)
+    List<ResultadoPartido> findTrayectoriaPublicaPrevious(@Param("perfilJugadorId") Long perfilJugadorId,
+                                                          @Param("cursorFechaHora") LocalDateTime cursorFechaHora,
+                                                          @Param("cursorPartidoId") Long cursorPartidoId,
+                                                          Pageable pageable);
 }

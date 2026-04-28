@@ -1,7 +1,9 @@
 package com.padelplay.server.facade;
 
 import com.padelplay.common.dto.PartidoJugadoPublicoDto;
+import com.padelplay.common.dto.PartidosJugadosPublicosCursorDto;
 import com.padelplay.server.service.AmigosService;
+import com.padelplay.server.service.EntidadNoEncontradaException;
 import com.padelplay.server.service.JwtService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,31 +36,37 @@ class AmigosControllerTest {
 
     @Test
     void listarPartidosJugadosPublicos_debeResponder200CuandoElJugadorEsValido() {
-        PartidoJugadoPublicoDto dto = new PartidoJugadoPublicoDto();
-        dto.setPartidoId(1L);
-        dto.setFechaHora(LocalDateTime.now().minusDays(1));
-        dto.setUbicacion("Bilbao");
+        PartidoJugadoPublicoDto item = new PartidoJugadoPublicoDto();
+        item.setPartidoId(1L);
+        item.setFechaHora(LocalDateTime.now().minusDays(1));
+        item.setUbicacion("Bilbao");
+
+        PartidosJugadosPublicosCursorDto dto = new PartidosJugadosPublicosCursorDto();
+        dto.setItems(List.of(item));
+        dto.setHasNext(true);
+        dto.setNextCursor("cursor-2");
 
         when(jwtService.validarToken("token-ok")).thenReturn(true);
         when(jwtService.extraerUsuarioId("token-ok")).thenReturn(5L);
-        when(amigosService.listarPartidosJugadosPublicos(9L)).thenReturn(List.of(dto));
+        when(amigosService.listarPartidosJugadosPublicos(9L, 3, null, "next")).thenReturn(dto);
 
-        ResponseEntity<?> response = amigosController.listarPartidosJugadosPublicos("Bearer token-ok", 9L);
+        ResponseEntity<?> response = amigosController.listarPartidosJugadosPublicos("Bearer token-ok", 9L, 3, null, "next");
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertInstanceOf(List.class, response.getBody());
-        List<?> body = (List<?>) response.getBody();
-        assertEquals(1, body.size());
+        assertInstanceOf(PartidosJugadosPublicosCursorDto.class, response.getBody());
+        PartidosJugadosPublicosCursorDto body = (PartidosJugadosPublicosCursorDto) response.getBody();
+        assertEquals(1, body.getItems().size());
+        assertTrue(body.isHasNext());
     }
 
     @Test
     void listarPartidosJugadosPublicos_debeResponder404CuandoElJugadorNoExiste() {
         when(jwtService.validarToken("token-ok")).thenReturn(true);
         when(jwtService.extraerUsuarioId("token-ok")).thenReturn(5L);
-        when(amigosService.listarPartidosJugadosPublicos(99L))
-                .thenThrow(new IllegalArgumentException("El perfil solicitado no existe."));
+        when(amigosService.listarPartidosJugadosPublicos(99L, 10, null, "next"))
+                .thenThrow(new EntidadNoEncontradaException("El perfil solicitado no existe."));
 
-        ResponseEntity<?> response = amigosController.listarPartidosJugadosPublicos("Bearer token-ok", 99L);
+        ResponseEntity<?> response = amigosController.listarPartidosJugadosPublicos("Bearer token-ok", 99L, 10, null, "next");
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertInstanceOf(Map.class, response.getBody());
@@ -67,8 +75,23 @@ class AmigosControllerTest {
     }
 
     @Test
+    void listarPartidosJugadosPublicos_debeResponder400CuandoElCursorEsInvalido() {
+        when(jwtService.validarToken("token-ok")).thenReturn(true);
+        when(jwtService.extraerUsuarioId("token-ok")).thenReturn(5L);
+        when(amigosService.listarPartidosJugadosPublicos(12L, 10, "bad", "next"))
+                .thenThrow(new IllegalArgumentException("Cursor invalido."));
+
+        ResponseEntity<?> response = amigosController.listarPartidosJugadosPublicos("Bearer token-ok", 12L, 10, "bad", "next");
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertInstanceOf(Map.class, response.getBody());
+        Map<?, ?> body = (Map<?, ?>) response.getBody();
+        assertEquals("Cursor invalido.", body.get("error"));
+    }
+
+    @Test
     void listarPartidosJugadosPublicos_debeResponder401CuandoFaltaToken() {
-        ResponseEntity<?> response = amigosController.listarPartidosJugadosPublicos(null, 7L);
+        ResponseEntity<?> response = amigosController.listarPartidosJugadosPublicos(null, 7L, 3, null, "next");
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertInstanceOf(Map.class, response.getBody());

@@ -1,6 +1,7 @@
 package com.padelplay.cliente.proxies;
 
 import com.padelplay.common.dto.AmigoPerfilDto;
+import com.padelplay.common.dto.PartidosJugadosPublicosCursorDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -8,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -45,6 +47,31 @@ public class AmigosServiceProxy {
                 HttpMethod.GET,
                 entity,
                 AmigoPerfilDto.class
+        );
+
+        return response.getBody();
+    }
+
+    public PartidosJugadosPublicosCursorDto obtenerPartidosJugadosPublicos(String token,
+                                                                           Long usuarioObjetivoId,
+                                                                           int limit,
+                                                                           String cursor,
+                                                                           String direction) {
+        HttpEntity<Void> entity = new HttpEntity<>(crearHeaders(token));
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder
+                .fromUriString(serverUrl + "/api/amigos/" + usuarioObjetivoId + "/partidos-jugados")
+                .queryParam("limit", limit)
+                .queryParam("direction", direction == null || direction.isBlank() ? "next" : direction);
+
+        if (cursor != null && !cursor.isBlank()) {
+            uriBuilder.queryParam("cursor", cursor);
+        }
+
+        ResponseEntity<PartidosJugadosPublicosCursorDto> response = restTemplate.exchange(
+                uriBuilder.toUriString(),
+                HttpMethod.GET,
+                entity,
+                PartidosJugadosPublicosCursorDto.class
         );
 
         return response.getBody();

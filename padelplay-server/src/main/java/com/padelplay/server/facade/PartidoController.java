@@ -35,6 +35,7 @@ public class PartidoController {
         this.jwtService = jwtService;
     }
 
+
     // =========================================================================
     // 1. OBTENER TODOS LOS PARTIDOS (DASHBOARD)
     // GET /api/partidos
@@ -47,6 +48,61 @@ public class PartidoController {
     public ResponseEntity<List<PartidoDto>> obtenerTodosLosPartidos() {
         List<PartidoDto> partidos = partidoService.listarPartidos();
         return new ResponseEntity<>(partidos, HttpStatus.OK);
+    }
+
+    // =========================================================================
+    // 1.5. OBTENER PARTIDOS RECIENTES POR JUGADOR
+    // GET /api/partidos/jugador/{jugadorId}/recientes
+    // =========================================================================
+    @Operation(summary = "Obtener partidos recientes de un jugador", description = "Recupera los partidos más recientes en los que participa un jugador (creados o unidos).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de partidos recuperada con éxito")
+    })
+    @GetMapping("/jugador/{jugadorId}/recientes")
+    public ResponseEntity<List<PartidoDto>> obtenerPartidosRecientesPorJugador(
+            @PathVariable("jugadorId") Long jugadorId) {
+        List<PartidoDto> partidos = partidoService.obtenerPartidosRecientesPorJugador(jugadorId);
+        return new ResponseEntity<>(partidos, HttpStatus.OK);
+    }
+
+    // =========================================================================
+    // 1.6. OBTENER TODOS LOS PARTIDOS POR JUGADOR
+    // GET /api/partidos/jugador/{jugadorId}/todos
+    // =========================================================================
+    @Operation(summary = "Obtener todos los partidos de un jugador", description = "Recupera todos los partidos en los que participa un jugador (creados o unidos).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de partidos recuperada con éxito")
+    })
+    @GetMapping("/jugador/{jugadorId}/todos")
+    public ResponseEntity<List<PartidoDto>> obtenerTodosLosPartidosPorJugador(
+            @PathVariable("jugadorId") Long jugadorId) {
+        List<PartidoDto> partidos = partidoService.obtenerTodosLosPartidosPorJugador(jugadorId);
+        return new ResponseEntity<>(partidos, HttpStatus.OK);
+    }
+
+    @GetMapping("/mis-partidos/todos")
+    public ResponseEntity<List<PartidoDto>> obtenerTodosMisPartidos(@RequestHeader("Authorization") String authHeader) {
+        Long usuarioId = extraerUsuarioId(authHeader);
+        return ResponseEntity.ok(partidoService.obtenerTodosLosPartidosPorJugador(usuarioId));
+    }
+
+    /**
+     * Obtiene los partidos creados por los alumnos del entrenador autenticado.
+     */
+    @GetMapping("/alumnos")
+    public ResponseEntity<List<PartidoDto>> obtenerPartidosDeAlumnos(
+            @RequestHeader("Authorization") String authHeader) {
+        Long usuarioId = extraerUsuarioId(authHeader);
+        return ResponseEntity.ok(partidoService.obtenerPartidosDeAlumnos(usuarioId));
+    }
+
+    /**
+     * Obtiene los partidos creados por los alumnos de un entrenador dado su usuarioId.
+     */
+    @GetMapping("/entrenador/{entrenadorId}/alumnos")
+    public ResponseEntity<List<PartidoDto>> obtenerPartidosDeAlumnosPorId(
+            @PathVariable("entrenadorId") Long entrenadorId) {
+        return ResponseEntity.ok(partidoService.obtenerPartidosDeAlumnos(entrenadorId));
     }
 
     // =========================================================================

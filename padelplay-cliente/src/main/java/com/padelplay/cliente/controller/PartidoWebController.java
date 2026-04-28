@@ -221,6 +221,44 @@ public class PartidoWebController {
         return "redirect:/partidos";
     }
 
+    // =========================================================================
+    // 6. HISTORIAL DE PARTIDOS DEL USUARIO
+    // GET /partidos/historial
+    // =========================================================================
+    @GetMapping("/historial")
+    public String mostrarHistorialPartidos(Model model, HttpSession session) {
+        String token = (String) session.getAttribute("token");
+
+        if (token == null)
+            return "redirect:/login";
+
+        try {
+            EstadoPerfilDto estado = perfilServiceProxy.obtenerEstadoPerfil(token);
+            model.addAttribute("estado", estado);
+
+            // Obtener todos los partidos del usuario si tiene perfil de jugador
+            if (estado.getPerfilJugador() != null) {
+                try {
+                    String url = BACKEND_URL + "/jugador/" + estado.getPerfilJugador().getId() + "/todos";
+                    ResponseEntity<PartidoDto[]> response = restTemplate.getForEntity(url, PartidoDto[].class);
+                    List<PartidoDto> partidosHistorial = Arrays
+                            .asList(response.getBody() != null ? response.getBody() : new PartidoDto[0]);
+                    model.addAttribute("partidosHistorial", partidosHistorial);
+                } catch (Exception e) {
+                    model.addAttribute("error", "No se pudieron cargar los partidos del historial.");
+                    model.addAttribute("partidosHistorial", List.of());
+                }
+            } else {
+                model.addAttribute("partidosHistorial", List.of());
+            }
+
+        } catch (Exception e) {
+            model.addAttribute("error", "Error al cargar el historial: " + e.getMessage());
+        }
+
+        return "historial-partidos";
+    }
+
     @PostMapping("/{id}/cancelar")
     public String cancelarAsistencia(@PathVariable("id") Long partidoId,
             HttpSession session,
@@ -281,6 +319,7 @@ public class PartidoWebController {
         }
 
         return "redirect:/partidos";
+
     }
 
     @PostMapping("/{id}/terminar")
@@ -304,8 +343,8 @@ public class PartidoWebController {
             headers.setBearerAuth(token);
 
             HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
-            restTemplate.exchange(BACKEND_URL + "/" + partidoId + "/terminar", HttpMethod.POST, requestEntity,
-                    PartidoDto.class);
+            String url = BACKEND_URL + "/" + partidoId + "/terminar";
+            restTemplate.exchange(url, HttpMethod.POST, requestEntity, PartidoDto.class);
 
             redirectAttributes.addFlashAttribute("exito", "Partido marcado como terminado correctamente.");
         } catch (HttpClientErrorException e) {
@@ -313,7 +352,7 @@ public class PartidoWebController {
             redirectAttributes.addFlashAttribute("error", mensajeError != null && !mensajeError.isEmpty() ? mensajeError
                     : "No se ha podido terminar el partido.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "OcurriÃ³ un error al contactar con el servidor.");
+            redirectAttributes.addFlashAttribute("error", "Ocurrió un error al contactar con el servidor.");
         }
 
         return "redirect:/partidos";

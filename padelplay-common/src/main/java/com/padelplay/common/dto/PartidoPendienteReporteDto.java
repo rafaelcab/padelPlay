@@ -61,4 +61,5 @@ public class PartidoPendienteReporteDto {
     public void setReporteCompletado(boolean reporteCompletado) {
         this.reporteCompletado = reporteCompletado;
     }
+
 }
