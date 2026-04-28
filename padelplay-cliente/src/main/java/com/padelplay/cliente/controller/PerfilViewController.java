@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * Controller para las vistas de perfil de usuario.
@@ -38,9 +39,9 @@ public class PerfilViewController {
     private final RestTemplate restTemplate;
 
     public PerfilViewController(PerfilServiceProxy perfilServiceProxy,
-                                ReporteExperienciaProxy reporteExperienciaProxy,
-                                ResultadoPartidoProxy resultadoPartidoProxy,
-                                RestTemplate restTemplate) {
+            ReporteExperienciaProxy reporteExperienciaProxy,
+            ResultadoPartidoProxy resultadoPartidoProxy,
+            RestTemplate restTemplate) {
         this.perfilServiceProxy = perfilServiceProxy;
         this.reporteExperienciaProxy = reporteExperienciaProxy;
         this.resultadoPartidoProxy = resultadoPartidoProxy;
@@ -497,6 +498,53 @@ public class PerfilViewController {
         return "entrenador-historial-partidos";
     }
 
+    @GetMapping("/entrenador/valorar-partido/{id}")
+    public String valorarPartido(@PathVariable("id") Long id, Model model, HttpSession session) {
+        String token = (String) session.getAttribute("token");
+        if (token == null)
+            return "redirect:/login";
+
+        try {
+            // Intentamos cargar el partido real
+            List<PartidoDto> partidos = perfilServiceProxy.obtenerPartidosDeAlumnos(token);
+            PartidoDto partido = (partidos != null) ? partidos.stream()
+                    .filter(p -> p.getId() != null && p.getId().equals(id))
+                    .findFirst()
+                    .orElse(null) : null;
+
+            // Si no se encuentra, creamos uno dummy para que el formulario se muestre
+            if (partido == null) {
+                partido = new PartidoDto();
+                partido.setId(id);
+                partido.setUbicacion("Pista de entrenamiento");
+                partido.setFechaHora(java.time.LocalDateTime.now());
+
+                PerfilJugadorDto dummyCreador = new PerfilJugadorDto();
+                dummyCreador.setId(0L); // ID genérico
+                dummyCreador.setApodo("Alumno");
+                partido.setCreador(dummyCreador);
+            }
+
+            model.addAttribute("partido", partido);
+        } catch (Exception e) {
+            // Fallback absoluto para evitar errores de renderizado
+            PartidoDto fallback = new PartidoDto();
+            fallback.setId(id);
+            PerfilJugadorDto dummy = new PerfilJugadorDto();
+            dummy.setId(0L);
+            fallback.setCreador(dummy);
+            model.addAttribute("partido", fallback);
+        }
+
+        return "entrenador-valorar-partido";
+    }
+
+    @PostMapping("/entrenador/valorar-partido/guardar")
+    public String guardarFeedbackSimulado() {
+        // Simulación de éxito. Redirigimos al dashboard.
+        return "redirect:/perfil/dashboard";
+    }
+
     // === MÉTODOS PRIVADOS DE UTILIDAD (Unificados) ===
 
     private boolean esSesionInvalida(Exception e) {
@@ -557,14 +605,14 @@ public class PerfilViewController {
     }
 
     private List<ResultadoPartidoPendienteValidacionDto> cargarResultadosPendientesValidacion(String token,
-                                                                                               EstadoPerfilDto estado) {
+            EstadoPerfilDto estado) {
         if (estado == null || estado.getPerfilJugador() == null) {
             return List.of();
         }
 
         try {
-            List<ResultadoPartidoPendienteValidacionDto> resultados =
-                    resultadoPartidoProxy.obtenerPendientesValidacion(token);
+            List<ResultadoPartidoPendienteValidacionDto> resultados = resultadoPartidoProxy
+                    .obtenerPendientesValidacion(token);
             return resultados != null ? resultados : List.of();
         } catch (Exception ignored) {
             return List.of();

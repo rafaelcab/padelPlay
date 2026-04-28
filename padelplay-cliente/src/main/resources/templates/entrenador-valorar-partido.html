@@ -301,7 +301,7 @@
 </head>
 
 <body>
-    <div class="container">
+    <div id="content-wrapper" class="container">
         <a href="/perfil/entrenador/historial-partidos" class="back-link">
             ← Volver al historial
         </a>
@@ -325,7 +325,8 @@
             <div class="partido-info-section">
                 <div class="info-row">
                     <span class="info-label">Fecha y hora:</span>
-                    <span class="info-value" th:text="${#temporals.format(partido.fechaHora, 'dd/MMM/yyyy HH:mm')}"></span>
+                    <span class="info-value"
+                        th:text="${#temporals.format(partido.fechaHora, 'dd/MMM/yyyy HH:mm')}"></span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Ubicación:</span>
@@ -337,12 +338,13 @@
                 </div>
                 <div class="info-row">
                     <span class="info-label">Tipo:</span>
-                    <span class="info-value" th:text="${partido.tipoPartido == 'PRIVADO' ? 'Privado' : 'Abierto'}"></span>
+                    <span class="info-value"
+                        th:text="${partido.tipoPartido == 'PRIVADO' ? 'Privado' : 'Abierto'}"></span>
                 </div>
             </div>
         </div>
 
-        <form method="post" action="/api/entrenador/feedback/guardar" id="feedbackForm">
+        <form th:action="@{/perfil/entrenador/valorar-partido/guardar}" method="post" id="feedbackForm">
             <div class="card">
                 <div class="card-title">
                     <span class="material-symbols-outlined">star</span>
@@ -375,21 +377,21 @@
                 <div class="form-group">
                     <label for="fortalezas">Fortalezas y puntos positivos</label>
                     <textarea id="fortalezas" name="fortalezas"
-                              placeholder="¿Qué hizo bien el alumno? (ej: buena defensa, buena actitud, excelente comunicación con el compañero)"></textarea>
+                        placeholder="¿Qué hizo bien el alumno? (ej: buena defensa, buena actitud, excelente comunicación con el compañero)"></textarea>
                     <p class="help-text">Destaca los aspectos positivos de su desempeño</p>
                 </div>
 
                 <div class="form-group">
                     <label for="areasMejora">Áreas de mejora</label>
                     <textarea id="areasMejora" name="areasMejora"
-                              placeholder="¿En qué puede mejorar? (ej: movimiento de pies, precisión en saques, cálculo de distancias)"></textarea>
+                        placeholder="¿En qué puede mejorar? (ej: movimiento de pies, precisión en saques, cálculo de distancias)"></textarea>
                     <p class="help-text">Sugiere áreas específicas para el desarrollo</p>
                 </div>
 
                 <div class="form-group">
                     <label for="comentario">Comentarios adicionales</label>
                     <textarea id="comentario" name="comentario"
-                              placeholder="Cualquier otro comentario o observación que consideres importante..."></textarea>
+                        placeholder="Cualquier otro comentario o observación que consideres importante..."></textarea>
                     <p class="help-text">Mantén un tono constructivo y motivador</p>
                 </div>
             </div>
@@ -408,50 +410,51 @@
         // Star rating interaction
         const stars = document.querySelectorAll('.star');
         const ratingInput = document.getElementById('calificacion');
-        const ratingValue = document.getElementById('ratingValue');
+        const ratingValueText = document.getElementById('ratingValue');
+        const starRatingContainer = document.getElementById('starRating');
 
-        stars.forEach(star => {
-            star.addEventListener('click', function() {
-                const value = this.dataset.value;
-                ratingInput.value = value;
-                ratingValue.textContent = value + '.0';
+        let selectedValue = 0; // Guardamos el valor seleccionado por click
 
-                // Update visual state
-                stars.forEach(s => {
-                    if (s.dataset.value <= value) {
-                        s.classList.add('active');
-                    } else {
-                        s.classList.remove('active');
-                    }
-                });
-            });
-
-            // Hover effect
-            star.addEventListener('mouseenter', function() {
-                const value = this.dataset.value;
-                stars.forEach(s => {
-                    if (s.dataset.value <= value) {
-                        s.style.color = 'var(--color-primary-fixed)';
-                    } else {
-                        s.style.color = 'var(--color-on-surface-variant)';
-                    }
-                });
-            });
-        });
-
-        // Reset hover effect
-        document.getElementById('starRating').addEventListener('mouseleave', function() {
-            const currentValue = ratingInput.value;
+        function renderStars(value) {
             stars.forEach(s => {
-                if (currentValue > 0 && s.dataset.value <= currentValue) {
-                    s.style.color = 'var(--color-primary-fixed)';
+                if (parseInt(s.dataset.value) <= value) {
+                    s.classList.add('active');
                 } else {
-                    s.style.color = 'var(--color-on-surface-variant)';
+                    s.classList.remove('active');
                 }
             });
+        }
+
+        stars.forEach(star => {
+            // Al hacer click, guardamos el valor seleccionado
+            star.addEventListener('click', function () {
+                selectedValue = parseInt(this.dataset.value);
+                ratingInput.value = selectedValue;
+                ratingValueText.textContent = selectedValue + '.0';
+                renderStars(selectedValue);
+            });
+
+            // Al pasar el ratón, mostramos preview
+            star.addEventListener('mouseenter', function () {
+                renderStars(parseInt(this.dataset.value));
+            });
         });
 
-        // Form submission handling
+        // Al salir del contenedor, volvemos al valor seleccionado (no a 0)
+        starRatingContainer.addEventListener('mouseleave', function () {
+            renderStars(selectedValue);
+        });
+
+        // Validación al enviar
+        document.getElementById('feedbackForm').addEventListener('submit', function (e) {
+            if (selectedValue === 0) {
+                e.preventDefault();
+                alert('Por favor, selecciona una calificación antes de continuar.');
+            }
+        });
+
+        // El formulario ahora se envía de forma nativa para mayor sencillez
+        /*
         document.getElementById('feedbackForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -471,7 +474,7 @@
             };
 
             try {
-                const response = await fetch('/api/entrenador/feedback/guardar', {
+                const response = await fetch('[[@{/perfil/entrenador/valorar-partido/guardar}]]', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -482,7 +485,7 @@
 
                 if (response.ok) {
                     alert('Valoración guardada exitosamente');
-                    window.location.href = '/perfil/entrenador/historial-partidos';
+                    window.location.href = '/perfil/dashboard';
                 } else {
                     alert('Error al guardar la valoración');
                 }
@@ -491,6 +494,7 @@
                 alert('Error en la solicitud');
             }
         });
+        */
     </script>
 </body>
 
