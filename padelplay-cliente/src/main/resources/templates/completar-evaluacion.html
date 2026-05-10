@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{base :: layout(~{::title}, ~{::style}, ~{::main})}">
+
+<head>
+    <title>Completar evaluación - PadelPlay</title>
+    <style>
+        .main-content {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            color: #eeeef0;
+            margin-bottom: 10px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+        }
+
+        .page-description {
+            color: #94a3b8;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .card {
+            background: #1d2023;
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid #334155;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #334155;
+            gap: 16px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #eeeef0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .summary-grid,
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .summary-item {
+            background: #0f1113;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .summary-label {
+            color: #94a3b8;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .summary-value {
+            color: #eeeef0;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .form-section {
+            margin-top: 26px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            color: #cbd5e1;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        input,
+        textarea {
+            background: #0f1113;
+            border: 1px solid #334155;
+            color: #eeeef0;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #D4FF00;
+            box-shadow: 0 0 0 3px rgba(212, 255, 0, 0.12);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .alert-error {
+            background: rgba(220, 38, 38, 0.1);
+            color: #fca5a5;
+            border: 1px solid #7f1d1d;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            border: none;
+            padding: 12px 22px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #D4FF00;
+            color: #000;
+        }
+
+        .btn-secondary {
+            background: #0f1113;
+            color: #cbd5e1;
+            border: 1px solid #334155;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        @media (max-width: 720px) {
+            .summary-grid,
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="main-content">
+        <h1 class="page-title">Completar evaluación</h1>
+        <p class="page-description">
+            Registra el ELO final del jugador tras la evaluación en pista. Este valor se añadirá al historial ELO.
+        </p>
+
+        <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+
+        <div class="card" th:if="${solicitud != null}">
+            <div class="card-header">
+                <div class="card-title"><span class="material-symbols-outlined">edit_note</span> Datos de la evaluación</div>
+            </div>
+
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-label">Jugador</div>
+                    <div class="summary-value"
+                         th:text="${solicitud.nombreJugador != null ? solicitud.nombreJugador : 'Jugador #' + solicitud.jugadorId}">
+                        Jugador
+                    </div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Fecha solicitada</div>
+                    <div class="summary-value"
+                         th:text="${solicitud.fechaHoraSolicitada != null ? #temporals.format(solicitud.fechaHoraSolicitada, 'dd MMM yyyy - HH:mm') : 'Sin fecha'}">
+                        20 may 2026 - 18:30
+                    </div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">ELO actual</div>
+                    <div class="summary-value" th:text="${solicitud.eloActual != null ? solicitud.eloActual : 'Sin historial'}">
+                        1200
+                    </div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Estado</div>
+                    <div class="summary-value" th:text="${solicitud.estado}">ACEPTADA</div>
+                </div>
+            </div>
+
+            <form class="form-section" th:action="@{'/entrenador/evaluaciones/' + ${solicitud.id} + '/completar'}" method="post">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="nuevoElo">Nuevo ELO</label>
+                        <input id="nuevoElo" name="nuevoElo" type="number" min="0" max="3000" required
+                               th:value="${solicitud.eloActual != null ? solicitud.eloActual : ''}">
+                    </div>
+                    <div class="form-group">
+                        <label for="control">Control</label>
+                        <input id="control" name="control" type="number" min="0" max="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="potencia">Potencia</label>
+                        <input id="potencia" name="potencia" type="number" min="0" max="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="consistencia">Consistencia</label>
+                        <input id="consistencia" name="consistencia" type="number" min="0" max="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="posicionamiento">Posicionamiento</label>
+                        <input id="posicionamiento" name="posicionamiento" type="number" min="0" max="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="tactica">Táctica</label>
+                        <input id="tactica" name="tactica" type="number" min="0" max="10">
+                    </div>
+                    <div class="form-group full">
+                        <label for="observaciones">Observaciones</label>
+                        <textarea id="observaciones" name="observaciones"
+                                  placeholder="Resume los motivos del ajuste de ELO y los puntos observados en pista."></textarea>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button type="submit" class="btn-primary">
+                        <span class="material-symbols-outlined">save</span>
+                        Guardar evaluación
+                    </button>
+                    <a href="/entrenador/evaluaciones" class="btn-secondary">Volver</a>
+                </div>
+            </form>
+        </div>
+    </main>
+</body>
+
+</html>
