@@ -97,6 +97,15 @@
             color: #D4FF00;
         }
 
+        .chart-wrapper {
+            background: #0f1113;
+            border: 1px solid #1e293b;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 28px;
+            height: 360px;
+        }
+
         .table-wrapper {
             overflow-x: auto;
         }
@@ -138,7 +147,7 @@
     <main class="main-content">
         <h1 class="page-title">Evolución de nivel</h1>
         <p class="page-description">
-            Sigue cómo cambia tu ELO con el tiempo. Esta sección deja los datos preparados para añadir una gráfica más adelante.
+            Sigue cómo cambia tu ELO con el tiempo y observa tu progresión partido a partido.
         </p>
 
         <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
@@ -148,8 +157,12 @@
                 <div class="card-title"><span class="material-symbols-outlined">trending_up</span> Historial ELO</div>
             </div>
 
+            <div class="chart-wrapper" th:if="${puntosElo != null && !puntosElo.empty}">
+                <canvas id="eloChart" aria-label="Gráfica de evolución ELO" role="img"></canvas>
+            </div>
+
             <div class="table-wrapper" th:if="${puntosElo != null && !puntosElo.empty}">
-                <table class="elo-table">
+                <table class="elo-table" id="eloDataTable">
                     <thead>
                         <tr>
                             <th>Fecha</th>
@@ -157,7 +170,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="punto : ${puntosElo}">
+                        <tr th:each="punto : ${puntosElo}"
+                            th:data-label="${punto.fecha != null ? #temporals.format(punto.fecha, 'dd/MM/yyyy') : 'Sin fecha'}"
+                            th:data-elo="${punto.elo}">
                             <td th:text="${punto.fecha != null ? #temporals.format(punto.fecha, 'dd MMM yyyy - HH:mm') : 'Sin fecha'}">10 may 2026 - 18:30</td>
                             <td class="elo-value" th:text="${punto.elo != null ? #numbers.formatDecimal(punto.elo, 1, 2) : 'Sin ELO'}">3.20</td>
                         </tr>
@@ -174,6 +189,101 @@
                 <a href="/perfil/mi-perfil" class="btn-edit">Volver al dashboard</a>
             </div>
         </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            (function () {
+                const canvas = document.getElementById('eloChart');
+                const rows = document.querySelectorAll('#eloDataTable tbody tr');
+                if (!canvas || rows.length === 0 || typeof Chart === 'undefined') {
+                    return;
+                }
+
+                const labels = [];
+                const values = [];
+
+                rows.forEach(function (row) {
+                    const elo = Number(row.dataset.elo);
+                    if (!Number.isNaN(elo)) {
+                        labels.push(row.dataset.label || 'Sin fecha');
+                        values.push(elo);
+                    }
+                });
+
+                if (values.length === 0) {
+                    return;
+                }
+
+                new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'ELO',
+                            data: values,
+                            borderColor: '#D4FF00',
+                            backgroundColor: 'rgba(212, 255, 0, 0.12)',
+                            pointBackgroundColor: '#D4FF00',
+                            pointBorderColor: '#0f1113',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                labels: {
+                                    color: '#eeeef0'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Evolución ELO',
+                                color: '#eeeef0',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: '#94a3b8'
+                                },
+                                grid: {
+                                    color: 'rgba(148, 163, 184, 0.12)'
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Fecha',
+                                    color: '#94a3b8'
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: '#94a3b8'
+                                },
+                                grid: {
+                                    color: 'rgba(148, 163, 184, 0.12)'
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'ELO',
+                                    color: '#94a3b8'
+                                }
+                            }
+                        }
+                    }
+                });
+            })();
+        </script>
     </main>
 </body>
 
