@@ -3,6 +3,7 @@ package com.padelplay.cliente.proxies;
 import com.padelplay.common.dto.CertificacionDto;
 import com.padelplay.common.dto.DetallesTecnicosDto;
 import com.padelplay.common.dto.EstadoPerfilDto;
+import com.padelplay.common.dto.EvolucionEloDto;
 import com.padelplay.common.dto.PartidoDto;
 import com.padelplay.common.dto.PerfilEntrenadorDto;
 import com.padelplay.common.dto.PerfilJugadorDto;
@@ -111,6 +112,22 @@ public class PerfilServiceProxy {
                 PerfilJugadorDto.class);
 
         return response.getBody();
+    }
+
+    /**
+     * Obtiene la evolución ELO del jugador autenticado.
+     */
+    public List<EvolucionEloDto> obtenerEvolucionEloJugador(String token) {
+        HttpHeaders headers = crearHeaders(token);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<EvolucionEloDto[]> response = restTemplate.exchange(
+                serverUrl + "/api/perfil/jugador/evolucion-elo",
+                HttpMethod.GET,
+                entity,
+                EvolucionEloDto[].class);
+
+        return response.getBody() != null ? java.util.Arrays.asList(response.getBody()) : List.of();
     }
 
     /**
