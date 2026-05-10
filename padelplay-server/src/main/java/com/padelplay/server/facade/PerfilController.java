@@ -3,6 +3,7 @@ package com.padelplay.server.facade;
 import com.padelplay.common.dto.CertificacionDto;
 import com.padelplay.common.dto.DetallesTecnicosDto;
 import com.padelplay.common.dto.EstadoPerfilDto;
+import com.padelplay.common.dto.EvolucionEloDto;
 import com.padelplay.common.dto.PerfilEntrenadorDto;
 import com.padelplay.common.dto.PerfilJugadorDto;
 import com.padelplay.common.dto.SeleccionRolDto;
@@ -124,6 +125,21 @@ public class PerfilController {
             return perfilService.obtenerPerfilJugador(usuarioId)
                     .map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Obtiene la evolución ELO del jugador autenticado.
+     */
+    @GetMapping("/jugador/evolucion-elo")
+    public ResponseEntity<?> obtenerEvolucionElo(@RequestHeader("Authorization") String authHeader) {
+        try {
+            Long usuarioId = extraerUsuarioId(authHeader);
+            List<EvolucionEloDto> evolucion = perfilService.obtenerEvolucionElo(usuarioId);
+            return ResponseEntity.ok(evolucion);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", e.getMessage()));
