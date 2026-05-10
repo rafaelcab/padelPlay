@@ -1,5 +1,6 @@
 package com.padelplay.server.service;
 
+import com.padelplay.common.dto.CompletarEvaluacionDto;
 import com.padelplay.common.dto.CrearSolicitudEvaluacionDto;
 import com.padelplay.common.dto.EntrenadorDisponibleDto;
 import com.padelplay.common.dto.ResponderSolicitudEvaluacionDto;
@@ -102,6 +103,50 @@ public class EvaluacionService {
         return responderSolicitud(solicitudId, entrenadorId, request, EstadoSolicitudEvaluacion.RECHAZADA);
     }
 
+    public SolicitudEvaluacionDto completarSolicitud(Long solicitudId,
+                                                     Long entrenadorId,
+                                                     CompletarEvaluacionDto request) {
+        Usuario entrenador = obtenerUsuario(entrenadorId, "Entrenador no encontrado.");
+        validarUsuarioEntrenador(entrenador);
+
+        if (request == null) {
+            throw new IllegalArgumentException("El cuerpo de la peticion es obligatorio.");
+        }
+        if (request.getSolicitudId() != null && !request.getSolicitudId().equals(solicitudId)) {
+            throw new IllegalArgumentException("El ID de solicitud del cuerpo no coincide con la URL.");
+        }
+        if (request.getNuevoElo() == null) {
+            throw new IllegalArgumentException("El nuevo ELO es obligatorio.");
+        }
+        if (request.getNuevoElo() < 0 || request.getNuevoElo() > 3000) {
+            throw new IllegalArgumentException("El nuevo ELO debe estar entre 0 y 3000.");
+        }
+
+        SolicitudEvaluacion solicitud = solicitudEvaluacionRepository.findById(solicitudId)
+                .orElseThrow(() -> new NoSuchElementException("Solicitud de evaluacion no encontrada."));
+
+        if (!solicitud.getEntrenadorId().equals(entrenadorId)) {
+            throw new SecurityException("Solo el entrenador destinatario puede completar esta solicitud.");
+        }
+
+        if (solicitud.getEstado() != EstadoSolicitudEvaluacion.ACEPTADA) {
+            throw new IllegalStateException("Solo se pueden completar solicitudes aceptadas.");
+        }
+
+        Usuario jugador = obtenerUsuario(solicitud.getJugadorId(), "Jugador no encontrado.");
+
+        solicitud.setEstado(EstadoSolicitudEvaluacion.COMPLETADA);
+        solicitud.setComentarioEntrenador(request.getObservaciones());
+        solicitud.setEloAsignado(request.getNuevoElo());
+        solicitud.setFechaRespuesta(LocalDateTime.now());
+
+        HistorialElo historialElo = new HistorialElo(jugador, request.getNuevoElo().doubleValue());
+        historialElo.setFecha(LocalDateTime.now());
+        historialEloRepository.save(historialElo);
+
+        return convertirADto(solicitudEvaluacionRepository.save(solicitud));
+    }
+
     private SolicitudEvaluacionDto responderSolicitud(Long solicitudId,
                                                       Long entrenadorId,
                                                       ResponderSolicitudEvaluacionDto request,
@@ -159,6 +204,7 @@ public class EvaluacionService {
         dto.setComentarioEntrenador(solicitud.getComentarioEntrenador());
         dto.setFechaCreacion(solicitud.getFechaCreacion());
         dto.setFechaRespuesta(solicitud.getFechaRespuesta());
+        dto.setNuevoElo(solicitud.getEloAsignado());
 
         usuarioRepository.findById(solicitud.getJugadorId())
                 .ifPresent(jugador -> dto.setNombreJugador(jugador.getNombre()));

@@ -47,6 +47,8 @@ public class SolicitudEvaluacion {
 
     private LocalDateTime fechaRespuesta;
 
+    private Integer eloAsignado;
+
     public SolicitudEvaluacion() {
         this.estado = EstadoSolicitudEvaluacion.PENDIENTE;
     }
@@ -138,5 +140,13 @@ public class SolicitudEvaluacion {
 
     public void setFechaRespuesta(LocalDateTime fechaRespuesta) {
         this.fechaRespuesta = fechaRespuesta;
+    }
+
+    public Integer getEloAsignado() {
+        return eloAsignado;
+    }
+
+    public void setEloAsignado(Integer eloAsignado) {
+        this.eloAsignado = eloAsignado;
     }
 }

@@ -1,5 +1,6 @@
 package com.padelplay.server.facade;
 
+import com.padelplay.common.dto.CompletarEvaluacionDto;
 import com.padelplay.common.dto.CrearSolicitudEvaluacionDto;
 import com.padelplay.common.dto.ResponderSolicitudEvaluacionDto;
 import com.padelplay.common.dto.SolicitudEvaluacionDto;
@@ -118,6 +119,28 @@ public class EvaluacionController {
         try {
             Long usuarioId = extraerUsuarioId(authHeader);
             return ResponseEntity.ok(evaluacionService.rechazarSolicitud(id, usuarioId, request));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/solicitudes/{id}/completar")
+    public ResponseEntity<?> completarSolicitud(@RequestHeader("Authorization") String authHeader,
+                                                @PathVariable Long id,
+                                                @RequestBody CompletarEvaluacionDto request) {
+        try {
+            Long usuarioId = extraerUsuarioId(authHeader);
+            return ResponseEntity.ok(evaluacionService.completarSolicitud(id, usuarioId, request));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", e.getMessage()));
