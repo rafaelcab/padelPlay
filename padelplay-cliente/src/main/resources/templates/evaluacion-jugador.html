@@ -236,6 +236,38 @@
             line-height: 1.5;
         }
 
+        .appointment-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .appointment-card {
+            background: #0f1113;
+            border: 1px solid rgba(212, 255, 0, 0.25);
+            border-radius: 14px;
+            padding: 20px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .appointment-title {
+            color: #eeeef0;
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .appointment-meta {
+            color: #cbd5e1;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .appointment-comment {
+            color: #94a3b8;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
         @media (max-width: 720px) {
             .form-grid {
                 grid-template-columns: 1fr;
@@ -306,15 +338,54 @@
 
         <div class="card">
             <div class="card-header">
-                <div class="card-title"><span class="material-symbols-outlined">history</span> Solicitudes previas</div>
+                <div class="card-title"><span class="material-symbols-outlined">event_available</span> Próximas evaluaciones</div>
             </div>
 
-            <div class="empty-state" th:if="${solicitudes == null || solicitudes.empty}">
+            <div class="empty-state" th:if="${proximasEvaluaciones == null || proximasEvaluaciones.empty}">
+                <div class="empty-state-icon"><span class="material-symbols-outlined" style="font-size: 44px;">event_busy</span></div>
+                <p>No tienes evaluaciones aceptadas como próximas citas.</p>
+            </div>
+
+            <div class="appointment-list" th:if="${proximasEvaluaciones != null && !proximasEvaluaciones.empty}">
+                <div class="appointment-card" th:each="solicitud : ${proximasEvaluaciones}">
+                    <div class="appointment-title"
+                         th:text="${solicitud.nombreEntrenador != null ? solicitud.nombreEntrenador : 'Entrenador #' + solicitud.entrenadorId}">
+                        Entrenador
+                    </div>
+                    <div class="appointment-meta">
+                        <span class="material-symbols-outlined" style="font-size: 18px; color: #D4FF00; vertical-align: middle;">schedule</span>
+                        <span th:text="${solicitud.fechaHoraSolicitada != null ? #temporals.format(solicitud.fechaHoraSolicitada, 'dd MMM yyyy - HH:mm') : 'Sin fecha'}">
+                            20 may 2026 - 18:30
+                        </span>
+                    </div>
+                    <span class="status status-aceptada">ACEPTADA</span>
+                    <div class="appointment-comment">
+                        <strong>Comentario entrenador:</strong>
+                        <span th:text="${solicitud.comentarioEntrenador != null && !#strings.isEmpty(solicitud.comentarioEntrenador) ? solicitud.comentarioEntrenador : 'Sin comentario'}">
+                            Sin comentario
+                        </span>
+                    </div>
+                    <div class="appointment-comment">
+                        <strong>Tu comentario:</strong>
+                        <span th:text="${solicitud.comentarioJugador != null && !#strings.isEmpty(solicitud.comentarioJugador) ? solicitud.comentarioJugador : 'Sin comentario'}">
+                            Sin comentario
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><span class="material-symbols-outlined">history</span> Solicitudes e historial</div>
+            </div>
+
+            <div class="empty-state" th:if="${solicitudesHistorial == null || solicitudesHistorial.empty}">
                 <div class="empty-state-icon"><span class="material-symbols-outlined" style="font-size: 44px;">assignment</span></div>
-                <p>Todavia no has solicitado ninguna evaluacion en pista.</p>
+                <p>Todavia no tienes solicitudes pendientes, rechazadas o finalizadas.</p>
             </div>
 
-            <div class="table-wrapper" th:if="${solicitudes != null && !solicitudes.empty}">
+            <div class="table-wrapper" th:if="${solicitudesHistorial != null && !solicitudesHistorial.empty}">
                 <table class="requests-table">
                     <thead>
                         <tr>
@@ -325,7 +396,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="solicitud : ${solicitudes}">
+                        <tr th:each="solicitud : ${solicitudesHistorial}">
                             <td th:text="${solicitud.nombreEntrenador != null ? solicitud.nombreEntrenador : 'Entrenador #' + solicitud.entrenadorId}">
                                 Entrenador
                             </td>

@@ -89,6 +89,21 @@
             gap: 16px;
         }
 
+        .scheduled-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .scheduled-item {
+            background: #0f1113;
+            border: 1px solid rgba(212, 255, 0, 0.25);
+            border-radius: 14px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(220px, auto);
+            gap: 20px;
+        }
+
         .request-item {
             background: #0f1113;
             border: 1px solid #1e293b;
@@ -218,7 +233,8 @@
         }
 
         @media (max-width: 820px) {
-            .request-item {
+            .request-item,
+            .scheduled-item {
                 grid-template-columns: 1fr;
             }
         }
@@ -237,16 +253,62 @@
 
         <div class="card">
             <div class="card-header">
-                <div class="card-title"><span class="material-symbols-outlined">fact_check</span> Solicitudes</div>
+                <div class="card-title"><span class="material-symbols-outlined">event_available</span> Evaluaciones programadas</div>
             </div>
 
-            <div class="empty-state" th:if="${solicitudes == null || solicitudes.empty}">
+            <div class="empty-state" th:if="${evaluacionesProgramadas == null || evaluacionesProgramadas.empty}">
+                <div class="empty-state-icon"><span class="material-symbols-outlined" style="font-size: 44px;">event_busy</span></div>
+                <p>No tienes evaluaciones aceptadas como citas programadas.</p>
+            </div>
+
+            <div class="scheduled-list" th:if="${evaluacionesProgramadas != null && !evaluacionesProgramadas.empty}">
+                <div class="scheduled-item" th:each="solicitud : ${evaluacionesProgramadas}">
+                    <div class="request-main">
+                        <div class="request-title"
+                             th:text="${solicitud.nombreJugador != null ? solicitud.nombreJugador : 'Jugador #' + solicitud.jugadorId}">
+                            Jugador
+                        </div>
+                        <div class="request-meta"
+                             th:text="${solicitud.fechaHoraSolicitada != null ? #temporals.format(solicitud.fechaHoraSolicitada, 'dd MMM yyyy - HH:mm') : 'Sin fecha solicitada'}">
+                            20 may 2026 - 18:30
+                        </div>
+                        <span class="status status-aceptada">ACEPTADA</span>
+                        <div class="request-text">
+                            <strong>Comentario jugador:</strong>
+                            <span th:text="${solicitud.comentarioJugador != null && !#strings.isEmpty(solicitud.comentarioJugador) ? solicitud.comentarioJugador : 'Sin comentario'}">
+                                Sin comentario
+                            </span>
+                        </div>
+                        <div class="request-text">
+                            <strong>Comentario entrenador:</strong>
+                            <span th:text="${solicitud.comentarioEntrenador != null && !#strings.isEmpty(solicitud.comentarioEntrenador) ? solicitud.comentarioEntrenador : 'Sin comentario'}">
+                                Sin comentario
+                            </span>
+                        </div>
+                    </div>
+                    <div class="request-actions">
+                        <a th:href="@{'/entrenador/evaluaciones/' + ${solicitud.id} + '/completar'}"
+                           class="btn-primary">
+                            <span class="material-symbols-outlined">edit_note</span>
+                            Completar evaluación
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><span class="material-symbols-outlined">fact_check</span> Solicitudes e historial</div>
+            </div>
+
+            <div class="empty-state" th:if="${solicitudesGestion == null || solicitudesGestion.empty}">
                 <div class="empty-state-icon"><span class="material-symbols-outlined" style="font-size: 44px;">assignment</span></div>
-                <p>No tienes solicitudes de evaluación pendientes o recientes.</p>
+                <p>No tienes solicitudes pendientes, rechazadas o finalizadas.</p>
             </div>
 
-            <div class="request-list" th:if="${solicitudes != null && !solicitudes.empty}">
-                <div class="request-item" th:each="solicitud : ${solicitudes}">
+            <div class="request-list" th:if="${solicitudesGestion != null && !solicitudesGestion.empty}">
+                <div class="request-item" th:each="solicitud : ${solicitudesGestion}">
                     <div class="request-main">
                         <div class="request-title"
                              th:text="${solicitud.nombreJugador != null ? solicitud.nombreJugador : 'Jugador #' + solicitud.jugadorId}">
@@ -292,13 +354,6 @@
                                 </button>
                             </form>
                         </div>
-
-                        <a th:if="${solicitud.estado == 'ACEPTADA'}"
-                           th:href="@{'/entrenador/evaluaciones/' + ${solicitud.id} + '/completar'}"
-                           class="btn-primary">
-                            <span class="material-symbols-outlined">edit_note</span>
-                            Completar evaluación
-                        </a>
 
                         <span th:if="${solicitud.estado == 'COMPLETADA'}" class="btn-muted">
                             <span class="material-symbols-outlined">verified</span>

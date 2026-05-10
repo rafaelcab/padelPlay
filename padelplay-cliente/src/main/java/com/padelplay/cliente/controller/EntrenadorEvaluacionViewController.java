@@ -45,8 +45,10 @@ public class EntrenadorEvaluacionViewController {
                 return "redirect:/perfil/seleccionar-rol";
             }
 
+            List<SolicitudEvaluacionDto> solicitudes = cargarSolicitudesRecibidas(token);
             model.addAttribute("estado", estado);
-            model.addAttribute("solicitudes", cargarSolicitudesRecibidas(token));
+            model.addAttribute("evaluacionesProgramadas", filtrarPorEstado(solicitudes, "ACEPTADA"));
+            model.addAttribute("solicitudesGestion", excluirEstado(solicitudes, "ACEPTADA"));
 
             if (!estado.isTienePerfilEntrenador()) {
                 model.addAttribute("error", "Necesitas un perfil de entrenador para gestionar evaluaciones.");
@@ -58,7 +60,8 @@ public class EntrenadorEvaluacionViewController {
                 return redirigirALogin(session);
             }
             model.addAttribute("error", "Error al cargar evaluaciones: " + e.getMessage());
-            model.addAttribute("solicitudes", List.of());
+            model.addAttribute("evaluacionesProgramadas", List.of());
+            model.addAttribute("solicitudesGestion", List.of());
             return "evaluaciones-entrenador";
         }
     }
@@ -198,6 +201,18 @@ public class EntrenadorEvaluacionViewController {
                 .filter(solicitud -> solicitudId.equals(solicitud.getId()))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private List<SolicitudEvaluacionDto> filtrarPorEstado(List<SolicitudEvaluacionDto> solicitudes, String estado) {
+        return solicitudes.stream()
+                .filter(solicitud -> estado.equals(solicitud.getEstado()))
+                .toList();
+    }
+
+    private List<SolicitudEvaluacionDto> excluirEstado(List<SolicitudEvaluacionDto> solicitudes, String estado) {
+        return solicitudes.stream()
+                .filter(solicitud -> !estado.equals(solicitud.getEstado()))
+                .toList();
     }
 
     private boolean esSesionInvalida(Exception e) {

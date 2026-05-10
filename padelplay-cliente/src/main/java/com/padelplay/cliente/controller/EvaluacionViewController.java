@@ -46,9 +46,11 @@ public class EvaluacionViewController {
                 return "redirect:/perfil/seleccionar-rol";
             }
 
+            List<SolicitudEvaluacionDto> solicitudes = cargarSolicitudes(token);
             model.addAttribute("estado", estado);
             model.addAttribute("entrenadores", cargarEntrenadores(token));
-            model.addAttribute("solicitudes", cargarSolicitudes(token));
+            model.addAttribute("proximasEvaluaciones", filtrarPorEstado(solicitudes, "ACEPTADA"));
+            model.addAttribute("solicitudesHistorial", excluirEstado(solicitudes, "ACEPTADA"));
 
             if (!estado.isTienePerfilJugador()) {
                 model.addAttribute("error", "Necesitas un perfil de jugador para solicitar una evaluacion.");
@@ -61,7 +63,8 @@ public class EvaluacionViewController {
             }
             model.addAttribute("error", "Error al cargar evaluaciones: " + e.getMessage());
             model.addAttribute("entrenadores", List.of());
-            model.addAttribute("solicitudes", List.of());
+            model.addAttribute("proximasEvaluaciones", List.of());
+            model.addAttribute("solicitudesHistorial", List.of());
             return "evaluacion-jugador";
         }
     }
@@ -105,6 +108,18 @@ public class EvaluacionViewController {
     private List<SolicitudEvaluacionDto> cargarSolicitudes(String token) {
         List<SolicitudEvaluacionDto> solicitudes = evaluacionServiceProxy.obtenerMisSolicitudes(token);
         return solicitudes != null ? solicitudes : List.of();
+    }
+
+    private List<SolicitudEvaluacionDto> filtrarPorEstado(List<SolicitudEvaluacionDto> solicitudes, String estado) {
+        return solicitudes.stream()
+                .filter(solicitud -> estado.equals(solicitud.getEstado()))
+                .toList();
+    }
+
+    private List<SolicitudEvaluacionDto> excluirEstado(List<SolicitudEvaluacionDto> solicitudes, String estado) {
+        return solicitudes.stream()
+                .filter(solicitud -> !estado.equals(solicitud.getEstado()))
+                .toList();
     }
 
     private boolean esSesionInvalida(Exception e) {
