@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{base :: layout(~{::title}, ~{::style}, ~{::main})}">
+
+<head>
+    <title>Evaluacion en pista - PadelPlay</title>
+    <style>
+        .main-content {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            color: #eeeef0;
+            margin-bottom: 10px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+        }
+
+        .page-description {
+            color: #94a3b8;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .card {
+            background: #1d2023;
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid #334155;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #334155;
+            gap: 16px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #eeeef0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            color: #cbd5e1;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        select,
+        input,
+        textarea {
+            background: #0f1113;
+            border: 1px solid #334155;
+            color: #eeeef0;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        select:focus,
+        input:focus,
+        textarea:focus {
+            border-color: #D4FF00;
+            box-shadow: 0 0 0 3px rgba(212, 255, 0, 0.12);
+        }
+
+        textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            border: none;
+            padding: 12px 22px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #D4FF00;
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: #bade00;
+            box-shadow: 0 0 10px rgba(212, 255, 0, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #334155;
+            color: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: #0f1113;
+            color: #cbd5e1;
+            border: 1px solid #334155;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 22px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .alert-error {
+            background: rgba(220, 38, 38, 0.1);
+            color: #fca5a5;
+            border: 1px solid #7f1d1d;
+        }
+
+        .alert-success {
+            background: rgba(22, 163, 74, 0.1);
+            color: #86efac;
+            border: 1px solid #14532d;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 34px;
+            color: #94a3b8;
+            background: #0f1113;
+            border: 1px solid #1e293b;
+            border-radius: 14px;
+        }
+
+        .empty-state-icon {
+            color: #D4FF00;
+            margin-bottom: 12px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .requests-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #eeeef0;
+        }
+
+        .requests-table th,
+        .requests-table td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+            vertical-align: top;
+        }
+
+        .requests-table th {
+            color: #94a3b8;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status {
+            display: inline-flex;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            border: 1px solid #334155;
+            color: #cbd5e1;
+            background: #0f1113;
+        }
+
+        .status-pendiente {
+            color: #D4FF00;
+            border-color: rgba(212, 255, 0, 0.3);
+            background: rgba(212, 255, 0, 0.08);
+        }
+
+        .status-aceptada,
+        .status-completada {
+            color: #86efac;
+            border-color: rgba(34, 197, 94, 0.25);
+            background: rgba(34, 197, 94, 0.08);
+        }
+
+        .status-rechazada {
+            color: #fca5a5;
+            border-color: rgba(220, 38, 38, 0.25);
+            background: rgba(220, 38, 38, 0.08);
+        }
+
+        .muted {
+            color: #94a3b8;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .appointment-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .appointment-card {
+            background: #0f1113;
+            border: 1px solid rgba(212, 255, 0, 0.25);
+            border-radius: 14px;
+            padding: 20px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .appointment-title {
+            color: #eeeef0;
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .appointment-meta {
+            color: #cbd5e1;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .appointment-comment {
+            color: #94a3b8;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 720px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="main-content">
+        <h1 class="page-title">Solicitar evaluación en pista</h1>
+        <p class="page-description">
+            Elige un entrenador, propone una fecha y deja una nota si necesitas contextualizar tu nivel actual.
+        </p>
+
+        <div class="alert alert-success" th:if="${exito}" th:text="${exito}"></div>
+        <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><span class="material-symbols-outlined">sports_tennis</span> Nueva solicitud</div>
+            </div>
+
+            <div class="empty-state" th:if="${entrenadores == null || entrenadores.empty}">
+                <div class="empty-state-icon"><span class="material-symbols-outlined" style="font-size: 44px;">school</span></div>
+                <p>No hay entrenadores disponibles ahora mismo.</p>
+            </div>
+
+            <form th:if="${entrenadores != null && !entrenadores.empty}" th:action="@{/perfil/evaluacion/solicitar}" method="post">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="entrenadorId">Entrenador</label>
+                        <select id="entrenadorId" name="entrenadorId" required>
+                            <option value="">Selecciona entrenador</option>
+                            <option th:each="entrenador : ${entrenadores}"
+                                    th:value="${entrenador.id}"
+                                    th:text="${entrenador.nombre != null ? entrenador.nombre : entrenador.email}">
+                                Entrenador
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fechaHoraSolicitada">Fecha y hora</label>
+                        <input id="fechaHoraSolicitada" name="fechaHoraSolicitada" type="datetime-local" required>
+                    </div>
+
+                    <div class="form-group full">
+                        <label for="comentarioJugador">Comentario opcional</label>
+                        <textarea id="comentarioJugador" name="comentarioJugador"
+                                  placeholder="Por ejemplo: quiero revisar mi nivel despues de varios partidos recientes."></textarea>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button type="submit" class="btn-primary">
+                        <span class="material-symbols-outlined">send</span>
+                        Enviar solicitud
+                    </button>
+                    <a href="/perfil/mi-perfil" class="btn-secondary">Volver al perfil</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><span class="material-symbols-outlined">event_available</span> Próximas evaluaciones</div>
+            </div>
+
+            <div class="empty-state" th:if="${proximasEvaluaciones == null || proximasEvaluaciones.empty}">
+                <div class="empty-state-icon"><span class="material-symbols-outlined" style="font-size: 44px;">event_busy</span></div>
+                <p>No tienes evaluaciones aceptadas como próximas citas.</p>
+            </div>
+
+            <div class="appointment-list" th:if="${proximasEvaluaciones != null && !proximasEvaluaciones.empty}">
+                <div class="appointment-card" th:each="solicitud : ${proximasEvaluaciones}">
+                    <div class="appointment-title"
+                         th:text="${solicitud.nombreEntrenador != null ? solicitud.nombreEntrenador : 'Entrenador #' + solicitud.entrenadorId}">
+                        Entrenador
+                    </div>
+                    <div class="appointment-meta">
+                        <span class="material-symbols-outlined" style="font-size: 18px; color: #D4FF00; vertical-align: middle;">schedule</span>
+                        <span th:text="${solicitud.fechaHoraSolicitada != null ? #temporals.format(solicitud.fechaHoraSolicitada, 'dd MMM yyyy - HH:mm') : 'Sin fecha'}">
+                            20 may 2026 - 18:30
+                        </span>
+                    </div>
+                    <span class="status status-aceptada">ACEPTADA</span>
+                    <div class="appointment-comment">
+                        <strong>Comentario entrenador:</strong>
+                        <span th:text="${solicitud.comentarioEntrenador != null && !#strings.isEmpty(solicitud.comentarioEntrenador) ? solicitud.comentarioEntrenador : 'Sin comentario'}">
+                            Sin comentario
+                        </span>
+                    </div>
+                    <div class="appointment-comment">
+                        <strong>Tu comentario:</strong>
+                        <span th:text="${solicitud.comentarioJugador != null && !#strings.isEmpty(solicitud.comentarioJugador) ? solicitud.comentarioJugador : 'Sin comentario'}">
+                            Sin comentario
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><span class="material-symbols-outlined">history</span> Solicitudes e historial</div>
+            </div>
+
+            <div class="empty-state" th:if="${solicitudesHistorial == null || solicitudesHistorial.empty}">
+                <div class="empty-state-icon"><span class="material-symbols-outlined" style="font-size: 44px;">assignment</span></div>
+                <p>Todavia no tienes solicitudes pendientes, rechazadas o finalizadas.</p>
+            </div>
+
+            <div class="table-wrapper" th:if="${solicitudesHistorial != null && !solicitudesHistorial.empty}">
+                <table class="requests-table">
+                    <thead>
+                        <tr>
+                            <th>Entrenador</th>
+                            <th>Fecha solicitada</th>
+                            <th>Estado</th>
+                            <th>Comentario entrenador</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="solicitud : ${solicitudesHistorial}">
+                            <td th:text="${solicitud.nombreEntrenador != null ? solicitud.nombreEntrenador : 'Entrenador #' + solicitud.entrenadorId}">
+                                Entrenador
+                            </td>
+                            <td th:text="${solicitud.fechaHoraSolicitada != null ? #temporals.format(solicitud.fechaHoraSolicitada, 'dd MMM yyyy - HH:mm') : 'Sin fecha'}">
+                                20 may 2026 - 18:30
+                            </td>
+                            <td>
+                                <span class="status"
+                                      th:classappend="${solicitud.estado != null ? ' status-' + #strings.toLowerCase(solicitud.estado) : ''}"
+                                      th:text="${solicitud.estado != null ? solicitud.estado : 'Sin estado'}">
+                                    PENDIENTE
+                                </span>
+                            </td>
+                            <td>
+                                <span th:if="${solicitud.comentarioEntrenador != null && !#strings.isEmpty(solicitud.comentarioEntrenador)}"
+                                      th:text="${solicitud.comentarioEntrenador}">Comentario</span>
+                                <span class="muted" th:unless="${solicitud.comentarioEntrenador != null && !#strings.isEmpty(solicitud.comentarioEntrenador)}">
+                                    Sin comentario
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

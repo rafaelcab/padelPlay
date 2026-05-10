@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{base :: layout(~{::title}, ~{::style}, ~{::main})}">
+
+<head>
+    <title>Evaluaciones recibidas - PadelPlay</title>
+    <style>
+        .main-content {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            color: #eeeef0;
+            margin-bottom: 10px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+        }
+
+        .page-description {
+            color: #94a3b8;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .card {
+            background: #1d2023;
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid #334155;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #334155;
+            gap: 16px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #eeeef0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .alert-error {
+            background: rgba(220, 38, 38, 0.1);
+            color: #fca5a5;
+            border: 1px solid #7f1d1d;
+        }
+
+        .alert-success {
+            background: rgba(22, 163, 74, 0.1);
+            color: #86efac;
+            border: 1px solid #14532d;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+            background: #0f1113;
+            border: 1px solid #1e293b;
+            border-radius: 14px;
+        }
+
+        .empty-state-icon {
+            color: #D4FF00;
+            margin-bottom: 12px;
+        }
+
+        .request-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .scheduled-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .scheduled-item {
+            background: #0f1113;
+            border: 1px solid rgba(212, 255, 0, 0.25);
+            border-radius: 14px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(220px, auto);
+            gap: 20px;
+        }
+
+        .request-item {
+            background: #0f1113;
+            border: 1px solid #1e293b;
+            border-radius: 14px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(220px, auto);
+            gap: 20px;
+        }
+
+        .request-main {
+            display: grid;
+            gap: 10px;
+        }
+
+        .request-title {
+            color: #eeeef0;
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .request-meta,
+        .request-text {
+            color: #94a3b8;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .request-text strong {
+            color: #cbd5e1;
+        }
+
+        .status {
+            display: inline-flex;
+            width: fit-content;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            border: 1px solid #334155;
+            color: #cbd5e1;
+            background: #111827;
+        }
+
+        .status-pendiente {
+            color: #D4FF00;
+            border-color: rgba(212, 255, 0, 0.3);
+            background: rgba(212, 255, 0, 0.08);
+        }
+
+        .status-aceptada,
+        .status-completada {
+            color: #86efac;
+            border-color: rgba(34, 197, 94, 0.25);
+            background: rgba(34, 197, 94, 0.08);
+        }
+
+        .status-rechazada {
+            color: #fca5a5;
+            border-color: rgba(220, 38, 38, 0.25);
+            background: rgba(220, 38, 38, 0.08);
+        }
+
+        .request-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .inline-form {
+            display: grid;
+            gap: 8px;
+        }
+
+        .comment-input {
+            background: #111827;
+            border: 1px solid #334155;
+            color: #eeeef0;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .btn-primary,
+        .btn-secondary,
+        .btn-danger,
+        .btn-muted {
+            border: none;
+            padding: 10px 16px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #D4FF00;
+            color: #000;
+        }
+
+        .btn-secondary {
+            background: #1f2937;
+            color: #e5e7eb;
+            border: 1px solid #334155;
+        }
+
+        .btn-danger {
+            background: rgba(220, 38, 38, 0.16);
+            color: #fca5a5;
+            border: 1px solid rgba(220, 38, 38, 0.35);
+        }
+
+        .btn-muted {
+            background: #111827;
+            color: #94a3b8;
+            border: 1px solid #334155;
+            cursor: default;
+        }
+
+        @media (max-width: 820px) {
+            .request-item,
+            .scheduled-item {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="main-content">
+        <h1 class="page-title">Evaluaciones recibidas</h1>
+        <p class="page-description">
+            Revisa las solicitudes de tus alumnos, acepta las que puedas atender y completa la evaluación cuando hayas validado su nivel en pista.
+        </p>
+
+        <div class="alert alert-success" th:if="${exito}" th:text="${exito}"></div>
+        <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><span class="material-symbols-outlined">event_available</span> Evaluaciones programadas</div>
+            </div>
+
+            <div class="empty-state" th:if="${evaluacionesProgramadas == null || evaluacionesProgramadas.empty}">
+                <div class="empty-state-icon"><span class="material-symbols-outlined" style="font-size: 44px;">event_busy</span></div>
+                <p>No tienes evaluaciones aceptadas como citas programadas.</p>
+            </div>
+
+            <div class="scheduled-list" th:if="${evaluacionesProgramadas != null && !evaluacionesProgramadas.empty}">
+                <div class="scheduled-item" th:each="solicitud : ${evaluacionesProgramadas}">
+                    <div class="request-main">
+                        <div class="request-title"
+                             th:text="${solicitud.nombreJugador != null ? solicitud.nombreJugador : 'Jugador #' + solicitud.jugadorId}">
+                            Jugador
+                        </div>
+                        <div class="request-meta"
+                             th:text="${solicitud.fechaHoraSolicitada != null ? #temporals.format(solicitud.fechaHoraSolicitada, 'dd MMM yyyy - HH:mm') : 'Sin fecha solicitada'}">
+                            20 may 2026 - 18:30
+                        </div>
+                        <span class="status status-aceptada">ACEPTADA</span>
+                        <div class="request-text">
+                            <strong>Comentario jugador:</strong>
+                            <span th:text="${solicitud.comentarioJugador != null && !#strings.isEmpty(solicitud.comentarioJugador) ? solicitud.comentarioJugador : 'Sin comentario'}">
+                                Sin comentario
+                            </span>
+                        </div>
+                        <div class="request-text">
+                            <strong>Comentario entrenador:</strong>
+                            <span th:text="${solicitud.comentarioEntrenador != null && !#strings.isEmpty(solicitud.comentarioEntrenador) ? solicitud.comentarioEntrenador : 'Sin comentario'}">
+                                Sin comentario
+                            </span>
+                        </div>
+                    </div>
+                    <div class="request-actions">
+                        <a th:href="@{'/entrenador/evaluaciones/' + ${solicitud.id} + '/completar'}"
+                           class="btn-primary">
+                            <span class="material-symbols-outlined">edit_note</span>
+                            Completar evaluación
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><span class="material-symbols-outlined">fact_check</span> Solicitudes e historial</div>
+            </div>
+
+            <div class="empty-state" th:if="${solicitudesGestion == null || solicitudesGestion.empty}">
+                <div class="empty-state-icon"><span class="material-symbols-outlined" style="font-size: 44px;">assignment</span></div>
+                <p>No tienes solicitudes pendientes, rechazadas o finalizadas.</p>
+            </div>
+
+            <div class="request-list" th:if="${solicitudesGestion != null && !solicitudesGestion.empty}">
+                <div class="request-item" th:each="solicitud : ${solicitudesGestion}">
+                    <div class="request-main">
+                        <div class="request-title"
+                             th:text="${solicitud.nombreJugador != null ? solicitud.nombreJugador : 'Jugador #' + solicitud.jugadorId}">
+                            Jugador
+                        </div>
+                        <div class="request-meta"
+                             th:text="${solicitud.fechaHoraSolicitada != null ? #temporals.format(solicitud.fechaHoraSolicitada, 'dd MMM yyyy - HH:mm') : 'Sin fecha solicitada'}">
+                            20 may 2026 - 18:30
+                        </div>
+                        <span class="status"
+                              th:classappend="${solicitud.estado != null ? ' status-' + #strings.toLowerCase(solicitud.estado) : ''}"
+                              th:text="${solicitud.estado != null ? solicitud.estado : 'Sin estado'}">
+                            PENDIENTE
+                        </span>
+                        <div class="request-text">
+                            <strong>Comentario jugador:</strong>
+                            <span th:text="${solicitud.comentarioJugador != null && !#strings.isEmpty(solicitud.comentarioJugador) ? solicitud.comentarioJugador : 'Sin comentario'}">
+                                Sin comentario
+                            </span>
+                        </div>
+                        <div class="request-text">
+                            <strong>Comentario entrenador:</strong>
+                            <span th:text="${solicitud.comentarioEntrenador != null && !#strings.isEmpty(solicitud.comentarioEntrenador) ? solicitud.comentarioEntrenador : 'Sin comentario'}">
+                                Sin comentario
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="request-actions">
+                        <div th:if="${solicitud.estado == 'PENDIENTE'}">
+                            <form class="inline-form" th:action="@{'/entrenador/evaluaciones/' + ${solicitud.id} + '/aceptar'}" method="post">
+                                <input class="comment-input" type="text" name="comentarioEntrenador" placeholder="Comentario opcional">
+                                <button type="submit" class="btn-primary">
+                                    <span class="material-symbols-outlined">check</span>
+                                    Aceptar
+                                </button>
+                            </form>
+                            <form class="inline-form" th:action="@{'/entrenador/evaluaciones/' + ${solicitud.id} + '/rechazar'}" method="post" style="margin-top: 10px;">
+                                <input class="comment-input" type="text" name="comentarioEntrenador" placeholder="Motivo opcional">
+                                <button type="submit" class="btn-danger">
+                                    <span class="material-symbols-outlined">close</span>
+                                    Rechazar
+                                </button>
+                            </form>
+                        </div>
+
+                        <span th:if="${solicitud.estado == 'COMPLETADA'}" class="btn-muted">
+                            <span class="material-symbols-outlined">verified</span>
+                            Finalizada
+                        </span>
+
+                        <span th:if="${solicitud.estado == 'RECHAZADA'}" class="btn-muted">
+                            <span class="material-symbols-outlined">block</span>
+                            Rechazada
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

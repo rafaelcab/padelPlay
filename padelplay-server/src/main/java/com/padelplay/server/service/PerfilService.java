@@ -3,11 +3,13 @@ package com.padelplay.server.service;
 import com.padelplay.common.dto.CertificacionDto;
 import com.padelplay.common.dto.DetallesTecnicosDto;
 import com.padelplay.common.dto.EstadoPerfilDto;
+import com.padelplay.common.dto.EvolucionEloDto;
 import com.padelplay.common.dto.PerfilEntrenadorDto;
 import com.padelplay.common.dto.PerfilJugadorDto;
 import com.padelplay.server.entity.*;
 import com.padelplay.server.repository.CertificacionRepository;
 import com.padelplay.server.repository.DetallesTecnicosRepository;
+import com.padelplay.server.repository.HistorialEloRepository;
 import com.padelplay.server.repository.PerfilEntrenadorRepository;
 import com.padelplay.server.repository.PerfilJugadorRepository;
 import com.padelplay.server.repository.SolicitudEntrenamientoRepository;
@@ -33,19 +35,22 @@ public class PerfilService {
     private final PerfilEntrenadorRepository perfilEntrenadorRepository;
     private final CertificacionRepository certificacionRepository;
     private final SolicitudEntrenamientoRepository solicitudEntrenamientoRepository;
+    private final HistorialEloRepository historialEloRepository;
 
     public PerfilService(UsuarioRepository usuarioRepository,
             PerfilJugadorRepository perfilJugadorRepository,
             DetallesTecnicosRepository detallesTecnicosRepository,
             PerfilEntrenadorRepository perfilEntrenadorRepository,
             CertificacionRepository certificacionRepository,
-            SolicitudEntrenamientoRepository solicitudEntrenamientoRepository) {
+            SolicitudEntrenamientoRepository solicitudEntrenamientoRepository,
+            HistorialEloRepository historialEloRepository) {
         this.usuarioRepository = usuarioRepository;
         this.perfilJugadorRepository = perfilJugadorRepository;
         this.detallesTecnicosRepository = detallesTecnicosRepository;
         this.perfilEntrenadorRepository = perfilEntrenadorRepository;
         this.certificacionRepository = certificacionRepository;
         this.solicitudEntrenamientoRepository = solicitudEntrenamientoRepository;
+        this.historialEloRepository = historialEloRepository;
     }
 
     /**
@@ -202,6 +207,16 @@ public class PerfilService {
     public Optional<PerfilJugadorDto> obtenerPerfilJugador(Long usuarioId) {
         return perfilJugadorRepository.findByUsuarioIdWithDetalles(usuarioId)
                 .map(this::convertirADto);
+    }
+
+    /**
+     * Obtiene la evolución ELO del jugador autenticado.
+     */
+    @Transactional(readOnly = true)
+    public List<EvolucionEloDto> obtenerEvolucionElo(Long usuarioId) {
+        return historialEloRepository.findByUsuarioIdOrderByFechaAsc(usuarioId).stream()
+                .map(this::convertirADto)
+                .toList();
     }
 
     // === MÉTODOS PARA ENTRENADOR ===
@@ -397,6 +412,10 @@ public class PerfilService {
         }
 
         return dto;
+    }
+
+    private EvolucionEloDto convertirADto(HistorialElo historialElo) {
+        return new EvolucionEloDto(historialElo.getFecha(), historialElo.getElo());
     }
 
     private PerfilEntrenadorDto convertirADto(PerfilEntrenador perfil) {

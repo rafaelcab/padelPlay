@@ -3,6 +3,7 @@ package com.padelplay.cliente.controller;
 import com.padelplay.common.dto.CertificacionDto;
 import com.padelplay.common.dto.DetallesTecnicosDto;
 import com.padelplay.common.dto.EstadoPerfilDto;
+import com.padelplay.common.dto.EvolucionEloDto;
 import com.padelplay.common.dto.PartidoDto;
 import com.padelplay.common.dto.PartidoPendienteReporteDto;
 import com.padelplay.common.dto.PerfilEntrenadorDto;
@@ -177,6 +178,25 @@ public class PerfilViewController {
             model.addAttribute("partidosReportables", List.of());
             model.addAttribute("resultadosPendientesValidacion", List.of());
             return "perfil-dashboard";
+        }
+    }
+
+    @GetMapping("/evolucion")
+    public String evolucion(HttpSession session, Model model) {
+        String token = (String) session.getAttribute("token");
+        if (token == null)
+            return "redirect:/login";
+
+        try {
+            List<EvolucionEloDto> puntosElo = perfilServiceProxy.obtenerEvolucionEloJugador(token);
+            model.addAttribute("puntosElo", puntosElo);
+            return "evolucion";
+        } catch (Exception e) {
+            if (esSesionInvalida(e))
+                return redirigirALogin(session);
+            model.addAttribute("error", "Error al cargar la evolucion: " + e.getMessage());
+            model.addAttribute("puntosElo", List.of());
+            return "evolucion";
         }
     }
 

@@ -488,6 +488,28 @@
 
             <div class="card">
                 <div class="card-header">
+                    <div class="card-title"><span class="material-symbols-outlined">trending_up</span> Evolución</div>
+                    <a href="/perfil/evolucion" class="btn-edit">Ver evolución</a>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">Progreso de nivel</div>
+                    <div class="profile-value">Consulta tu historial ELO y prepara la grafica de evolución.</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><span class="material-symbols-outlined">fact_check</span> Evaluación</div>
+                    <a href="/perfil/evaluacion" class="btn-edit">Solicitar</a>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">Validación ELO</div>
+                    <div class="profile-value">Solicita una evaluación en pista con un entrenador para revisar tu nivel.</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
                     <div class="card-title"><span class="material-symbols-outlined">sports_tennis</span> Detalles Tecnicos</div>
                     <a href="/perfil/jugador/detalles-tecnicos" class="btn-edit">Editar</a>
                 </div>
@@ -701,6 +723,17 @@
                     th:if="${estado.perfilEntrenador?.descripcion != null}">
                     <div class="profile-label">Sobre mi</div>
                     <div class="profile-value" th:text="${estado.perfilEntrenador.descripcion}">-</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><span class="material-symbols-outlined">fact_check</span> Evaluaciones</div>
+                    <a href="/entrenador/evaluaciones" class="btn-edit">Gestionar</a>
+                </div>
+                <div class="profile-item">
+                    <div class="profile-label">Solicitudes de alumnos</div>
+                    <div class="profile-value">Acepta, rechaza o completa evaluaciones en pista ajustando el ELO del jugador.</div>
                 </div>
             </div>
 
