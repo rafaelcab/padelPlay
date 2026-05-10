@@ -43,6 +43,7 @@ Root project 'padelPlay'
 \--- Project ':padelplay-cliente'
 ```
 
+
 ### 3. Compilar el proyecto
 Para compilar todos los módulos a la vez:
 ```
