@@ -39,6 +39,7 @@ public class PerfilEntrenadorDto {
     private String nivel;
     private String especialidad;
     private Integer experiencia;
+    private Long usuarioId;
 
     public PerfilEntrenadorDto() {
     }
@@ -259,5 +260,13 @@ public class PerfilEntrenadorDto {
 
     public void setExperiencia(Integer experiencia) {
         this.experiencia = experiencia;
+    }
+
+    public Long getUsuarioId() {
+        return usuarioId;
+    }
+
+    public void setUsuarioId(Long usuarioId) {
+        this.usuarioId = usuarioId;
     }
 }
