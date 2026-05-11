@@ -330,6 +330,44 @@ public class PerfilServiceProxy {
         return new java.util.ArrayList<>();
     }
 
+    /**
+     * Guarda el feedback del entrenador para un partido
+     */
+    public void guardarFeedback(String token, Map<String, Object> request) {
+        HttpHeaders headers = crearHeaders(token);
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
+
+        restTemplate.exchange(
+                serverUrl + "/api/entrenador/feedback/guardar",
+                HttpMethod.POST,
+                entity,
+                Void.class);
+    }
+
+    /**
+     * Obtiene los feedbacks recibidos por el alumno autenticado.
+     */
+    public List<Map<String, Object>> obtenerMisValoraciones(String token) {
+        HttpHeaders headers = crearHeaders(token);
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<Map[]> response = restTemplate.exchange(
+                    serverUrl + "/api/entrenador/feedback/mis-valoraciones",
+                    HttpMethod.GET,
+                    entity,
+                    Map[].class);
+
+            if (response.getBody() != null) {
+                return java.util.Arrays.asList(response.getBody());
+            }
+            return new java.util.ArrayList<>();
+        } catch (Exception e) {
+            System.err.println("Error al obtener mis valoraciones: " + e.getMessage());
+            return new java.util.ArrayList<>();
+        }
+    }
+
     private HttpHeaders crearHeaders(String token) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

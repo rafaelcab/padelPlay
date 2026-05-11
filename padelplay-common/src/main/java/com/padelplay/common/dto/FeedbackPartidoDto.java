@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 public class FeedbackPartidoDto {
     private Long id;
+    private Long entrenadorId;
+    private String entrenadorApodo;
     private Long alumnoId;
     private String alumnoApodo;
     private Long partidoId;
@@ -53,6 +55,22 @@ public class FeedbackPartidoDto {
 
     public void setAlumnoId(Long alumnoId) {
         this.alumnoId = alumnoId;
+    }
+
+    public Long getEntrenadorId() {
+        return entrenadorId;
+    }
+
+    public void setEntrenadorId(Long entrenadorId) {
+        this.entrenadorId = entrenadorId;
+    }
+
+    public String getEntrenadorApodo() {
+        return entrenadorApodo;
+    }
+
+    public void setEntrenadorApodo(String entrenadorApodo) {
+        this.entrenadorApodo = entrenadorApodo;
     }
 
     public String getAlumnoApodo() {

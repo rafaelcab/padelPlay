@@ -591,6 +591,47 @@
                 </div>
             </div>
         
+            <!-- Feedbacks recibidos (Solo para Alumnos) -->
+            <div class="card" th:if="${valoracionesRecibidas != null && !valoracionesRecibidas.empty}">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="material-symbols-outlined">reviews</span> 
+                        Valoraciones de Entrenadores
+                    </div>
+                </div>
+                <div class="report-list">
+                    <div class="report-item" th:each="feedback : ${valoracionesRecibidas}" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <div class="report-title" th:text="${feedback.entrenadorApodo}">Entrenador</div>
+                                <div class="report-subtitle" th:text="${#temporals.format(feedback.fechaCreacion, 'dd MMM yyyy') + ' · ' + feedback.ubicacionPartido}">15 may 2026 · Club Norte</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 6px; background: rgba(212, 255, 0, 0.1); padding: 6px 12px; border-radius: 12px; border: 1px solid rgba(212, 255, 0, 0.2);">
+                                <span class="material-symbols-outlined" style="color: #D4FF00; font-size: 18px; font-variation-settings: 'FILL' 1;">star</span>
+                                <span style="color: #D4FF00; font-weight: 800; font-size: 16px;" th:text="${#numbers.formatDecimal(feedback.calificacion, 1, 1)}">4.5</span>
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px;">
+                            <div th:if="${feedback.fortalezas}">
+                                <div class="profile-label" style="font-size: 10px; margin-bottom: 4px;">Fortalezas</div>
+                                <p style="font-size: 13px; color: #eeeef0; line-height: 1.4;" th:text="${feedback.fortalezas}"></p>
+                            </div>
+                            
+                            <div th:if="${feedback.areasMejora}">
+                                <div class="profile-label" style="font-size: 10px; margin-bottom: 4px;">Áreas de mejora</div>
+                                <p style="font-size: 13px; color: #eeeef0; line-height: 1.4;" th:text="${feedback.areasMejora}"></p>
+                            </div>
+                        </div>
+                        
+                        <div th:if="${feedback.comentario}" style="border-left: 3px solid #D4FF00; padding-left: 12px; margin-top: 5px;">
+                            <div class="profile-label" style="font-size: 10px; margin-bottom: 4px;">Comentarios del Coach</div>
+                            <p style="font-size: 13px; color: #94a3b8; font-style: italic; line-height: 1.5;" th:text="${feedback.comentario}"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-header">
                     <div class="card-title"><span class="material-symbols-outlined">task_alt</span> Validaciones pendientes</div>

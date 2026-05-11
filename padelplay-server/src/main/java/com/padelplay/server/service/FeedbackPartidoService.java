@@ -111,6 +111,17 @@ public class FeedbackPartidoService {
     }
 
     /**
+     * Obtiene todos los feedbacks recibidos por un alumno.
+     */
+    @Transactional(readOnly = true)
+    public List<FeedbackPartidoDto> obtenerFeedbacksRecibidosPorAlumno(Long alumnoId) {
+        return feedbackPartidoRepository.findByAlumnoIdOrderByFechaCreacionDesc(alumnoId)
+                .stream()
+                .map(this::convertirADto)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Obtiene el feedback para un partido específico.
      */
     @Transactional(readOnly = true)
@@ -146,19 +157,21 @@ public class FeedbackPartidoService {
      * Convierte una entidad FeedbackPartido a DTO.
      */
     private FeedbackPartidoDto convertirADto(FeedbackPartido feedback) {
-        return new FeedbackPartidoDto(
-                feedback.getId(),
-                feedback.getAlumno().getId(),
-                feedback.getAlumno().getApodo(),
-                feedback.getPartido().getId(),
-                feedback.getPartido().getFechaHora(),
-                feedback.getPartido().getUbicacion(),
-                feedback.getCalificacion(),
-                feedback.getComentario(),
-                feedback.getFortalezas(),
-                feedback.getAreasMejora(),
-                feedback.getFechaCreacion(),
-                feedback.getFechaActualizacion()
-        );
+        FeedbackPartidoDto dto = new FeedbackPartidoDto();
+        dto.setId(feedback.getId());
+        dto.setEntrenadorId(feedback.getEntrenador().getId());
+        dto.setEntrenadorApodo(feedback.getEntrenador().getApodo());
+        dto.setAlumnoId(feedback.getAlumno().getId());
+        dto.setAlumnoApodo(feedback.getAlumno().getApodo());
+        dto.setPartidoId(feedback.getPartido().getId());
+        dto.setFechaPartido(feedback.getPartido().getFechaHora());
+        dto.setUbicacionPartido(feedback.getPartido().getUbicacion());
+        dto.setCalificacion(feedback.getCalificacion());
+        dto.setComentario(feedback.getComentario());
+        dto.setFortalezas(feedback.getFortalezas());
+        dto.setAreasMejora(feedback.getAreasMejora());
+        dto.setFechaCreacion(feedback.getFechaCreacion());
+        dto.setFechaActualizacion(feedback.getFechaActualizacion());
+        return dto;
     }
 }

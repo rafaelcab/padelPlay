@@ -151,6 +151,7 @@ public class PerfilViewController {
             model.addAttribute("estado", estado);
             model.addAttribute("partidosReportables", cargarPartidosReportables(token, estado));
             model.addAttribute("resultadosPendientesValidacion", cargarResultadosPendientesValidacion(token, estado));
+            model.addAttribute("valoracionesRecibidas", perfilServiceProxy.obtenerMisValoraciones(token));
 
             if (estado.getPerfilJugador() != null) {
                 cargarResumenAdmin(model, estado.getPerfilJugador().getId());
@@ -540,9 +541,42 @@ public class PerfilViewController {
     }
 
     @PostMapping("/entrenador/valorar-partido/guardar")
-    public String guardarFeedbackSimulado() {
-        // Simulación de éxito. Redirigimos al dashboard.
-        return "redirect:/perfil/dashboard";
+    public String guardarFeedback(
+            @RequestParam("partidoId") Long partidoId,
+            @RequestParam("alumnoId") Long alumnoId,
+            @RequestParam("calificacion") Double calificacion,
+            @RequestParam(value = "comentario", required = false) String comentario,
+            @RequestParam(value = "fortalezas", required = false) String fortalezas,
+            @RequestParam(value = "areasMejora", required = false) String areasMejora,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        String token = (String) session.getAttribute("token");
+        if (token == null)
+            return "redirect:/login";
+
+        System.out.println("DEBUG: Guardando feedback para partido " + partidoId + ", alumno " + alumnoId + ", calificacion " + calificacion);
+        try {
+            Map<String, Object> request = new java.util.HashMap<>();
+            request.put("partidoId", partidoId.toString());
+            request.put("alumnoId", alumnoId.toString());
+            request.put("calificacion", calificacion.toString());
+            request.put("comentario", comentario);
+            request.put("fortalezas", fortalezas);
+            request.put("areasMejora", areasMejora);
+
+            System.out.println("DEBUG: Enviando al proxy...");
+            perfilServiceProxy.guardarFeedback(token, request);
+            System.out.println("DEBUG: Feedback guardado correctamente");
+
+            redirectAttributes.addFlashAttribute("mensajeExito", "Valoración guardada exitosamente");
+            return "redirect:/perfil/entrenador/historial-partidos";
+        } catch (Exception e) {
+            System.err.println("DEBUG ERROR: " + e.getMessage());
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("error", "Error al guardar la valoración: " + e.getMessage());
+            return "redirect:/perfil/entrenador/valorar-partido/" + partidoId;
+        }
     }
 
     // === MÉTODOS PRIVADOS DE UTILIDAD (Unificados) ===

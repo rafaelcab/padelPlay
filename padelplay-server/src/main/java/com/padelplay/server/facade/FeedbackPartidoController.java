@@ -119,6 +119,23 @@ public class FeedbackPartidoController {
     }
 
     /**
+     * Obtiene todos los feedbacks recibidos por el usuario actual (como alumno).
+     */
+    @GetMapping("/mis-valoraciones")
+    @Operation(summary = "Obtener feedbacks recibidos", description = "Recupera todos los feedbacks que ha recibido el alumno")
+    public ResponseEntity<List<FeedbackPartidoDto>> obtenerMisValoraciones(
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            Long alumnoId = extraerUsuarioId(authHeader);
+            List<FeedbackPartidoDto> feedbacks = feedbackPartidoService.obtenerFeedbacksRecibidosPorAlumno(alumnoId);
+            return ResponseEntity.ok(feedbacks);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(null);
+        }
+    }
+
+    /**
      * Obtiene el feedback para un partido específico.
      */
     @GetMapping("/partido/{partidoId}")
