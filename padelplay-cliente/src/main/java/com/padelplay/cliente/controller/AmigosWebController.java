@@ -20,9 +20,11 @@ import java.util.List;
 public class AmigosWebController {
 
     private final AmigosServiceProxy amigosServiceProxy;
+    private final com.padelplay.cliente.proxies.PerfilServiceProxy perfilServiceProxy;
 
-    public AmigosWebController(AmigosServiceProxy amigosServiceProxy) {
+    public AmigosWebController(AmigosServiceProxy amigosServiceProxy, com.padelplay.cliente.proxies.PerfilServiceProxy perfilServiceProxy) {
         this.amigosServiceProxy = amigosServiceProxy;
+        this.perfilServiceProxy = perfilServiceProxy;
     }
 
     @GetMapping
@@ -35,8 +37,13 @@ public class AmigosWebController {
         try {
             List<AmigoPerfilDto> amigos = amigosServiceProxy.listarAmigos(token);
             model.addAttribute("amigos", amigos);
+            
+            // También cargamos todos los entrenadores públicos
+            List<com.padelplay.common.dto.PerfilEntrenadorDto> entrenadores = perfilServiceProxy.obtenerEntrenadoresPublicos();
+            model.addAttribute("entrenadores", entrenadores);
         } catch (Exception e) {
             model.addAttribute("amigos", List.of());
+            model.addAttribute("entrenadores", List.of());
             model.addAttribute("error", "No se pudieron cargar los perfiles.");
         }
 

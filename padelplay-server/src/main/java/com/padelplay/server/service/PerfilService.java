@@ -457,6 +457,7 @@ public class PerfilService {
         if (perfil.getUsuario() != null) {
             dto.setNombre(perfil.getUsuario().getNombre());
             dto.setFotoUrl(perfil.getUsuario().getPictureUrl());
+            dto.setUsuarioId(perfil.getUsuario().getId());
         }
 
         dto.setExperiencia(perfil.getAniosExperiencia());

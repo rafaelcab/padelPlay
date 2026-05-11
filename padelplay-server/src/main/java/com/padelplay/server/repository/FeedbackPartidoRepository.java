@@ -37,4 +37,9 @@ public interface FeedbackPartidoRepository extends JpaRepository<FeedbackPartido
      */
     @Query("SELECT f FROM FeedbackPartido f WHERE f.entrenador.id = :entrenadorId ORDER BY f.fechaCreacion DESC")
     List<FeedbackPartido> findByEntrenadorIdOrderByFechaCreacion(@Param("entrenadorId") Long entrenadorId);
+
+    /**
+     * Obtiene todos los feedbacks recibidos por un alumno.
+     */
+    List<FeedbackPartido> findByAlumnoIdOrderByFechaCreacionDesc(Long alumnoId);
 }
