@@ -211,6 +211,12 @@ public class PartidoService {
             throw new IllegalStateException("El usuario no está apuntado a este partido.");
         }
 
+        // Penalización de Karma si se cancela con menos de 24h de antelación
+        if (LocalDateTime.now().isAfter(partido.getFechaHora().minusHours(24))) {
+            usuario.setPuntosKarma(Math.max(0, usuario.getPuntosKarma() - 10));
+            perfilJugadorRepository.save(usuario);
+        }
+
         partido.getJugadoresApuntados().removeIf(j -> j.getId().equals(usuarioId));
 
         if (partido.getJugadoresApuntados().isEmpty()) {
@@ -316,6 +322,7 @@ public class PartidoService {
         dto.setCodigoAcceso(p.getCodigoAcceso());
         dto.setCancelado(p.isCancelado());
         dto.setTerminado(p.isTerminado());
+        dto.setPenalizacionCancelacion(LocalDateTime.now().isAfter(p.getFechaHora().minusHours(24)));
 
         PerfilJugadorDto creadorDto = new PerfilJugadorDto();
         creadorDto.setId(p.getCreador().getId());

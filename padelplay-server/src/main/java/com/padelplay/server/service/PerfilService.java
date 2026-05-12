@@ -375,7 +375,7 @@ public class PerfilService {
         solicitud.setJugador(jugador);
         solicitud.setEntrenador(entrenador);
         solicitud.setMensaje(mensaje);
-        
+
         return solicitudEntrenamientoRepository.save(solicitud);
     }
 
@@ -388,6 +388,7 @@ public class PerfilService {
         dto.setAniosExperiencia(perfil.getAniosExperiencia());
         dto.setNivelJuego(perfil.getNivelJuego());
         dto.setTelefono(perfil.getTelefono());
+        dto.setPuntosKarma(perfil.getPuntosKarma());
 
         if (perfil.getDetallesTecnicos() != null) {
             dto.setDetallesTecnicos(convertirADto(perfil.getDetallesTecnicos()));

@@ -509,6 +509,13 @@
                         <div class="profile-value" th:classappend="${estado.perfilJugador.telefono == null} ? 'empty'"
                             th:text="${estado.perfilJugador.telefono} ?: 'Sin especificar'">-</div>
                     </div>
+                    <div class="profile-item">
+                        <div class="profile-label">Puntos Karma</div>
+                        <div class="profile-value">
+                            <span class="material-symbols-outlined" style="color: #D4FF00; font-size: 16px; vertical-align: middle;">auto_awesome</span>
+                            <span th:text="${estado.perfilJugador.puntosKarma}">100</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 

@@ -186,7 +186,8 @@
 
                         <div class="mt-4"
                             th:if="${partidosApuntadoIds != null && partidosApuntadoIds.contains(partido.id)}">
-                            <form th:action="@{'/partidos/' + ${partido.id} + '/cancelar'}" method="post">
+                            <form th:action="@{'/partidos/' + ${partido.id} + '/cancelar'}" method="post"
+                                th:onsubmit="|return confirmarCancelacion(event, ${partido.penalizacionCancelacion})|">
                                 <button type="submit"
                                     th:disabled="${partido.cancelado || partido.terminado || (partidosCreadosIds != null && partidosCreadosIds.contains(partido.id))}"
                                     th:classappend="${(partido.cancelado || partido.terminado) ? 'opacity-50 cursor-not-allowed' : ''}"
@@ -530,6 +531,19 @@
 
             function closeFinishModal() {
                 document.getElementById('finish-modal').classList.add('hidden');
+            }
+
+            function confirmarCancelacion(event, penalizacion) {
+                let mensaje = "¿Estás seguro de que quieres cancelar tu asistencia?";
+                if (penalizacion) {
+                    mensaje = "¡ATENCIÓN! Quedan menos de 24h para el partido. Cancelar ahora supondrá una penalización de 10 Puntos Karma. ¿Deseas continuar?";
+                }
+                
+                if (!confirm(mensaje)) {
+                    event.preventDefault();
+                    return false;
+                }
+                return true;
             }
         </script>
     </div>

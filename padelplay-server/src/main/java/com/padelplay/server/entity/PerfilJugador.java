@@ -44,6 +44,9 @@ public class PerfilJugador {
 
     private Double nivel; // Migrado de Jugador
 
+    @Column(nullable = false)
+    private Integer puntosKarma = 100;
+
     @JsonIgnore
     @OneToMany(mappedBy = "creador", cascade = CascadeType.ALL)
     private List<Partido> partidosCreados = new ArrayList<>();
@@ -141,6 +144,14 @@ public class PerfilJugador {
 
     public void setNivel(Double nivel) {
         this.nivel = nivel;
+    }
+
+    public Integer getPuntosKarma() {
+        return puntosKarma;
+    }
+
+    public void setPuntosKarma(Integer puntosKarma) {
+        this.puntosKarma = puntosKarma;
     }
 
     public List<Partido> getPartidosCreados() {

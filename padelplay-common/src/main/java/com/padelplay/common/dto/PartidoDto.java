@@ -19,6 +19,7 @@ public class PartidoDto {
     private String codigoAcceso;
     private boolean cancelado;
     private boolean terminado;
+    private boolean penalizacionCancelacion;
 
     // Cambiamos la lista de IDs por la lista de perfiles para los iconos/avatares
     private List<PerfilJugadorDto> jugadoresApuntados;
@@ -116,5 +117,13 @@ public class PartidoDto {
 
     public void setJugadoresApuntados(List<PerfilJugadorDto> jugadoresApuntados) {
         this.jugadoresApuntados = jugadoresApuntados;
+    }
+
+    public boolean isPenalizacionCancelacion() {
+        return penalizacionCancelacion;
+    }
+
+    public void setPenalizacionCancelacion(boolean penalizacionCancelacion) {
+        this.penalizacionCancelacion = penalizacionCancelacion;
     }
 }
