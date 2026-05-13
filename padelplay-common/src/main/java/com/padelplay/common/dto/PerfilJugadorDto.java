@@ -11,12 +11,11 @@ public class PerfilJugadorDto {
     private String nivelJuego;
     private String telefono;
     private Double nivel;
+    private Integer puntosKarma;
     private DetallesTecnicosDto detallesTecnicos;
 
     public PerfilJugadorDto() {
     }
-
-    // Getters y Setters
 
     public Long getId() {
         return id;
@@ -72,5 +71,13 @@ public class PerfilJugadorDto {
 
     public void setNivel(Double nivel) {
         this.nivel = nivel;
+    }
+
+    public Integer getPuntosKarma() {
+        return puntosKarma;
+    }
+
+    public void setPuntosKarma(Integer puntosKarma) {
+        this.puntosKarma = puntosKarma;
     }
 }

@@ -14,6 +14,61 @@
 
 <body>
     <div id="content-wrapper" class="w-full pt-32 relative">
+        <!-- MODAL CANCELAR ASISTENCIA -->
+        <div id="cancel-modal"
+            class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div
+                class="bg-[#1d2023] w-full max-w-md rounded-[2rem] p-8 shadow-[0px_40px_80px_rgba(0,0,0,0.6)] border border-white/5 relative overflow-hidden">
+
+                <div
+                    class="absolute -top-24 -left-24 w-48 h-48 bg-red-500/10 blur-[80px] rounded-full pointer-events-none">
+                </div>
+
+                <div class="relative z-10 space-y-6">
+                    <!-- Icono + Título -->
+                    <div class="text-center space-y-3">
+                        <div
+                            class="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center mx-auto">
+                            <span class="material-symbols-outlined text-red-400 text-3xl">warning</span>
+                        </div>
+                        <h2 class="text-2xl font-headline font-extrabold tracking-tight text-white">¿Cancelar
+                            asistencia?</h2>
+                    </div>
+
+                    <!-- Bloque de penalización (solo visible si hay penalización) -->
+                    <div id="cancel-penalizacion-block"
+                        class="hidden bg-red-500/10 border border-red-500/30 rounded-2xl p-4 flex items-start gap-3">
+                        <span class="material-symbols-outlined text-red-400 text-xl mt-0.5">schedule</span>
+                        <div>
+                            <p class="text-red-400 font-bold text-sm uppercase tracking-widest mb-1">Penalización activa
+                            </p>
+                            <p class="text-slate-300 text-sm leading-relaxed">Quedan menos de <span
+                                    class="text-white font-bold">24 horas</span> para el partido. Cancelar ahora te
+                                restará <span class="text-red-400 font-black text-base">−10 Karma</span>.</p>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje sin penalización -->
+                    <div id="cancel-normal-block" class="hidden">
+                        <p class="text-slate-400 text-sm text-center leading-relaxed">
+                            Esta acción retirará tu plaza del partido. Podrás volver a unirte si quedan huecos libres.
+                        </p>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="space-y-3 pt-2">
+                        <button id="cancel-confirm-btn" type="button"
+                            class="w-full py-4 rounded-full bg-red-500 hover:bg-red-600 text-white font-headline font-extrabold tracking-tight text-base active:scale-95 transition-all uppercase shadow-[0_0_20px_rgba(239,68,68,0.2)]">
+                            Sí, cancelar asistencia
+                        </button>
+                        <button type="button" onclick="closeCancelModal()"
+                            class="w-full py-4 rounded-full bg-transparent text-slate-400 font-semibold text-sm hover:text-white transition-colors">
+                            Volver
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <main class="max-w-7xl mx-auto px-6 md:px-12 w-full pb-24 md:pb-12 pt-8 relative">
 
@@ -168,14 +223,15 @@
                             </div>
 
                             <button th:if="${partidosApuntadoIds == null || !partidosApuntadoIds.contains(partido.id)}"
-                                th:disabled="${partido.huecosDisponibles == 0 || partido.cancelado || partido.terminado}" th:data-id="${partido.id}"
-                                th:data-ubicacion="${partido.ubicacion}"
+                                th:disabled="${partido.huecosDisponibles == 0 || partido.cancelado || partido.terminado}"
+                                th:data-id="${partido.id}" th:data-ubicacion="${partido.ubicacion}"
                                 th:data-fecha="${#temporals.format(partido.fechaHora, 'dd MMM - HH:mm')}"
                                 th:data-nivel="${partido.nivelRequerido}" th:data-tipo="${partido.tipoPartido}"
                                 onclick="openJoinModal(this)"
                                 th:classappend="${(partido.huecosDisponibles == 0 || partido.cancelado || partido.terminado) ? 'opacity-50 cursor-not-allowed bg-slate-700 text-slate-400' : 'bg-[#D4FF00] text-black hover:bg-[#bce600] shadow-[0_0_15px_rgba(212,255,0,0.2)]'}"
                                 class="px-8 py-3 rounded-full font-headline font-black text-sm tracking-tighter transition-all active:scale-95">
-                                <span th:text="${partido.cancelado ? 'CANCELADO' : (partido.terminado ? 'TERMINADO' : (partido.huecosDisponibles == 0 ? 'LLENO' : 'JOIN'))}">JOIN</span>
+                                <span
+                                    th:text="${partido.cancelado ? 'CANCELADO' : (partido.terminado ? 'TERMINADO' : (partido.huecosDisponibles == 0 ? 'LLENO' : 'JOIN'))}">JOIN</span>
                             </button>
 
                             <div th:if="${partidosApuntadoIds != null && partidosApuntadoIds.contains(partido.id)}"
@@ -186,7 +242,8 @@
 
                         <div class="mt-4"
                             th:if="${partidosApuntadoIds != null && partidosApuntadoIds.contains(partido.id)}">
-                            <form th:action="@{'/partidos/' + ${partido.id} + '/cancelar'}" method="post">
+                            <form th:action="@{'/partidos/' + ${partido.id} + '/cancelar'}" method="post"
+                                th:onsubmit="|return confirmarCancelacion(event, ${partido.penalizacionCancelacion})|">
                                 <button type="submit"
                                     th:disabled="${partido.cancelado || partido.terminado || (partidosCreadosIds != null && partidosCreadosIds.contains(partido.id))}"
                                     th:classappend="${(partido.cancelado || partido.terminado) ? 'opacity-50 cursor-not-allowed' : ''}"
@@ -364,13 +421,15 @@
 
                     <div class="relative z-10 space-y-8">
                         <div class="text-center space-y-2">
-                            <h2 class="text-2xl font-headline font-extrabold tracking-tight text-white">¿Finalizar Partido?</h2>
+                            <h2 class="text-2xl font-headline font-extrabold tracking-tight text-white">¿Finalizar
+                                Partido?</h2>
                             <p id="finish-modal-subtitle" class="text-slate-400 text-sm italic">Pista Central</p>
                         </div>
 
                         <form id="finish-form" method="POST" action="">
                             <p class="text-sm text-slate-400 leading-relaxed mb-6">
-                                Esta acción marcará el partido como terminado. El flujo de resultados se ha retirado de esta rama para rehacerlo desde cero.
+                                Esta acción marcará el partido como terminado. El flujo de resultados se ha retirado de
+                                esta rama para rehacerlo desde cero.
                             </p>
 
                             <div class="space-y-3 pt-2">
@@ -531,6 +590,41 @@
             function closeFinishModal() {
                 document.getElementById('finish-modal').classList.add('hidden');
             }
+
+
+            let _cancelFormPendiente = null;
+
+            function confirmarCancelacion(event, penalizacion) {
+                event.preventDefault();
+                _cancelFormPendiente = event.target;
+
+                const bloquePenal = document.getElementById('cancel-penalizacion-block');
+                const bloqueNormal = document.getElementById('cancel-normal-block');
+
+                if (penalizacion) {
+                    bloquePenal.classList.remove('hidden');
+                    bloqueNormal.classList.add('hidden');
+                } else {
+                    bloquePenal.classList.add('hidden');
+                    bloqueNormal.classList.remove('hidden');
+                }
+
+                document.getElementById('cancel-modal').classList.remove('hidden');
+                return false;
+            }
+
+            function closeCancelModal() {
+                document.getElementById('cancel-modal').classList.add('hidden');
+                _cancelFormPendiente = null;
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                document.getElementById('cancel-confirm-btn').addEventListener('click', function () {
+                    if (_cancelFormPendiente) {
+                        _cancelFormPendiente.submit();
+                    }
+                });
+            });
         </script>
     </div>
 </body>
